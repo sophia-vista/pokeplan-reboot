@@ -470,7 +470,7 @@ private fun QuickActionsCard(model: AppModel, go: (Place) -> Unit) {
     val mood = if (Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
     val routine = if (Module.CARE.name !in locked) model.care.todayRoutines().firstOrNull { !it.doneOn(model.care.today) } else null
     TextBox {
-        app.pokeplan.ui.theme.Accordion("Quick actions", summary = "task, expense, routine") {
+        app.pokeplan.ui.theme.Accordion("Quick actions", summary = "task, expense, routine, memory") {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("Task", { model.addTaskRequested = true; go(Place.PLANNER) }, color = ModuleAccent.PLAN.accent, compact = true)
@@ -489,6 +489,7 @@ private fun QuickActionsCard(model: AppModel, go: (Place) -> Unit) {
                     }
                     if (Module.BASE.name !in locked) PixelButton("Base chore", { go(Place.BASE); model.baseSection = BaseSection.CHORES }, color = ModuleAccent.BASE.accent, compact = true)
                     if (Module.LINK.name !in locked) PixelButton("Add a person", { go(Place.LINK); model.linkSection = LinkSection.PEOPLE }, color = ModuleAccent.LINK.accent, compact = true)
+                    if (Module.LINK.name !in locked) PixelButton("Memory", { go(Place.LINK); app.pokeplan.ui.link.addMemoryNow(model) }, color = ModuleAccent.LINK.accent, compact = true)
                 }
                 if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
                 RestDayRow(model)

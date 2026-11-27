@@ -27,6 +27,7 @@ import app.pokeplan.app.integrations.SourceSnapshot
 import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.PlanDays
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.integrations.EventMemoryDraft
 import app.pokeplan.ui.FeedbackKind
 import app.pokeplan.ui.screens.FormBox
 import app.pokeplan.ui.screens.FormGroup
@@ -158,7 +159,7 @@ internal fun DeviceEventPanel(model: AppModel, event: CalendarEvent, close: () -
                 if (key == null) PixelButton("Close", close, color = Pixel.InkSoft, compact = true)
             }
             if (key != null) {
-                EventEnrichmentSection(model, key, snapshot)
+                EventEnrichmentSection(model, key, snapshot, EventMemoryDraft(event.shownTitle, event.start.date, model.integrations.peopleOf(key)))
                 if (!editable || row == null) PixelButton("Close", close, color = Pixel.InkSoft, compact = true)
             }
         }

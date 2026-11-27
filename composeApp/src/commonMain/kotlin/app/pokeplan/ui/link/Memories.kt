@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.link.Era
 import app.pokeplan.app.link.LinkStore
 import app.pokeplan.link.LinkData
+import app.pokeplan.ui.integrations.MemoryEventLinks
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.Memory
 import app.pokeplan.link.MemoryPhoto
@@ -79,6 +80,9 @@ private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.W
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
 private val MONTHS = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+/** The tab of the Chapters view: the number a jump carries to open it. */
+internal const val MEMORIES_CHAPTERS = 1
+
 private const val NO_YEAR = "No year"
 private const val NO_MONTH = "Month"
 
@@ -137,7 +141,7 @@ private fun PhotoImage(bitmap: ImageBitmap?, description: String?, modifier: Mod
 
 /** The full view of one photo: the picture across the width, its caption, and one key to close it. */
 @Composable
-internal fun PhotoViewer(photo: MemoryPhoto, onClose: () -> Unit) {
+internal fun PhotoViewer(photo: MemoryPhoto, onOpenMemory: (() -> Unit)? = null, onClose: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         val bitmap = remember(photo.data) { decodePhoto(photo.data) }
         if (bitmap != null) Image(
@@ -145,6 +149,7 @@ internal fun PhotoViewer(photo: MemoryPhoto, onClose: () -> Unit) {
             Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height), contentScale = ContentScale.Fit,
         ) else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         if (photo.caption.isNotBlank()) Text(photo.caption, style = MaterialTheme.typography.bodyLarge)
+        if (onOpenMemory != null) PixelButton("Open memory", onOpenMemory, Modifier.fillMaxWidth(), accent, compact = true)
         PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     }
 }
@@ -215,22 +220,42 @@ internal fun MemoriesScreen(model: AppModel) {
     val data = model.linkData
     val memories = link.memories()
     val eras = link.eras()
-    var tab by remember { mutableStateOf(0) }
-    var openId by remember { mutableStateOf<String?>(null) }
-    var openEraId by remember { mutableStateOf<String?>(null) }
-    var adding by remember { mutableStateOf(false) }
+    // A jump from search, a person's page or a quick action arrives with what to open: a memory (its Memory Detail), a chapter, or the add form.
+    val jump = remember { takeJump(LinkSection.MEMORIES) }
+    var tab by remember { mutableStateOf(jump?.tab ?: 0) }
+    var detailId by remember { mutableStateOf(jump?.id?.takeIf { jump.tab != MEMORIES_CHAPTERS }) }
+    var editingDetail by remember { mutableStateOf(false) }
+    var openEraId by remember { mutableStateOf(jump?.id?.takeIf { jump.tab == MEMORIES_CHAPTERS }) }
+    var adding by remember { mutableStateOf(model.addMemoryRequested) }
     var viewing by remember { mutableStateOf<MemoryPhoto?>(null) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { model.addMemoryRequested = false }
+
+    // The read-first page of one memory replaces the lists while it is open; its Edit key opens the form in the same place.
+    val detail = detailId?.let { id -> data.memories.firstOrNull { it.id == id } }
+    if (detailId != null && detail == null) androidx.compose.runtime.LaunchedEffect(detailId) { detailId = null; editingDetail = false }
+    if (detail != null) {
+        UpTo { if (editingDetail) editingDetail = false else detailId = null }
+        if (editingDetail) FormBox { MemoryForm(model, existing = detail, onDone = { editingDetail = false }) }
+        else MemoryDetail(
+            model, detail, onEdit = { editingDetail = true },
+            onPerson = { id -> openPerson(model, id) }, onChapter = { id -> detailId = null; tab = MEMORIES_CHAPTERS; openEraId = id },
+        )
+        return
+    }
 
     val onThisDay = link.onThisDay()
     if (onThisDay.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("On this day")
             onThisDay.forEach { m ->
-                RecordRow(link.memoryLabel(m), listOf(LinkRules.dateLabel(m.date), peopleLine(data, m.personIds)).filter { it.isNotBlank() }.joinToString(" · "))
+                RecordRow(
+                    link.memoryLabel(m), listOf(LinkRules.dateLabel(m.date), peopleLine(data, m.personIds)).filter { it.isNotBlank() }.joinToString(" · "),
+                    onClick = { detailId = m.id }, onClickLabel = "Open the memory",
+                )
             }
         }
     }
-    ModuleTabs(listOf("Timeline", "Chapters", "Gallery"), tab, accent) { tab = it; openId = null; openEraId = null; adding = false; viewing = null }
+    ModuleTabs(listOf("Timeline", "Chapters", "Gallery"), tab, accent) { tab = it; openEraId = null; adding = false; viewing = null }
     if (tab == 0) {
         if (memories.isEmpty()) Text("No memories yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         else TextBox {
@@ -238,14 +263,7 @@ internal fun MemoriesScreen(model: AppModel) {
                 LinkRules.yearGroups(memories).forEach { (year, group) ->
                     FieldLabel(year?.toString() ?: NO_YEAR)
                     group.forEach { m ->
-                        RecordRow(
-                            link.memoryLabel(m), memoryLine(data, m),
-                            onClick = { openId = if (openId == m.id) null else m.id },
-                            onClickLabel = if (openId == m.id) "Close the memory" else "Open the memory",
-                        )
-                        if (openId == m.id) Column(Modifier.padding(bottom = Spacing.S)) {
-                            MemoryForm(model, existing = m, onDone = { openId = null })
-                        }
+                        RecordRow(link.memoryLabel(m), memoryLine(data, m), onClick = { detailId = m.id }, onClickLabel = "Open the memory")
                     }
                 }
             }
@@ -263,7 +281,7 @@ internal fun MemoriesScreen(model: AppModel) {
                         onClickLabel = if (openEraId == era.id) "Close the chapter" else "Open the chapter",
                     )
                     if (openEraId == era.id) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-                        link.memoriesInEra(era.id).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date)) }
+                        link.memoriesInEra(era.id).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date), onClick = { detailId = m.id }, onClickLabel = "Open the memory") }
                         EraForm(model, era, onDone = { openEraId = null })
                     }
                 }
@@ -275,7 +293,7 @@ internal fun MemoriesScreen(model: AppModel) {
         val photo = viewing
         if (photo != null) {
             UpTo { viewing = null }
-            TextBox { PhotoViewer(photo) { viewing = null } }
+            TextBox { PhotoViewer(photo, onOpenMemory = { viewing = null; detailId = photo.memoryId }) { viewing = null } }
         } else {
             val photos = data.photos.sortedByDescending { it.addedMillis }
             if (photos.isEmpty()) Text("No photos yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -330,18 +348,24 @@ private fun PartialDateEditor(input: DateInput, label: String) {
     }
 }
 
+/** What a memory form starts with when it is made from something else (a PLAN event, REP-088): the player can change all of it. */
+internal data class MemoryPreset(val title: String, val date: PartialDate, val personIds: List<String> = emptyList())
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalEncodingApi::class)
 @Composable
-internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: String? = null, onDone: () -> Unit) {
+internal fun MemoryForm(
+    model: AppModel, existing: Memory?, presetPersonId: String? = null, preset: MemoryPreset? = null,
+    onSaved: ((Memory) -> Unit)? = null, onDone: () -> Unit,
+) {
     val link = model.link
     val data = model.linkData
     val key = existing?.id ?: "new"
-    var title by remember(key) { mutableStateOf(existing?.title.orEmpty()) }
+    var title by remember(key) { mutableStateOf(existing?.title ?: preset?.title.orEmpty()) }
     var note by remember(key) { mutableStateOf(existing?.note.orEmpty()) }
-    val date = remember(key) { DateInput(existing?.date ?: PartialDate()) }
+    val date = remember(key) { DateInput(existing?.date ?: preset?.date ?: PartialDate()) }
     var place by remember(key) { mutableStateOf(existing?.place.orEmpty()) }
     var time by remember(key) { mutableStateOf(existing?.time.orEmpty()) }
-    var personIds by remember(key) { mutableStateOf(existing?.personIds ?: listOfNotNull(presetPersonId)) }
+    var personIds by remember(key) { mutableStateOf(existing?.personIds ?: preset?.personIds ?: listOfNotNull(presetPersonId)) }
     var eraIds by remember(key) { mutableStateOf(existing?.eraIds.orEmpty()) }
     var message by remember(key) { mutableStateOf<String?>(null) }
     /**
@@ -397,6 +421,7 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
             }
             photoProblem?.let { Report(model, it, NoticeTone.WARNING) }
         }
+        if (existing != null) MemoryEventLinks(model, existing.id)
         if (data.people.isNotEmpty()) {
             FieldLabel("People")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -416,7 +441,7 @@ internal fun MemoryForm(model: AppModel, existing: Memory?, presetPersonId: Stri
                 removePhotoIds = removed, captions = captions.toMap(),
             )
             if (out.record == null) { message = out.refused; return@FormSave }
-            message = null; photoProblem = null; model.haptic(); onDone()
+            message = null; photoProblem = null; model.haptic(); onSaved?.invoke(out.record!!); onDone()
         }, accent, enabled = title.isNotBlank() || note.isNotBlank() || date.value().year != null || photoCount > 0)
         if (existing == null) PixelButton("Cancel", onDone, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         else Actions {

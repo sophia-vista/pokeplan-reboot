@@ -128,13 +128,15 @@ Do not display inferred relationship health, contact frequency, response time, o
 **Photos (local photos built, 0.245.0; the OneDrive source is built on Android, 0.247.0).** Memories are photo-first: the player can start from photos and add the words later, or start with words and add photos. A memory keeps up to 9 local photos, each with its own caption (up to 200 characters); the memory itself has a description. A photo is picked through the platform picture picker (the Android Photo Picker on Android), which downscales a large picture to fit; on Android several can be taken at once from the system gallery picker ("Add photos") or from the system file picker ("From files": any documents provider the phone has, including a cloud app's folder, with no account or sign-in inside LINK and no extra permission). LINK accepts PNG, JPEG and WebP and stores the picture once in the Link document as standard base64 with no `data:` prefix, at most 1,400,000 base64 characters (the same budget as MINT's receive QR), and the base64 must decode. A photo belongs to its memory: the form shows it as a 96 dp thumbnail with Caption and Remove (Undo), deleting the memory deletes its photos, the "Memories and eras" export/erase kind includes them, and a person's gallery gathers the photos of the memories that name them. A photo can also come from the optional OneDrive source on Android (6.2): it is downloaded once and kept as a normal local memory photo, and a photo is stored once, with each place pointing to it rather than holding a duplicate.
 
 **Browsing modes.** The same records can be browsed three ways; Timeline and Chapters are built (0.244.0) and the Gallery is built for local photos (0.245.0), with the optional OneDrive source adding to it on Android (6.2):
-- **Chronological timeline:** memories newest first, a heading for each year and memories with no known year last under "No year"; each row shows its date, place and people, and tapping it edits it in place with Delete and Undo.
+- **Chronological timeline:** memories newest first, a heading for each year and memories with no known year last under "No year"; each row shows its date, place and people, and tapping it opens the **Memory Detail** (below); Edit, with Delete and Undo, is a separate key there.
 - **Photo gallery:** a grid of the stored photos, newest added first, each tile labelled with its memory's title and its caption or date; tapping one opens it full size with its caption and Close, and a person's page shows a strip of their photos.
 - **Life chapters:** the eras, newest first by the chapter's end date (or its start when it has no end) and undated chapters last, each showing its range and memory count and opening to the memories in it, for looking back at a chapter as a whole.
 
 Dates read as "14 Mar 2024", "Mar 2024", "2024", "Around 2024" or "Unknown date"; an era's range reads "2020 - 2024", "2020 - now", "Until 2024" or "No dates" (a plain hyphen, because the DP font has no en dash).
 
 **Person-specific collections.** A person's page gathers their memories, dates, follow-ups, last recorded meetup and photo gallery from the associations already recorded; the collection is filled by association, not by copying records into a second list. The Overview lists up to four of the person's memories and an "Add a memory" that preselects that person; the last recorded meetup is the latest of those memories that knows a full date (2.4).
+
+**Memory Detail (owner, 27 November 2026 — Sprint 2).** Every memory entry opens the same read-first page: the memory's name, its date, place and time, the note, the photos (tapping one opens it full size), the people (each opens that person), the chapters (each opens the Chapters view on that chapter) and the PLAN events it is attached to (6.3). **Edit** is one key on that page and opens the memory form; Back returns to where the player came from. Timeline rows, a chapter's memories, On this day, a person's Memories and a photo's full-size view (an **Open memory** key) all open it, and so does a search result. Nothing on the page writes.
 
 **On This Day and historical discovery.** The "On this day" box at the top of Memories is built (0.244.0): it gathers the memories the player recorded on this calendar day in earlier years. Historical discovery is browsing by year, era, person and photo gallery; LINK suggests nothing from outside the player's own records and ranks no memory by engagement. It all works entirely on the phone from local records.
 
@@ -175,7 +177,7 @@ Follow-up conversion to PLAN keeps one completion and one owner:
 
 ### 2.5 Unified search and organization
 
-- One search entry point across people, memories, eras, reminders, notes, slambook answers and photo captions.
+- One search entry point across people, memories, eras, reminders, notes, slambook answers and photo captions. **Built (Sprint 2, 27 November 2026): a visible Search key on LINK's main screen (the pull-down still works) over people, notes, memories (title, note, place, people), chapters, photo captions, dates and follow-ups; results are grouped by kind under a heading, show a line of context and open the exact record (a memory opens its Memory Detail, a chapter the Chapters view, a photo caption its memory). Search also shows whenever any of those records exist, including a memory-only archive.** Slambook answers and the filters below are not built.
 - Filters by record kind, relationship category, group, person, era, year and reminder status; search results respect LINK's lock setting.
 - No automatic categorization or tagging based on message content, photo content or inferred identity.
 - Search indexes remain local and are rebuilt safely after migration; the archive is searchable offline.
@@ -200,7 +202,7 @@ A person's profile is also a **slambook page**: the details the player chooses t
 
 ### 3.1 Add a memory
 
-1. Choose Add a memory in Memories, or Add a memory on a person's page (which preselects that person).
+1. Choose Add a memory in Memories, on a person's page (which preselects that person), from **Memory in Home's Quick actions or in LINK's own Quick actions box** (owner, 27 November 2026; both open Memories with the form already open), or after a calendar event (3.4).
 2. Write a title, a note, set a date or add a photo; **any one of the four is enough** (owner's Sprint 1 list, 27 November 2026), so a photo-only or date-only moment can be kept now and finished later. A place or a time alone is not enough. A memory without a title is called by its note's first line, else its date, else "Photo memory" or "Untitled memory" (`LinkRules.memoryLabel`).
 3. Set the date with the Year, Month and Day fields, leaving unknown parts blank, and turn on "Around then" for a memory the player only remembers approximately. A month needs its year and a day needs its month.
 4. Optionally add the place and the time.
@@ -306,7 +308,7 @@ LINK owns the following canonical records:
 
 **Memories, eras and photos (owner, 25 November 2026; built 0.244.0-0.245.0).** LINK owns the memory and era records, the captions and the associations, and the local photo files it stores. A photo added from the optional OneDrive source (6.2) is downloaded once and kept as a normal local photo; the original stays in OneDrive and LINK keeps no OneDrive reference record. Deleting an era removes only its associations. Deleting a memory removes its associations and the local copies of photos that only it used (a photo still associated elsewhere stays), and never touches the OneDrive original.
 
-**PLAN memory links (owner, 25 November 2026; specified, not built).** A memory may reference a PLAN calendar event by a stable id through the integration layer, the same way the event "People" links work. PLAN owns the event and its edits and deletes; LINK owns the memory. No calendar record is duplicated, and breaking the link is explicit and recoverable: it never deletes the memory or the event silently.
+**PLAN memory links (owner, 25 November 2026; built 0.263.0).** A memory may reference a PLAN calendar event by a stable id through the integration layer, the same way the event "People" links work. PLAN owns the event and its edits and deletes; LINK owns the memory. No calendar record is duplicated, and breaking the link is explicit and recoverable: it never deletes the memory or the event silently.
 
 **Person-team assignments (owner direction, 25 November 2026; specified, not built).** A person's Pokémon team references shared owned Pokémon; LINK never keeps a second collection and never pays outside the linked event boundary. The placement (a place of its own, with LINK's party serving as the Me entry's team) and the capacity of six are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A; the passive EXP and the memory/milestone progression are to be specified in the economy before build (9.6).
 
@@ -403,7 +405,7 @@ An optional photo source for the archive. The connection and the first photo flo
 
 The existing LINK-PLAN integration stays: dates and open follow-ups appear as read-only all-day entries in PLAN's calendar, and people can be tied to a PLAN event (2.4).
 
-The archive direction adds a memory link (specified, not built, owner, 25 November 2026):
+The archive direction adds a memory link (built 0.263.0, owner, 25 November 2026):
 - After a scheduled PLAN calendar event, **Save as Memory** creates a LINK memory pre-filled from the event's title, day and linked people.
 - An existing memory can be attached to a PLAN event instead; the link is a reference stored in the integration layer (`app.pokeplan.app.integrations`), not a duplicated calendar record.
 - A memory and its PLAN event are independent: editing or deleting the event never edits or deletes the memory, and deleting the memory never deletes the event. Breaking the link is explicit and recoverable.
@@ -581,7 +583,7 @@ The archive direction (owner, 25 November 2026) is the build order below. The co
 4. **Person connections and the profile reorganisation (specified, not built).** Connections between people (family, friends, colleagues, the player's own words), and the grouped, shorter profile UI.
 5. **Per-person Pokémon teams (specified, not built).** Up to six Pokémon per person, passive EXP, and extra progression through memories and milestones; the placement and the Me exception are decided in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 6. **Reminders consolidation (specified, not built).** One Reminders place replacing the separate Dates and Follow-ups places, the last recorded meetup, the consolidated upcoming dashboard and the birthday/important-date widgets.
-7. **PLAN memory linking (specified, not built).** "Save as Memory" after a scheduled event, attaching an existing memory to a PLAN event, and the independent, recoverable link (6.3).
+7. **PLAN memory linking (built 0.263.0).** "Save as Memory" after a scheduled event, attaching an existing memory to a PLAN event, and the independent, recoverable link (6.3).
 
 Also still open from before the archive direction:
 
@@ -687,7 +689,7 @@ A page with an overview on top and, behind the header's Sections key, five place
 - **Person connections and the profile reorganisation** (2.2).
 - **Per-person Pokémon teams:** up to six Pokémon per person, passive EXP and memory/milestone progression; the placement and the Me exception are in `../FEATURES/POKEMON_ECOSYSTEM.md` 2.2.2A, and the build waits on the economy numbers (9.6).
 - **Reminders consolidation:** one Reminders place for dates, follow-ups and the last recorded meetup, the upcoming dashboard and the date widgets (2.4).
-- **PLAN memory linking:** Save as Memory after a scheduled event and attaching an existing memory to an event (6.3).
+- **PLAN memory linking (built 0.263.0):** Save as Memory after a scheduled event and attaching an existing memory to an event (6.3).
 
 Nothing above changes Postcard Trail, Friend Safari, the reward-event boundary or the existing `link_*` tables.
 

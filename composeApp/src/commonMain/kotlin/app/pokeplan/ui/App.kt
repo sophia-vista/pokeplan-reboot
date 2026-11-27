@@ -316,6 +316,9 @@ class AppModel(
 
     var addTaskRequested: Boolean by mutableStateOf(false)
 
+    /** Set by a quick action to open LINK's Memories with the add form open; the screen clears it once it has looked. */
+    var addMemoryRequested: Boolean by mutableStateOf(false)
+
     var sharedText: String? by mutableStateOf(null)
 
     var openPokemonId: String? by mutableStateOf(null)

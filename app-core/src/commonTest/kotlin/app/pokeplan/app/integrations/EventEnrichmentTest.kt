@@ -101,4 +101,25 @@ class EventEnrichmentTest {
         assertFalse(EventReminders.stillWanted(listOf(e.copy(reminderMinutes = null)), "e1", LocalDate(2026, 11, 29)))
         assertFalse(EventReminders.stillWanted(emptyList(), "e1", LocalDate(2026, 11, 29)))
     }
+
+    @Test fun aMemoryIsAttachedToAnEventByItsIdAndNeverSharesItsFate() {
+        // A PLAN event (its series id) and a phone-calendar event both take a memory; the same one twice is one link.
+        store.linkMemory("series-1", "m1"); store.linkMemory("series-1", "m1"); store.linkMemory(key, "m1", snap)
+        store.linkMemory("series-1", "m2")
+        assertEquals(listOf("m1", "m2"), store.memoriesOf("series-1"))
+        assertEquals(setOf("series-1", key), store.eventsOfMemory("m1").toSet())
+        assertEquals(snap, store.enrichmentOf(key)!!.seen, "a phone-calendar event keeps what it looked like")
+        // The link is only the id: nothing of the memory is stored, so deleting or editing the memory has nothing to change here.
+        assertEquals(listOf(RecordRef(RecordRef.MEMORY, "m1"), RecordRef(RecordRef.MEMORY, "m2")), store.enrichmentOf("series-1")!!.records)
+        // Detaching is explicit and leaves other links, a goal and the event's other additions alone.
+        store.linkRecord("series-1", RecordRef(RecordRef.GOAL, "g1")); store.setNotes("series-1", "Bring cake")
+        store.unlinkMemory("series-1", "m1")
+        assertEquals(listOf("m2"), store.memoriesOf("series-1"))
+        assertEquals(listOf(RecordRef(RecordRef.GOAL, "g1")), store.enrichmentOf("series-1")!!.records.filter { it.module == RecordRef.GOAL })
+        assertEquals("Bring cake", store.enrichmentOf("series-1")!!.notes)
+        assertEquals(listOf(key), store.eventsOfMemory("m1"))
+        // The twelve-link cap holds for memories too.
+        (1..30).forEach { store.linkMemory("busy", "m$it") }
+        assertEquals(IntegrationStore.MAX_LINKS, store.memoriesOf("busy").size)
+    }
 }
