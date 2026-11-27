@@ -334,7 +334,9 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
-            Tray(tray, undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null })
+            Tray(tray, undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null }) {
+                if (mode == 0) PlanSuggestionsBox(model, tray + undated, plans.first(), days.first())
+            }
 
             Column(
                 Modifier
@@ -541,7 +543,7 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Tray(today: List<Task>, undated: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean) {
+private fun Tray(today: List<Task>, undated: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean, extra: @Composable () -> Unit = {}) {
     if (today.isEmpty() && undated.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -549,6 +551,7 @@ private fun Tray(today: List<Task>, undated: List<Task>, picked: String?, pick: 
             if (hint) Text("Tap one, then an hour (or drag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             TrayGroup("Today, no time", today, picked, pick, grid, drop)
             TrayGroup("No day", undated, picked, pick, grid, drop)
+            extra()
         }
     }
 }

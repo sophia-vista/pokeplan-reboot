@@ -259,9 +259,12 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?, listId: Stri
     val before = TaskViews.overdue(rest, store.now).toSet()
     val (day, evening) = rest.filter { it !in before }.partition { !TaskViews.isEvening(it) }
     val movable = late.filter { it.due == null }
+    var reviewing by remember { mutableStateOf(false) }
+    if (reviewing) OutstandingReviewBox(model) { reviewing = false }
     if (before.isNotEmpty()) TaskGroup(
         "From before", before.toList(), color = Pixel.Warning,
         action = if (movable.isEmpty()) null else "Move to today" to { movable.forEach { store.updateTask(it.copy(planned = store.today)) } },
+        extraAction = if (reviewing) null else "Review" to { reviewing = true },
         card = card,
     )
     if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
@@ -276,7 +279,7 @@ internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?, listId: Stri
 @Composable
 internal fun TaskGroup(
     title: String?, tasks: List<Task>, color: Color = Pixel.Ink, dayOf: LocalDate? = null,
-    action: Pair<String, () -> Unit>? = null, card: @Composable (Task, LocalDate?) -> Unit,
+    action: Pair<String, () -> Unit>? = null, card: @Composable (Task, LocalDate?) -> Unit, extraAction: Pair<String, () -> Unit>? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (title != null) {
@@ -284,6 +287,7 @@ internal fun TaskGroup(
                 Text(title, style = MaterialTheme.typography.titleSmall, color = color, modifier = Modifier.semantics { heading() })
                 Text("${tasks.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Spacer(Modifier.weight(1f))
+                if (extraAction != null) PixelButton(extraAction.first, extraAction.second, color = Pixel.InkSoft, compact = true)
                 if (action != null) PixelButton(action.first, action.second, color = Pixel.InkSoft, compact = true)
             }
         }
@@ -369,7 +373,7 @@ private fun DuplicateButton(model: AppModel, task: Task) {
 }
 
 @Composable
-internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, titled: Boolean = false, footer: (@Composable () -> Unit)? = null) {
+internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, titled: Boolean = false, footer: (@Composable () -> Unit)? = null, templatesOpen: Boolean = false, optionsOpen: Boolean = false) {
     val draftKey = "$addTo:${listId.orEmpty()}"
     var text by remember { mutableStateOf(model.quickAddDrafts[draftKey].orEmpty()) }
     LaunchedEffect(text) { if (text.isEmpty()) model.quickAddDrafts.remove(draftKey) else model.quickAddDrafts[draftKey] = text }
@@ -396,7 +400,9 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
             model.sharedText = null
         }
     }
-    var more by remember { mutableStateOf(false) }
+    var more by remember { mutableStateOf(optionsOpen) }
+    var chosenList by remember { mutableStateOf<String?>(null) }
+    var templates by remember { mutableStateOf(templatesOpen) }
     fun add() {
         if (text.isNotBlank()) {
             val parsed = QuickAdd.parse(text, model.store.today)
@@ -408,7 +414,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
             val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes, reward = reward,
-                listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
+                listId = chosenList ?: listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
                 plannedTime = parsed.plannedTime, evening = parsed.evening,
             )
             repeat?.let { r ->
@@ -424,7 +430,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 made.planned != null -> made.planned!!.short()
                 else -> "Tasks"
             })
-            text = ""; day = null; noDate = false; picking = false; more = false; repeat = null; repeatAnchor = null; reward = defaultReward
+            text = ""; day = null; noDate = false; picking = false; more = false; repeat = null; repeatAnchor = null; reward = defaultReward; chosenList = null
         }
     }
     TextBox {
@@ -469,6 +475,27 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                         repeat = r
                     }
                     PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
+                    val lists = model.store.activeLists
+                    if (lists.isNotEmpty()) PixelDropdown(
+                        listOf<String?>(null) + lists.map { it.id }, chosenList ?: listId,
+                        { id -> if (id == null) "No list" else lists.firstOrNull { it.id == id }?.name ?: "" },
+                        { chosenList = it }, Modifier.fillMaxWidth(), label = "List",
+                    )
+                }
+            }
+            if (text.isBlank() && model.data.taskTemplates.isNotEmpty()) {
+                PixelButton(if (templates) "Hide templates" else "From a template", { templates = !templates }, color = Pixel.InkSoft, compact = true)
+                if (templates) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    model.data.taskTemplates.forEach { tpl ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton(tpl.name, {
+                                val planned = if (noDate) null else day ?: if (addTo == AddTo.TODAY) model.store.today else null
+                                val made = model.store.useTaskTemplate(tpl.id, planned)
+                                if (made != null) { model.say("Added ${tpl.name}"); templates = false }
+                            }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                            PixelIconButton("trash", "Delete template ${tpl.name}", { model.store.deleteTaskTemplate(tpl.id) }, Pixel.InkSoft)
+                        }
+                    }
                 }
             }
             if (footer != null) {
@@ -690,6 +717,7 @@ private fun TaskEditTab(model: AppModel, task: Task, more: Boolean, onDeleted: (
         if (saved) Text("Saved", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
         if (more) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             if (onFocus != null) PixelButton("Focus on this", { onFocus(task) }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
+            if (task.link == null) PixelButton("Save as template", { if (store.saveTaskTemplate(task.id) != null) model.say("Template saved.") }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 DuplicateButton(model, task)

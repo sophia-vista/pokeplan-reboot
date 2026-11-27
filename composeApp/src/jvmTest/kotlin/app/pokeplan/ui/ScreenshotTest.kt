@@ -629,6 +629,60 @@ class ScreenshotTest {
         }
     }
 
+    /** The P2 surfaces: the outstanding-task review, the quick add's templates and list, and the tray's suggested times. */
+    @Test
+    fun planP2() {
+        val store = started()
+        val work = store.addList("Work", app.pokeplan.plan.TaskList.COLORS[0], app.pokeplan.plan.TaskList.ICONS[0])!!
+        val back = { n: Int -> store.today.minus(kotlinx.datetime.DatePeriod(days = n)) }
+        store.addTask("Send the invoice to the printing company before the end of the month", Rank.B, planned = back(4), listId = work.id)
+        store.addTask("Call the dentist", Rank.D, planned = back(2))
+        store.addTask("Renew library card", Rank.E, planned = back(1))
+        val weekly = store.addTask("Weekly report", Rank.B, estimateMinutes = 45, notes = "Send to Sam", listId = work.id)
+        store.addSubtask(weekly.id, "Gather the numbers")
+        store.saveTaskTemplate(weekly.id)
+        store.addTask("Water the plants", Rank.E, planned = store.today, estimateMinutes = 15)
+        store.addTask("Plan the weekend", Rank.D, estimateMinutes = 60)
+        val busy = store.addTask("Team call", Rank.C, planned = store.today, plannedTime = kotlinx.datetime.LocalTime(11, 0), estimateMinutes = 60)
+        val model = AppModel(store)
+        val plan = app.pokeplan.plan.DayTimeline.build(store.data.tasks, store.today, store.now)
+        listOf(false, true).forEach { dark ->
+            val mode = if (dark) "dark" else "light"
+            render("plan-p2-review-$mode", height = 1500) {
+                PixelTheme(dark) {
+                    Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        app.pokeplan.ui.plan.OutstandingReviewBox(model) {}
+                        app.pokeplan.ui.plan.TodayList(model, null)
+                    }
+                }
+            }
+            render("plan-p2-quickadd-$mode", height = 1100) {
+                PixelTheme(dark) {
+                    Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        app.pokeplan.ui.plan.QuickAddBox(model, app.pokeplan.ui.plan.AddTo.TODAY, templatesOpen = true)
+                    }
+                }
+            }
+            render("plan-p2-quickadd-options-$mode", height = 1500) {
+                PixelTheme(dark) {
+                    Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        app.pokeplan.ui.plan.QuickAddBox(model, app.pokeplan.ui.plan.AddTo.TODAY, optionsOpen = true)
+                    }
+                }
+            }
+            render("plan-p2-suggest-$mode", height = 900) {
+                PixelTheme(dark) {
+                    Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        app.pokeplan.ui.theme.TextBox {
+                            app.pokeplan.ui.plan.PlanSuggestionsBox(model, plan.tray + plan.undated, plan, store.today, open = true)
+                        }
+                    }
+                }
+            }
+        }
+        check(busy.id.isNotEmpty())
+    }
+
     @Test
     fun secretBaseRoom() {
         val room = HoennRoom.room(
