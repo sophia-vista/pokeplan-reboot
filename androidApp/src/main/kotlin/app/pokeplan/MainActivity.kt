@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
         // The palette the app closed in (Settings → Look can differ from the phone's), read here so the window and the
         // startup screens show it from the first frame; until one was ever stored the phone's own setting applies.
         val startupDark = rememberedDark()
+        val phoneDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         if (startupDark != null) window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(if (startupDark) PAPER_DARK else PAPER_LIGHT))
         setContent {
             var ready by remember { mutableStateOf(false) }
@@ -137,7 +138,7 @@ class MainActivity : ComponentActivity() {
                 if (!pending) runCatching { BackupWorker.runSoon(app) }
             }
             when {
-                !ready -> StartupLoading(darkTheme = startupDark ?: androidx.compose.foundation.isSystemInDarkTheme())
+                !ready -> StartupLoading(darkTheme = startupDark ?: phoneDark)
                 recovery -> RecoveryChoice(
                     olderFromMillis = LiveStore.olderFilesMillis(this@MainActivity),
                     onOlder = { LiveStore.resolveRecovery(this@MainActivity, useOlder = true); recreate() },
