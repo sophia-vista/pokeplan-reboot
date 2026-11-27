@@ -109,6 +109,7 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
     var statementPay by remember(a.id) { mutableStateOf<Long?>(null) }
     var recordingStatement by remember(a.id) { mutableStateOf(false) }
     var statementMinimum by remember(a.id) { mutableStateOf("") }
+    var earlyPay by remember(a.id) { mutableStateOf(false) }
     val statementCycle = mint.currentCardCycle(a.id)
     if (howItWorks) CardFlowInfo { howItWorks = false }
     if (buying) Dialog({ buying = false }, DialogProperties(usePlatformDefaultWidth = false)) {
@@ -182,6 +183,25 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
             if (statementCycle == null) app.pokeplan.mint.CardCycles.next(a, today)?.let { (close, due) ->
                 Text("Nothing has closed since this account was added. The next statement closes on " + close.compact() + ", due " + due.compact() + ".", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
+            // Paying early: any amount, at any time, even before a statement closes (MINT.md 5.5: a repayment may be
+            // partial or early). It is the same transfer to the card as paying a statement, so nothing is spending.
+            if (owed > 0 && a.status == AccountStatus.ACTIVE) {
+                HorizontalDivider(color = Pixel.Border)
+                if (!earlyPay) {
+                    PixelButton("Pay early", { earlyPay = true; problem(null) }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+                    Text("Any amount, any time, even before a statement closes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                } else {
+                    PayForm(
+                        model, "early-" + a.id, a.currency, owed, owed,
+                        "Paying early is a transfer to the card, never spending. Pay as much as you like; a statement does not need to have closed.",
+                        problem,
+                    ) { minor, source, day ->
+                        val out = mint.payStatement(a.id, minor, source, day)
+                        if (out.record != null) { earlyPay = false; model.say("Paid early."); model.haptic(); null } else out.note()
+                    }
+                    PixelButton("Not now", { earlyPay = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                }
+            }
             val bills = mint.openBills(a.id)
             if (plans.isNotEmpty() && !model.mintData.settings.billReminders) Text("Bill reminders are off.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (bills.isNotEmpty()) {
@@ -201,11 +221,6 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                 MintLine(onClick = { finished = !finished }, onClickLabel = if (finished) "Hide finished plans" else "Show finished plans") { Text("Finished (${done.size})", style = MaterialTheme.typography.bodyLarge) }
                 if (finished) done.forEach { PlanRow(model, it, open == it.plan.id, { open = if (open == it.plan.id) null else it.plan.id }, problem) }
             }
-            if (owed > 0 && a.status == AccountStatus.ACTIVE) PixelButton(
-                if (a.type == AccountType.CREDIT_CARD) "Pay card" else "Pay balance",
-                { model.mintStartType = TxType.TRANSFER; model.mintStartTo = a.id; model.mintSection = MintSection.ACTIVITY },
-                Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true,
-            )
             PixelButton("Add purchase", { existing = false; buying = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
         }
     }

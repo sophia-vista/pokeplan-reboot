@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.257.0
+
+- **Pay a credit card early (MINT.md 5.5, 5.6D).** The credit line box now has **Pay early** whenever something is owed: any amount, any time, including before a statement closes and when nothing is billed yet. It is the same transfer to the card as a statement payment — owed now and the paying account fall together, never spending — and it says so after the payment. **Pay minimum** and **Pay in full** stay for paying exactly what the lender billed.
+- **Test:** `MintStatementsAndHistoryTest` pays a card added after its statement day, before any statement exists.
+
 ## 0.256.0
 
 Two fixes from testing the phone build (27 November 2026).
