@@ -21,7 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -53,6 +52,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.layout.layout
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.Animation
@@ -156,6 +156,7 @@ internal fun Town(
         }
         val life = remember { TownLife() }
         life.sheets = sheets
+        SideEffect { life.floor = geo }
         val pickups = remember { FloorPickups() }
         val finds = if (geo == null) emptyList() else remember(data.counters, day) { model.store.townFinds() }
         fun collect(i: Int, heard: Boolean = true): Boolean {
@@ -284,6 +285,9 @@ private fun Resident(
         Animatable(start, Offset.VectorConverter)
     }
     var napping by remember(mon.id) { mutableStateOf(false) }
+    // walking to a bed: a Pokémon that falls asleep where it stands, in a corridor or on the stairs, first finds a room square to sleep on
+    var bedding by remember(mon.id) { mutableStateOf(false) }
+    val sleeps = (asleep && !bedding) || napping
     var ailment by remember(mon.id) { mutableStateOf<Condition?>(null) }
     var ailmentStamp by remember(mon.id) { mutableIntStateOf(0) }
     var spinning by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
@@ -302,7 +306,7 @@ private fun Resident(
     val scope = rememberCoroutineScope()
     SideEffect {
         life.spots[mon.id] = { spot.value }
-        if (asleep || napping) life.sleeping += mon.id else life.sleeping -= mon.id
+        if (sleeps) life.sleeping += mon.id else life.sleeping -= mon.id
     }
     val avoidNow by rememberUpdatedState(avoid)
     val taps = remember(mon.id) { mutableListOf<TimeMark>() }
@@ -332,7 +336,7 @@ private fun Resident(
         life.pets[mon.id] = {
             taps.removeAll { it.elapsedNow() > 2.seconds }
             taps += TimeSource.Monotonic.markNow()
-            if ((asleep || napping) && disguise == null) { /* a sleeping Pokémon stays asleep: only the ripple answers a tap */ }
+            if (sleeps && disguise == null) { /* a sleeping Pokémon stays asleep: only the ripple answers a tap */ }
             else if (disguise != null && !unmasked) {
                 unmasked = true; model.cry(mon); hopping = true; hopKey++; feel(StatusKind.ALERT, 900, stay = false)
             } else when (TownBehavior.tapReaction(random, taps.size)) {
@@ -372,7 +376,7 @@ private fun Resident(
             val awake = life.spots.filterKeys { it != mon.id && it !in life.sleeping }.values.map { it() }
             val near = if (geo != null) {
                 val a = geo.cellOf(me)
-                awake.firstOrNull { o -> geo.cellOf(o).let { c -> maxOf(abs(c.x - a.x), abs(c.y - a.y)) <= 2 } }
+                awake.firstOrNull { o -> geo.cellOf(o).let { c -> maxOf(abs(c.x - a.x), abs(c.y - a.y)) <= 2 && geo.floor.sees(a, c) } }
             } else awake.firstOrNull { TownBehavior.crowded(me, listOf(it), 0.14f) }
             if (near != null) { last = TimeSource.Monotonic.markNow(); scareFrom = near; scare++ }
         }
@@ -429,6 +433,12 @@ private fun Resident(
         spot.animateTo(to, tween(millis, easing = LinearEasing))
     }
 
+    /** One step onto [c]: the square is held for this Pokémon from the moment it sets off, and let go when it arrives or is called off. */
+    suspend fun stepOnto(g: FloorGeometry, c: Cell, speed: Float) {
+        life.dests[mon.id] = c
+        try { stepTo(g, g.spotOf(c), speed) } finally { life.dests.remove(mon.id) }
+    }
+
     suspend fun spring(g: FloorGeometry, at: Cell, trap: FloorTrap, walked: List<Cell>) {
         if (trap != FloorTrap.WONDER) life.revealed[at] = true
         TrapFx.of(trap)?.let { trapFx = it; trapFxPlay++ }
@@ -470,7 +480,8 @@ private fun Resident(
                 if (landing != at) {
                     facingLeft = dx < 0
                     val squares = maxOf(abs(landing.x - at.x), abs(landing.y - at.y))
-                    spot.animateTo(g.spotOf(landing), tween(squares * 70 + 250, easing = LinearEasing))
+                    life.dests[mon.id] = landing
+                    try { spot.animateTo(g.spotOf(landing), tween(squares * 70 + 250, easing = LinearEasing)) } finally { life.dests.remove(mon.id) }
                 }
             }
             FloorTrap.SLOW -> { slowUntil = TimeSource.Monotonic.markNow() + 20.seconds; feel(StatusKind.SWEAT, 1_400) }
@@ -486,7 +497,8 @@ private fun Resident(
         val theirs = life.spots[other]?.invoke()?.let { g.cellOf(it) } ?: return false
         val hold = Hold(null, faceLeft = theirs.x > here.x, approach = g.spotOf(here))
         life.holds[other] = hold
-        scope.launch { delay(900); if (life.holds[other] === hold) life.holds.remove(other) }
+        life.dests[other] = here
+        scope.launch { delay(900); if (life.holds[other] === hold) life.holds.remove(other); if (life.dests[other] == here) life.dests.remove(other) }
         return true
     }
 
@@ -508,21 +520,22 @@ private fun Resident(
                     val taken = life.standing(g, mon.id)
                     val aside = (-1..1).flatMap { dy -> (-1..1).map { dx -> Cell(here.x + dx, here.y + dy) } }.filter { it != here && it != c && g.floor.canRoam(it, going) && it !in g.floor.traps && it !in taken }
                     aside.randomOrNull(random)?.let { to ->
-                        stepTo(g, g.spotOf(to), speed)
+                        stepOnto(g, to, speed)
                         facingLeft = random.nextBoolean(); walk = null
                         delay(250)
                         return roamFloor(g, g.spotOf(goal), speed, phase = phase)
                     }
                 }
                 val there = life.occupantOf(g, c, mon.id)
-                if (there != null && !swapWith(g, there)) {
+                // one that is itself on its way in or out of the square is waited for; only one standing still is swapped with
+                if (there != null && (there in life.dests || !swapWith(g, there))) {
                     walk = null
                     delay(500)
                     if (life.occupantOf(g, c, mon.id) != null) { if (tries < 2) return roamFloor(g, g.spotOf(goal), speed, tries + 1) else return }
                 }
                 val shade = if (g.floor.map.at(c.x, c.y) == TownCell.WALL) 0.5f else 1f
                 if (fade.targetValue != shade) scope.launch { fade.animateTo(shade, tween(160)) }
-                stepTo(g, g.spotOf(c), speed * if (quirk == Quirk.ERRATIC) 0.6f + random.nextFloat() else 1f)
+                stepOnto(g, c, speed * if (quirk == Quirk.ERRATIC) 0.6f + random.nextFloat() else 1f)
                 life.finds[c]?.let { i ->
                     if (life.pickUp(i, interactive && g.spotOf(c).x.let { it >= home && it < home + 1 })) { walk = null; hopping = true; hopKey++; feel(StatusKind.TWINKLE, 900, stay = false); delay(500) }
                 }
@@ -539,7 +552,7 @@ private fun Resident(
         if (!leaving) return@LaunchedEffect
         if (!calm) {
             if (geo != null) {
-                geo.floor.path(geo.cellOf(spot.value), geo.floor.stairs, Mover.ANYWHERE)?.let { way -> for (c in geo.floor.turns(way).drop(1)) stepTo(geo, geo.spotOf(c), 0.9f) }
+                (geo.floor.path(geo.cellOf(spot.value), geo.floor.stairs, mover) ?: geo.floor.path(geo.cellOf(spot.value), geo.floor.stairs, Mover.ANYWHERE))?.let { way -> for (c in geo.floor.turns(way).drop(1)) stepTo(geo, geo.spotOf(c), 0.9f) }
                 walk = null
                 fade.animateTo(0f, tween(400))
             } else strollTo(TownBehavior.exit(spot.value, home), 0.9f)
@@ -554,6 +567,19 @@ private fun Resident(
         if (still) {
             walk = null
             scareFrom = null
+            if (geo != null) {
+                // nobody waits between squares: a step that was called off is finished onto the nearest one
+                val here = geo.cellOf(spot.value)
+                val centre = geo.spotOf(here)
+                if (centre != spot.value && geo.floor.canStand(here, mover)) spot.animateTo(centre, tween(160, easing = LinearEasing))
+                // and a Pokémon that falls asleep somewhere it should not walks to a room square first
+                if (asleep && !napping && hold == null && !geo.floor.canRest(here, mover) && geo.floor.canStand(here, mover)) {
+                    bedding = true
+                    try {
+                        geo.nearestResting(here, mover, life.occupiedCells(geo, mon.id), life.crowded(geo, mon.id))?.let { roamFloor(geo, geo.spotOf(it), 0.8f) }
+                    } finally { bedding = false }
+                }
+            }
             hold?.approach?.takeIf { to -> geo == null || geo.floor.canStand(geo.cellOf(to), mover) }?.let { to ->
                 facingLeft = hold.faceLeft ?: facingLeft
                 walk = SpriteAction.WALK_SIDE
@@ -617,17 +643,23 @@ private fun Resident(
     }
     trapFx?.let { fx ->
         key(trapFxPlay) {
-            TrapEffect(fx, { spot.value.let { at -> Offset(widthPx * at.x, heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y) } }, pixel) { trapFx = null }
+            // on the same game pixel as the sprite's feet, or the effect would sit up to a pixel off them
+            TrapEffect(fx, { spot.value.let { at -> Offset(snap(widthPx * at.x, pixel).toFloat(), snap(heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y, pixel).toFloat()) } }, pixel) { trapFx = null }
         }
     }
     val box = TILE * 3 * pixel
-    val depthRow by remember { derivedStateOf { (spot.value.y * 24).toInt() } }
+    // Pokémon are drawn in order of how far down the screen their feet are, to the pixel, and a tie is settled the same way every frame: the games' own depth sort.
+    // Read while placing, so a step re-sorts the layers without recomposing the Pokémon.
+    val tieBreak = remember(mon.id) { (mon.id.hashCode() and 0xFF) * 1e-7f }
     val sizeDp = (box / LocalDensity.current.density).dp
     Box(
         Modifier.offset {
             val at = spot.value
             IntOffset(snap(widthPx * at.x, pixel) - box / 2, snap(heightPx * groundTop + heightPx * (groundBottom - groundTop) * at.y, pixel) - box)
-        }.size(sizeDp).zIndex(depthRow / 24f).graphicsLayer { alpha = fade.value }
+        }.size(sizeDp).layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            layout(placeable.width, placeable.height) { placeable.place(0, 0, zIndex = spot.value.y.coerceIn(0f, 1f) + tieBreak) }
+        }.graphicsLayer { alpha = fade.value }
             .then(if (interactive) Modifier.pointerInput(mon.id, tapperOn) {
                 detectTapGestures(onLongPress = { onMenu(mon) }, onTap = if (tapperOn) null else ({ life.pets[mon.id]?.invoke() }))
             } else Modifier)
@@ -642,10 +674,10 @@ private fun Resident(
         Canvas(Modifier.fillMaxSize()) { drawShadow(frame.first, pixel) }
         AnimatedSprite(
             shown.form.id, shown.isShiny, shown.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm && !(hold != null && walk == null), ground = 0.dp,
-            action = if (asleep || napping) SpriteAction.SLEEP else if (hopping) SpriteAction.HOP else if (grazing) SpriteAction.EAT else spinning ?: walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
+            action = if (sleeps) SpriteAction.SLEEP else if (hopping) SpriteAction.HOP else if (grazing) SpriteAction.EAT else spinning ?: walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
             fixedScale = pixel, mirror = if (hold != null) hold.faceLeft ?: facingLeft else if (spinning != null) facingLeft && spinning == SpriteAction.IDLE_SIDE else facingLeft && (walk == SpriteAction.WALK_SIDE || (walk == null && facing != SpriteAction.IDLE_UP)),
         )
-        val icon = if (hold != null) hold.icon else if (asleep || napping) StatusKind.SLEEP else ownIcon ?: ailment?.icon
+        val icon = if (hold != null) hold.icon else if (sleeps) StatusKind.SLEEP else ownIcon ?: ailment?.icon
         if (icon != null) key(icon) {
             val rise = ((frame.second * 0.8f).toInt()).coerceIn(ICON_RISE_MIN, ICON_RISE_MAX) - (icon.cell - 16) / 2
             StatusIcon(icon, pixel, Modifier.align(Alignment.BottomCenter).offset(y = (-rise * pixel / LocalDensity.current.density).dp), loop = icon == StatusKind.SLEEP || (hold == null && ownIcon == null && icon == ailment?.icon), animate = !calm)
@@ -700,15 +732,34 @@ internal class TownLife {
     val bound = mutableMapOf<String, Offset>()
     val sleeping = mutableSetOf<String>()
 
-    fun occupantOf(g: FloorGeometry, c: Cell, self: String): String? = spots.entries.firstOrNull { (id, s) -> id != self && g.cellOf(s()) == c }?.key
+    /**
+     * The square each Pokémon is stepping onto, held from the moment it sets off until it arrives. In the games a move is settled before it is shown, so
+     * no two monsters can ever take one square; here a Pokémon in a step holds both the square it leaves and the one it enters.
+     */
+    val dests = mutableMapOf<String, Cell>()
 
-    fun standing(g: FloorGeometry, self: String): Set<Cell> = spots.entries.filter { it.key != self }.map { g.cellOf(it.value()) }.toSet()
+    var floor: FloorGeometry? = null
+
+    fun occupantOf(g: FloorGeometry, c: Cell, self: String): String? =
+        spots.entries.firstOrNull { (id, s) -> id != self && (g.cellOf(s()) == c || dests[id] == c) }?.key
+
+    fun standing(g: FloorGeometry, self: String): Set<Cell> =
+        spots.entries.filter { it.key != self }.flatMap { (id, s) -> listOfNotNull(g.cellOf(s()), dests[id]) }.toSet()
+
+    /** Whether two Pokémon are close enough to notice each other: within [tiles] squares with no wall between (as in the games, sight stops at a wall), else [fx] by [fy] of the screen. */
+    fun near(a: String, b: String, tiles: Int, fx: Float, fy: Float): Boolean {
+        val pa = spots[a]?.invoke() ?: return false
+        val pb = spots[b]?.invoke() ?: return false
+        val g = floor ?: return abs(pa.x - pb.x) < fx && abs(pa.y - pb.y) < fy
+        val ca = g.cellOf(pa)
+        val cb = g.cellOf(pb)
+        return maxOf(abs(ca.x - cb.x), abs(ca.y - cb.y)) <= tiles && g.floor.sees(ca, cb)
+    }
 
     var sheets: Map<Int, Animation>? = null
     val sizes = mutableMapOf<String, Pair<Int, Int>>()
 
-    fun occupiedCells(g: FloorGeometry, self: String): Set<Cell> =
-        spots.filterKeys { it != self }.values.map { g.cellOf(it()) }.toSet() + goals.filterKeys { it != self }.values
+    fun occupiedCells(g: FloorGeometry, self: String): Set<Cell> = standing(g, self) + goals.filterKeys { it != self }.values
 
     fun claimedOn(floor: Any): Map<String, Cell> {
         if (claimedFloor !== floor) { claims.clear(); claimedFloor = floor }
@@ -718,6 +769,7 @@ internal class TownLife {
     fun crowded(g: FloorGeometry, self: String, claimed: Map<String, Cell> = claims): (Cell) -> Boolean {
         val others = buildList {
             spots.forEach { (id, s) -> if (id != self) add(id to g.cellOf(s())) }
+            dests.forEach { (id, c) -> if (id != self) add(id to c) }
             goals.forEach { (id, c) -> if (id != self) add(id to c) }
             claimed.forEach { (id, c) -> if (id != self && id !in spots) add(id to c) }
         }
@@ -740,8 +792,7 @@ internal class TownLife {
 internal suspend fun TownLife.startleAround(sourceId: String, candidates: List<String>, random: Random, chance: Int, max: Int) {
     val at = spots[sourceId]?.invoke() ?: return
     val near = candidates.filter { it != sourceId && it !in holds }.filter { id ->
-        val p = spots[id]?.invoke() ?: return@filter false
-        abs(p.x - at.x) < STARTLE_RANGE_X && abs(p.y - at.y) < STARTLE_RANGE_Y && random.nextInt(100) < chance
+        near(sourceId, id, STARTLE_TILES, STARTLE_RANGE_X, STARTLE_RANGE_Y) && random.nextInt(100) < chance
     }.take(max)
     if (near.isEmpty()) return
     try {
@@ -752,6 +803,7 @@ internal suspend fun TownLife.startleAround(sourceId: String, candidates: List<S
     }
 }
 
+private const val STARTLE_TILES = 3
 private const val STARTLE_RANGE_X = 0.16f
 private const val STARTLE_RANGE_Y = 0.2f
 
@@ -777,7 +829,7 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                 val pb = life.spots[b.id]?.invoke() ?: continue
                 if (pa.x !in (home + 0.05f)..(home + 0.95f) || pb.x !in (home + 0.05f)..(home + 0.95f)) continue
                 val close = if (geo != null) geo.cellOf(pa).let { ca -> geo.cellOf(pb).let { cb -> maxOf(abs(ca.x - cb.x), abs(ca.y - cb.y)) <= 2 } } else abs(pa.x - pb.x) <= 0.09f && abs(pa.y - pb.y) <= 0.12f
-                if (!close) continue
+                if (!close || !life.near(a.id, b.id, 2, 1f, 1f)) continue
                 val pair = a.id + b.id
                 if (last[pair]?.let { it.elapsedNow() < 180.seconds } == true || random.nextInt(10) >= 5) continue
                 last[pair] = TimeSource.Monotonic.markNow()
