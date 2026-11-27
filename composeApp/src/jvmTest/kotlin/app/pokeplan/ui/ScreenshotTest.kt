@@ -1839,7 +1839,11 @@ class ScreenshotTest {
             tapAt(scene, 434f, 374f)
             tapAt(scene, 162f, 551f)
         })
-        link("link-memories-edit", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 2900, prepare = ::seed, interact = { scene ->
+        // A timeline row opens the read-first Memory Detail; its Edit key opens the form (the screenshot below taps through to it).
+        link("link-memory-detail", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1500, prepare = ::seed, interact = { scene ->
+            tapAt(scene, 270f, 700f)
+        })
+        link("link-memory-detail-dark", app.pokeplan.ui.link.LinkSection.MEMORIES, height = 1500, dark = true, prepare = ::seed, interact = { scene ->
             tapAt(scene, 270f, 700f)
         })
         // The form on one memory, so the date editor and its delete key have a screenshot of their own.
