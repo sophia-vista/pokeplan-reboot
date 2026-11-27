@@ -15,4 +15,15 @@ internal fun dayLine(label: String, day: Int, today: LocalDate): String? {
     return "$label on the ${ordinal(day)} · " + when (away) { 0 -> "today"; 1 -> "tomorrow"; else -> "in $away days" }
 }
 
+/** How long ago a day was, in few words, for freshness lines (MINT.md 4.4). */
+internal fun agoText(day: LocalDate, today: LocalDate): String {
+    val n = today.toEpochDays() - day.toEpochDays()
+    return when {
+        n <= 0L -> "today"
+        n == 1L -> "yesterday"
+        n < 30L -> "$n days ago"
+        else -> day.toString().take(10)
+    }
+}
+
 internal fun dayInput(raw: String): String = raw.filter { it.isDigit() }.take(2).let { t -> if ((t.toIntOrNull() ?: 0) > 31) "31" else t }

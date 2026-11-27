@@ -306,27 +306,29 @@ internal fun OverviewCard(model: AppModel) {
                 position.forEach { (cur, minor) -> MintValueRow("Net position", mint.show(minor, cur), soft = true) }
                 if (available.installmentsCount > 0) MintValueRow("Credit bills due", "${mint.show(available.installmentsMinor, currency)} (${available.installmentsCount})", soft = true)
             } else position.forEach { (cur, minor) -> Text(mint.show(minor, cur), style = MaterialTheme.typography.titleLarge) }
-            upcoming.forEach { o ->
-                MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
-            }
-            // A card's own statement cycle is an obligation too, so it shows beside the bills (MINT.md 5.6D).
-            mint.cardObligationsWithin(days).take(3).forEach { (account, cycle) ->
-                MintValueRow(
-                    account.name + " statement",
-                    if (cycle.dueDay == today) "Today" else if (cycle.state(today) == app.pokeplan.mint.CardCycles.State.OVERDUE) "Overdue" else cycle.dueDay.short(),
-                    soft = true,
-                )
+            if (data.settings.overviewUpcoming) {
+                upcoming.forEach { o ->
+                    MintValueRow(o.bill.name, if (o.dueDay == today) "Today" else if (o.state == OccurrenceState.OVERDUE) "Overdue" else o.dueDay.short(), soft = true)
+                }
+                // A card's own statement cycle is an obligation too, so it shows beside the bills (MINT.md 5.6D).
+                mint.cardObligationsWithin(days).take(3).forEach { (account, cycle) ->
+                    MintValueRow(
+                        account.name + " statement",
+                        if (cycle.dueDay == today) "Today" else if (cycle.state(today) == app.pokeplan.mint.CardCycles.State.OVERDUE) "Overdue" else cycle.dueDay.short(),
+                        soft = true,
+                    )
+                }
             }
             // Accounts and budgets, a few of each; the full lists are in their own sections.
             val accounts = remember(data.accounts, data.transactions) {
                 MintRules.balances(data).filter { it.account.status == AccountStatus.ACTIVE && !it.account.hideFromTotal }.take(4)
             }
-            if (accounts.isNotEmpty()) {
+            if (data.settings.overviewAccounts && accounts.isNotEmpty()) {
                 SectionLabel("Accounts")
                 accounts.forEach { b -> MintValueRow(b.account.name, mint.show(b.postedMinor, b.account.currency), soft = true) }
             }
             val budgets = data.budgets.filter { it.status == PlanStatus.ACTIVE }.take(3)
-            if (budgets.isNotEmpty()) {
+            if (data.settings.overviewBudgets && budgets.isNotEmpty()) {
                 SectionLabel("Budgets")
                 budgets.forEach { b ->
                     val p = MintRules.progress(data, b, today, model.data.settings.weekStart)
@@ -625,17 +627,89 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                 "Open ${if (appLabel.length > 14) appLabel.take(13) + "…" else appLabel}",
                 { if (!launcher.open(a.appPackage)) refused = "That app could not be opened." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true,
             )
+            QuickBalance(model, a)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                if (a.status == AccountStatus.ACTIVE) PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                else PixelButton("Reopen", { mint.setAccountStatus(a.id, AccountStatus.ACTIVE); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                when (a.status) {
+                    AccountStatus.ACTIVE -> PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    AccountStatus.ARCHIVED -> PixelButton("Restore", { mint.setAccountStatus(a.id, AccountStatus.ACTIVE); onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                    AccountStatus.CLOSED -> PixelButton("Reopen", { refused = mint.reopenAccount(a.id); if (refused == null) onDone() }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                if (a.status == AccountStatus.ACTIVE) PixelButton("Close", { mint.setAccountStatus(a.id, AccountStatus.CLOSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                if (a.status == AccountStatus.ACTIVE) PixelButton("Close", { refused = mint.closeAccount(a.id, model.store.today); if (refused == null) onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
+            if (a.status == AccountStatus.CLOSED) Text("Closed on " + (a.closedDay?.toString() ?: "a day not kept"), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            mint.accountDeletionReason(a.id)?.let { reason -> Text(reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
         }
         refused?.let { Report(model, it, NoticeTone.WARNING) }
+    }
+}
+
+/**
+ * Updating a balance from the account itself (MINT.md 4.4, 5.8): type what the bank app shows, compare it with Mint,
+ * and record the reconciliation — with the reason an adjustment needs — without leaving the account.
+ */
+@Composable
+private fun QuickBalance(model: AppModel, a: FinancialAccount) {
+    val mint = model.mint
+    var open by remember(a.id) { mutableStateOf(false) }
+    var text by remember(a.id) { mutableStateOf("") }
+    var reason by remember(a.id) { mutableStateOf("") }
+    var check by remember(a.id) { mutableStateOf<app.pokeplan.app.mint.MintStore.BalanceCheck?>(null) }
+    var note by remember(a.id) { mutableStateOf<String?>(null) }
+    val fresh = mint.accountFreshness(a.id)
+    val line = buildList {
+        fresh?.lastActivity?.let { add("moved " + agoText(it, model.store.today)) }
+        add("checked " + (fresh?.lastChecked?.let { agoText(it, model.store.today) } ?: "never"))
+    }.joinToString(" · ")
+    if (!open) {
+        Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelButton("Update the balance", { open = true; check = null; note = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    } else {
+        Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelField(
+            text, { text = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); check = null; note = null }, Modifier.fillMaxWidth(),
+            label = "Balance in the bank app", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = a.currency,
+        )
+        val shown = check
+        if (shown != null) {
+            if (shown.matches) {
+                Text("It matches: " + mint.show(shown.bookMinor, a.currency) + ".", style = MaterialTheme.typography.bodyLarge)
+                PixelButton("Record the check", {
+                    mint.reconcile(a.id, shown.reportedMinor)
+                    note = null; open = false; model.say("Saved."); model.haptic()
+                }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            } else {
+                Text(
+                    "Mint has " + mint.show(shown.bookMinor, a.currency) + "; the bank says " + mint.show(shown.reportedMinor, a.currency) + " — " +
+                        mint.show(kotlin.math.abs(shown.differenceMinor), a.currency) + " " + (if (shown.differenceMinor > 0) "higher" else "lower") + ".",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                shown.causes.forEach { cause -> Text("\u2022 " + cause, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+                PixelField(
+                    reason, { reason = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(),
+                    label = "Why the difference (needed to adjust)", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                FormSave("Record the adjustment", {
+                    if (reason.isBlank()) { note = "Say what the difference is for, in a few words."; return@FormSave }
+                    val out = mint.reconcile(a.id, shown.reportedMinor, acceptAdjustment = true, reason = reason)
+                    if (out.record == null) note = out.refused ?: "That could not be saved."
+                    else { note = null; open = false; reason = ""; text = ""; model.say("Adjustment recorded."); model.haptic() }
+                }, ModuleAccent.MINT.accent, enabled = reason.isNotBlank())
+                if (reason.isBlank()) Text("Say what the difference is for.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Compare", {
+                val reported = Money.parse(text, a.currency)
+                if (reported == null) note = "Check the amount."
+                else { check = mint.balanceCheck(a.id, reported); note = null }
+            }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+            PixelButton("Cancel", { open = false; check = null; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        note?.let { message -> Report(model, message, NoticeTone.WARNING) }
     }
 }
 
@@ -1471,6 +1545,16 @@ private fun BudgetsView(model: AppModel) {
                         onClick = { openId = if (openId == b.id) null else b.id; newAmount = Money.plain(b.plannedMinor, b.currency); newPeriod = b.period; editMessage = null }, onClickLabel = "Show options",
                     ) { Text(label, style = MaterialTheme.typography.bodyLarge) }
                     PixelBar((p.percent ?: 0) / 100f, color = ModuleAccent.MINT.accent, label = "$label: ${p.percent ?: 0} percent used")
+                    if (p.carriedMinor != 0L) Text(
+                        if (p.carriedMinor > 0) "Carried from the period before: ${mint.show(p.carriedMinor, b.currency)}" else "Overspent the period before by ${mint.show(-p.carriedMinor, b.currency)}",
+                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                    )
+                    MintRules.pace(p, today)?.let { pace ->
+                        Text(
+                            "At this pace the period reaches ${mint.show(pace, b.currency)}" + if (pace > b.plannedMinor) ", over the plan." else ".",
+                            style = MaterialTheme.typography.bodyMedium, color = if (pace > b.plannedMinor) Pixel.Warning else Pixel.InkSoft,
+                        )
+                    }
                     if (openId == b.id) {
                         FormStack {
                         PixelField(
@@ -1479,6 +1563,9 @@ private fun BudgetsView(model: AppModel) {
                         )
                         FormDivider()
                         PixelChoice(BudgetPeriod.entries.toList(), newPeriod, { it?.label ?: "" }, { if (it != null) newPeriod = it }, label = "Period", key = accent)
+                        val current = data.budgets.firstOrNull { it.id == b.id } ?: b
+                        ToggleRow("Carry what is left into the next period", current.rollover) { mint.setBudgetRollover(b.id, it) }
+                        if (current.rollover) Text("A period's leftover, or overspend, moves into the next one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         editMessage?.let { Report(model, it, NoticeTone.WARNING) }
                         FormSave("Save", {
                             val minor = Money.parse(newAmount, b.currency)
@@ -1513,9 +1600,11 @@ private fun BudgetsView(model: AppModel) {
                                             },
                                             onClickLabel = "Show savings target options",
                                         ) { Text(target.name, style = MaterialTheme.typography.bodyLarge) }
+                                        val contributed = mint.savingsContributed(target.id)
                                         Text(
                                             "${mint.show(progress.savedMinor, target.currency)} of ${mint.show(target.targetMinor, target.currency)}" +
-                                                (target.targetDay?.let { " · by ${it.short()}" } ?: ""),
+                                                (target.targetDay?.let { " · by ${it.short()}" } ?: "") +
+                                                (if (contributed > 0) " · moved in " + mint.show(contributed, target.currency) + " in 30 days" else ""),
                                             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                                         )
                                         PixelBar(progress.percent / 100f, color = ModuleAccent.MINT.accent, label = "${target.name}: ${progress.percent} percent saved")
@@ -1590,8 +1679,10 @@ private fun BudgetsView(model: AppModel) {
             FormDivider()
             FormGroup {
                 val budgetCategories = data.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived }
-                PixelDropdown(listOf<String?>(null) + budgetCategories.map { it.id }, categoryId, { id -> budgetCategories.firstOrNull { it.id == id }?.name ?: "Everything" }, { categoryId = it }, Modifier.fillMaxWidth(), key = accent, label = "Category")
+                PixelDropdown(listOf<String?>(null) + budgetCategories.map { it.id }, categoryId, { id -> budgetCategories.firstOrNull { it.id == id }?.name ?: "Everything" }, { categoryId = it; amount = "" }, Modifier.fillMaxWidth(), key = accent, label = "Category")
                 PixelChoice(BudgetPeriod.entries.toList(), period, { it?.label ?: "" }, { if (it != null) period = it }, label = "Period", key = accent)
+                val usual = remember(categoryId, data.transactions) { mint.suggestedBudget(categoryId, currency) }
+                if (usual > 0) PixelButton("Use " + mint.show(usual, currency) + ", the usual month", { amount = Money.plain(usual, currency) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
             FormSave("Save", {
                 val minor = Money.parse(amount, currency)
@@ -1908,6 +1999,49 @@ private fun MintReviewView(model: AppModel) {
             }
         }
     }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Insights")
+            val recurring = remember(data, today) { app.pokeplan.mint.Insights.recurring(data, today) }
+            val changes = remember(data, today) { app.pokeplan.mint.Insights.changes(data, BudgetPeriod.MONTHLY, today, model.data.settings.weekStart).take(4) }
+            val merchants = remember(data, today) { app.pokeplan.mint.Insights.merchants(data, today) }
+            val forecast = remember(data, today) { app.pokeplan.mint.Insights.forecast(data, today, 30) }
+            if (data.transactions.isEmpty()) {
+                Text("Record a few expenses and this fills itself.", style = MaterialTheme.typography.bodyLarge)
+            } else {
+                if (recurring.isNotEmpty()) {
+                    SectionLabel("Looks like a subscription")
+                    recurring.take(4).forEach { r ->
+                        MintValueRow(r.payee, mint.show(r.averageMinor, currency) + " · about every " + r.everyDays + " days", soft = true)
+                    }
+                }
+                if (changes.isNotEmpty()) {
+                    SectionLabel("Against last month")
+                    changes.forEach { c ->
+                        val name = data.categories.firstOrNull { it.id == c.categoryId }?.name ?: "No category"
+                        val sign = if (c.differenceMinor >= 0) "+" else "-"
+                        MintValueRow(name, sign + mint.show(kotlin.math.abs(c.differenceMinor), currency) + (c.percent?.let { " (" + it + "%)" } ?: ""), soft = true)
+                    }
+                }
+                if (merchants.isNotEmpty()) {
+                    SectionLabel("Where it goes")
+                    merchants.forEach { m -> MintValueRow(m.payee, mint.show(m.totalMinor, currency) + " in " + m.count + (if (m.count == 1) " record" else " records"), soft = true) }
+                }
+                SectionLabel("Next 30 days")
+                MintValueRow("Known payments", mint.show(forecast.comingOutMinor, currency), soft = true)
+                MintValueRow("Usual spending", mint.show(forecast.usualSpendingMinor, currency), soft = true)
+                if (forecast.comingInMinor > 0) MintValueRow("Expected in", mint.show(forecast.comingInMinor, currency), soft = true)
+                MintValueRow("Likely left", mint.show(forecast.netMinor, currency), soft = true)
+                Text("A forecast from what is recorded, not a promise.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            Accordion("How available money is worked out") {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    app.pokeplan.mint.Insights.availableLines(data, currency, today, app.pokeplan.mint.OverviewCounts.days(data, today))
+                        .forEach { line -> Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+                }
+            }
+        }
+    }
     if (data.accounts.any { it.status == AccountStatus.ACTIVE }) FormBox { Accordion("Balance check and reconciliation") { ReconcileCard(model) } }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -2078,7 +2212,16 @@ private fun MintSettingsView(model: AppModel) {
             }
         }
     }
-    Accordion("Overview") { OverviewCountsBox(model) }
+    Accordion("Overview") {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            OverviewCountsBox(model)
+            ToggleRow("Accounts on the Overview", settings.overviewAccounts) { mint.setOverviewAccounts(it) }
+            ToggleRow("Budgets on the Overview", settings.overviewBudgets) { mint.setOverviewBudgets(it) }
+            ToggleRow("Coming up on the Overview", settings.overviewUpcoming) { mint.setOverviewUpcoming(it) }
+            val staleChoices = listOf(7, 14, 30, 60, 90)
+            PixelDropdown(staleChoices, settings.reviewStaleDays, { d -> if (d == null) "" else "Ask after $d days" }, { d -> if (d != null) mint.setReviewStaleDays(d) }, Modifier.fillMaxWidth(), key = accent, label = "Check a balance")
+        }
+    }
     Accordion("Days off") { PaydaysAndHolidays(model) }
     TextBox { Accordion("Categories", summary = model.mintData.categories.size.toString()) { CategoriesContent(model) } }
     TextBox {

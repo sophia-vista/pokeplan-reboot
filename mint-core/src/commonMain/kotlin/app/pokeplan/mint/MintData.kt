@@ -46,6 +46,8 @@ data class FinancialAccount(
     val earnTaxBasisPoints: Int = 0,
     val earnAutoPost: Boolean = false,
     val earnFrom: LocalDate? = null,
+    /** The day the account was closed, when it is; it can be reopened and keeps its history (MINT.md 4.6). */
+    val closedDay: LocalDate? = null,
 )
 
 @Serializable
@@ -148,6 +150,8 @@ data class Budget(
     val categoryId: String? = null,
     val status: PlanStatus = PlanStatus.ACTIVE,
     val createdMillis: Long = 0,
+    /** Carry what was not spent, and what was overspent, into the next period (MINT.md 7.3). */
+    val rollover: Boolean = false,
 )
 
 @Serializable
@@ -256,6 +260,12 @@ data class MintSettings(
     val captureNotifications: Boolean = false,
     /** Reads bank and wallet text messages into MINT's pending review (MINT.md 10.4, 7.3); off until the player turns it on. */
     val captureMessages: Boolean = false,
+    /** How long an account may go unchecked before the review inbox suggests checking it, in days (MINT.md 9.1). */
+    val reviewStaleDays: Int = 30,
+    /** Which parts of the Overview card are shown (MINT.md 3.2, owner's P3 list). */
+    val overviewAccounts: Boolean = true,
+    val overviewBudgets: Boolean = true,
+    val overviewUpcoming: Boolean = true,
 )
 
 /** A review item the player put off, and the day it comes back (MINT.md 9.1). */
