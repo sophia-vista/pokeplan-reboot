@@ -37,29 +37,65 @@ class MintStatementsAndHistoryTest {
     private fun card(m: MintStore, opening: Long = 0): String =
         assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP", opening, statementDay = 15, dueDay = 5).record).id
 
+    private fun millisAt(day: LocalDate): Long = day.toEpochDays() * 86_400_000L + 12 * 3_600_000L
+
+    /** Lets the clock run to the 20th of the next month: the 15th has closed since the account was added. */
+    private fun closeAStatement(clock: FakeClock) {
+        clock.millis += 25 * 86_400_000L
+    }
+
     private fun bank(m: MintStore): String = assertNotNull(m.addAccount("BPI", AccountType.BANK, "PHP", 1_000_000).record).id
 
     @Test
-    fun aStatementPaymentIsATransferThatNeverCountsAsSpending() {
+    fun aCardAddedThisMonthHasNoStatementItMissed() {
         val (m, _) = store()
+        // Added on the 25th with what is already owed: nothing closed on the 15th, because the account did not exist.
+        val card = assertNotNull(m.addAccount("SPayLater", AccountType.PAY_LATER, "PHP", 500_000, statementDay = 15, dueDay = 5).record)
+        assertNull(m.currentCardCycle(card.id), "no statement has closed since it was added")
+        assertTrue(m.cardObligationsWithin(30).isEmpty(), "so nothing is overdue for it")
+        assertTrue(m.cardCycles(card.id).isEmpty())
+    }
+
+    @Test
+    fun installmentsForNextMonthAreUpcomingNotOverdue() {
+        val (m, _) = store()
+        val card = assertNotNull(m.addAccount("Visa", AccountType.CREDIT_CARD, "PHP", 0, statementDay = 15, dueDay = 5).record)
+        // A purchase on the 10th closes on the 15th and is due on the 5th of the next month.
+        val plan = assertNotNull(m.addPlanPurchase(card.id, "Laptop", 300_000, null, 3, app.pokeplan.mint.PlanEvery.MONTH, null, day = LocalDate(2026, 11, 10)).record)
+        val view = assertNotNull(m.planView(plan.id))
+        assertEquals(LocalDate(2026, 12, 5), view.installments.first().dueDay)
+        assertTrue(view.installments.all { it.state != app.pokeplan.mint.InstallmentState.OVERDUE }, view.installments.map { it.state }.toString())
+        assertEquals(app.pokeplan.mint.InstallmentState.UPCOMING, view.installments.first().state)
+        val bills = m.openBills(card.id)
+        assertEquals(3, bills.size, "one bill a month for the three installments")
+        assertEquals(LocalDate(2026, 12, 5), bills.first().dueDay)
+        assertEquals(app.pokeplan.mint.InstallmentState.UPCOMING, bills.first().state, "next month's bill is not overdue")
+        assertTrue(bills.none { it.state == app.pokeplan.mint.InstallmentState.OVERDUE }, "none of them is overdue")
+    }
+
+    @Test
+    fun aStatementPaymentIsATransferThatNeverCountsAsSpending() {
+        val (m, clock) = store()
         val c = card(m)
         val b = bank(m)
-        assertNotNull(m.record(TxType.EXPENSE, 100_000, c, payee = "Laptop", atMillis = today.minusDays(20).toEpochMillis()).record)
+        closeAStatement(clock)
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, c, payee = "Laptop", atMillis = millisAt(LocalDate(2026, 12, 1))).record)
         val cycle = assertNotNull(m.currentCardCycle(c))
         assertEquals(100_000L, cycle.remainingMinor)
         val out = assertNotNull(m.payStatement(c, 40_000, b, statementId = null).record)
         assertEquals(TxType.TRANSFER, out.type)
         assertEquals(60_000L, assertNotNull(m.currentCardCycle(c)).remainingMinor, "part payment leaves the rest due")
-        assertEquals(0L, MintRules.spent(m.data, today, today, "PHP"), "a repayment is not spending")
+        assertEquals(0L, MintRules.spent(m.data, m.today, m.today, "PHP"), "a repayment is not spending")
         assertEquals(960_000L, MintRules.balance(m.data, m.data.accounts.first { it.id == b }).postedMinor, "the paying account falls")
     }
 
     @Test
     fun aStatementPaymentCannotBeMoreThanIsOwedOrComeFromACreditLine() {
-        val (m, _) = store()
+        val (m, clock) = store()
         val c = card(m)
         val b = bank(m)
-        assertNotNull(m.record(TxType.EXPENSE, 100_000, c).record)
+        closeAStatement(clock)
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, c, atMillis = millisAt(LocalDate(2026, 12, 1))).record)
         assertNull(m.payStatement(c, 200_000, b).record, "more than is owed")
         assertNull(m.payStatement(c, 10_000, c).record, "a credit line does not pay itself")
         assertNull(m.payStatement(c, 0, b).record)
@@ -67,9 +103,10 @@ class MintStatementsAndHistoryTest {
 
     @Test
     fun theCycleCanBecomeTheRecordedStatement() {
-        val (m, _) = store()
+        val (m, clock) = store()
         val c = card(m)
-        assertNotNull(m.record(TxType.EXPENSE, 100_000, c, atMillis = today.minusDays(20).toEpochMillis(), status = TxStatus.POSTED).record)
+        closeAStatement(clock)
+        assertNotNull(m.record(TxType.EXPENSE, 100_000, c, atMillis = millisAt(LocalDate(2026, 12, 1)), status = TxStatus.POSTED).record)
         val cycle = assertNotNull(m.currentCardCycle(c))
         assertEquals(100_000L, cycle.billedMinor)
         val statement = assertNotNull(m.recordStatementFromCycle(c, 10_000).record)

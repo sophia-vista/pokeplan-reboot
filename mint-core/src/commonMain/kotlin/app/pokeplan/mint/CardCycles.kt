@@ -79,10 +79,18 @@ object CardCycles {
         return Cycle(close, due, billed, paid, statement?.minimumPaymentMinor ?: 0, statement?.id)
     }
 
-    /** The open cycle: the one whose statement has closed at or before [today]. */
+    /**
+     * The open cycle: the one whose statement has closed at or before [today].
+     *
+     * Nothing is derived from before the account was added: its opening balance only says what was owed on that first
+     * day, so a close before it never billed anything (MINT.md 4.3D). Without the guard a card added on the 20th with an
+     * opening balance and a statement day earlier in the month looked like an old statement whose due date had passed.
+     */
     fun current(data: MintData, account: FinancialAccount, today: LocalDate): Cycle? {
         if (!applies(account)) return null
-        return cycle(data, account, onOrBefore(account.statementDay, today), today)
+        val close = onOrBefore(account.statementDay, today)
+        if (close < account.openingDay) return null
+        return cycle(data, account, close, today)
     }
 
     /**
@@ -94,11 +102,22 @@ object CardCycles {
         val out = ArrayList<Cycle>()
         var close = onOrBefore(account.statementDay, today)
         repeat(back) {
+            if (close < account.openingDay) return out
             val c = cycle(data, account, close, today)
             if (c.billedMinor > 0 || c.statementId != null) out += c
             close = onOrBefore(account.statementDay, close.minus(DatePeriod(days = 1)))
         }
         return out
+    }
+
+    /**
+     * The next close and the day it is due, for the card's own "closes on" line: the day the next statement closes and
+     * the configured due day after it. Null when the account keeps neither day.
+     */
+    fun next(account: FinancialAccount, today: LocalDate): Pair<LocalDate, LocalDate>? {
+        if (!applies(account)) return null
+        val close = MonthlyBills.dayOnOrAfter(account.statementDay, today)
+        return close to after(account.dueDay, close)
     }
 
     /**
