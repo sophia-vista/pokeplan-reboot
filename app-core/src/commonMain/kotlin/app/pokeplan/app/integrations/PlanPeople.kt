@@ -67,6 +67,9 @@ class IntegrationStore(storage: Storage) {
         d.copy(enrichments = if (next.isEmpty && d.eventPeople.none { it.eventId == key }) others else others + next)
     }
 
+    /** Makes sure a record exists for [key] with what its source looks like now (used when people are tied to a phone-calendar event). */
+    fun track(key: String, snapshot: SourceSnapshot) = edit(key, snapshot) { it }
+
     fun setNotes(key: String, notes: String, snapshot: SourceSnapshot? = null) =
         edit(key, snapshot) { it.copy(notes = notes.take(MAX_NOTES)) }
 

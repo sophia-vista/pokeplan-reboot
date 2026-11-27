@@ -117,5 +117,8 @@ val CalendarEvent.isOwn: Boolean get() = calendarId == PlanEvent.OWN_CALENDAR
 /** An entry an integration adds (its calendar id is below PLAN's own): read-only here, and the integration decides what a tap opens. */
 val CalendarEvent.isOverlay: Boolean get() = calendarId < PlanEvent.OWN_CALENDAR
 
-/** Whether a tap on this entry does anything: PLAN's own opens the editor, an integration's opens what it points at. */
-val CalendarEvent.isOpenable: Boolean get() = isOwn || isOverlay
+/** Whether a tap on this entry does anything: PLAN's own opens the editor, an integration's opens what it points at, a phone calendar's opens its details. */
+val CalendarEvent.isOpenable: Boolean get() = isOwn || isOverlay || isDevice
+
+/** An event read from a phone calendar: its details open, with the player's own additions, and it is editable only in the synced calendar (PLAN 8.1B). */
+val CalendarEvent.isDevice: Boolean get() = calendarId >= 0

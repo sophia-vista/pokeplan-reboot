@@ -83,6 +83,7 @@ import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.isOwn
 import app.pokeplan.plan.isOpenable
+import app.pokeplan.plan.isDevice
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
@@ -149,12 +150,14 @@ internal data class Draft(
     val companion: String? = null,
     /** LINK people tied to the new event (opaque ids; the integration keeps them, not PLAN). */
     val people: List<String> = emptyList(),
+    val description: String = "", val location: String = "", val reminder: Int? = null,
 ) {
     fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
 
     fun addTo(store: app.pokeplan.app.GameStore, added: (PlanEvent) -> Unit = {}) {
         val event = if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
         else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat).also { e -> companion?.let { store.setEventCompanion(e.id, it) } }
+        if (description.isNotBlank() || location.isNotBlank() || reminder != null) store.setEventDetails(event.id, description, location, reminder)
         added(event)
     }
 }
@@ -248,9 +251,11 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     val source = model.calendars
     val shown = model.data.shownCalendars
     var events by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
-    LaunchedEffect(source, shown, range.first(), range.size) {
+    LaunchedEffect(source, shown, range.first(), range.size, model.calendarRevision) {
         events = if (source == null || shown.isEmpty()) emptyList()
         else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }.let { model.hideSynced(it) }
+        // Notes on an event that has left the calendar are kept and marked, never deleted (PLAN 8.4).
+        if (source != null && shown.isNotEmpty()) withContext(Dispatchers.Default) { model.noteDeviceEvents(events, range.first()..range.last(), shown) }
     }
     val own = model.data.events
     val ownShown = own.flatMap { it.occurrences(range.first(), range.last()) }
@@ -269,9 +274,10 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     }
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
     val chosenEvent = ownShown.firstOrNull { it.id == picked }
+    val chosenDevice = events.firstOrNull { it.id == picked && it.isDevice }
     val pick = { id: String -> if (!model.openCalendarEntry(id)) { picked = if (picked == id) null else id; draft = null } }
     // A panel opened over the calendar closes before the Calendar section does (a new event's draft is not lost to Back).
-    if (draft != null) UpTo { draft = null } else if (chosen != null) UpTo { picked = null } else if (chosenEvent != null) UpTo { picked = null }
+    if (draft != null) UpTo { draft = null } else if (chosen != null) UpTo { picked = null } else if (chosenEvent != null) UpTo { picked = null } else if (chosenDevice != null) UpTo { picked = null }
 
     val grid = remember { Grid() }
     grid.days = days
@@ -333,10 +339,12 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             draft?.let { d -> NewEventPanel(d, { draft = it }, { d.addTo(store) { e -> if (d.people.isNotEmpty()) model.integrations.setPeople(e.id, d.people) }; draft = null }, today = store.today, party = model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), model = model) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
+            if (chosenDevice != null) DeviceEventPanel(model, chosenDevice) { picked = null }
 
             Tray(tray, undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null }) {
                 if (mode == 0) PlanSuggestionsBox(model, tray + undated, plans.first(), days.first())
             }
+            KeptNotesBox(model)
 
             Column(
                 Modifier
@@ -845,7 +853,7 @@ private fun EventBlock(
                     (own?.repeat?.let { ", repeats ${it.label.lowercase()}" } ?: "")
             }
             .let {
-                if (own == null) it
+                if (own == null) { if (e.isDevice) it.clickable(role = Role.Button, onClickLabel = "Open ${e.title}", onClick = onClick) else it }
                 else it.clickable(role = Role.Button, onClickLabel = "Pick", onClick = onClick).dragToPlan(
                     own, anchor,
                     onStart = { local, size ->
@@ -868,6 +876,7 @@ private fun EventBlock(
             Column {
                 BlockTitle(e.title, ink, lines = if (minutes >= 60) 2 else 1, TextDecoration.None)
                 if (minutes >= 45) BlockTime(start, block.endMinute)
+                if (minutes >= 60) Text(if (own != null) EntrySource.EVENT.label else if (e.isDevice) EntrySource.PHONE.label else EntrySource.LINK.label, style = MaterialTheme.typography.labelSmall, color = Pixel.InkSoft, maxLines = 1)
             }
         }
         if (selected) {

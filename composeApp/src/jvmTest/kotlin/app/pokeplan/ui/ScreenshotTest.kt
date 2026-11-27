@@ -3067,6 +3067,72 @@ class ScreenshotTest {
         link("link-people-groups-manager", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1800, interact = { scene -> tapAt(scene, 270f, 525f) })
     }
 
+    /** A phone with a Google calendar (read-only here) and a second one chosen for the sync, holding a repeating invite. */
+    private class EventCalendar : CalendarSource, app.pokeplan.app.integrations.CalendarWriter, CalendarWriteAccess {
+        val rows = mutableMapOf<Long, app.pokeplan.app.integrations.ProviderRow>()
+        override fun permitted() = true
+        override fun requestPermission(done: (Boolean) -> Unit) = done(true)
+        override fun calendars() = listOf(
+            app.pokeplan.plan.DeviceCalendar(1, "Work", "sophia@example.com", google = true),
+            app.pokeplan.plan.DeviceCalendar(4, "Family", "sophia@example.com", google = true),
+        )
+        override fun events(calendarIds: Set<Long>, from: kotlinx.datetime.LocalDate, to: kotlinx.datetime.LocalDate) = emptyList<app.pokeplan.plan.CalendarEvent>()
+        override fun eventExists(calendarId: Long, providerId: Long) = rows.containsKey(providerId)
+        override fun writePermitted() = true
+        override fun requestWritePermission(done: (Boolean) -> Unit) = done(true)
+        override fun writableCalendars() = listOf(app.pokeplan.app.integrations.TargetCalendar(4, "Family", "sophia@example.com"))
+        override fun read(calendarId: Long, ids: Set<Long>): Map<Long, app.pokeplan.app.integrations.ProviderRow>? = rows.filterKeys { it in ids }
+        override fun insert(calendarId: Long, event: app.pokeplan.app.integrations.ProviderEvent): Long? = null
+        override fun update(id: Long, event: app.pokeplan.app.integrations.ProviderEvent) = true
+        override fun delete(id: Long) = true
+    }
+
+    /** The P1 event surfaces: a PLAN event with its additions, a read-only Google event, an editable one, and kept notes. */
+    @Test
+    fun planEventDetails() {
+        val store = started()
+        val day = store.today.plus(2, DateTimeUnit.DAY)
+        val phone = EventCalendar()
+        val model = AppModel(store, calendars = phone)
+        val choir = store.addEvent("Choir rehearsal", day, kotlinx.datetime.LocalTime(19, 0), 90)
+        store.setEventDetails(choir.id, "Bring the new score and a pencil.", "Parish hall", 30)
+        val task = store.addTask("Print the score", Rank.D, planned = day)
+        model.integrations.setNotes(choir.id, "Ask about the concert dates.")
+        model.integrations.addLine(choir.id, "Water bottle", "c1"); model.integrations.addLine(choir.id, "Folder", "c2"); model.integrations.tickLine(choir.id, "c1")
+        model.integrations.linkTask(choir.id, task.id)
+        val zone = kotlinx.datetime.TimeZone.currentSystemDefault()
+        fun at(d: kotlinx.datetime.LocalDate, h: Int) = kotlinx.datetime.LocalDateTime(d, kotlinx.datetime.LocalTime(h, 0))
+        val dentist = app.pokeplan.plan.CalendarEvent(
+            "11@1", 1, "Dentist check-up with Dr. Okafor", at(day, 10), at(day, 11), location = "Maple Street Clinic", description = "Bring the insurance card.",
+        )
+        val sync = app.pokeplan.plan.CalendarEvent("77@${kotlinx.datetime.TimeZone.currentSystemDefault().let { z -> with(z) { at(day, 15).toInstant().toEpochMilliseconds() } }}", 4, "Team sync", at(day, 15), at(day, 16))
+        phone.rows[77] = app.pokeplan.app.integrations.ProviderRow(
+            77, false,
+            app.pokeplan.app.integrations.ProviderEvent(
+                "Team sync", false, kotlinx.datetime.TimeZone.currentSystemDefault().let { z -> with(z) { at(day, 15).toInstant().toEpochMilliseconds() } }, null, "PT1H", zone.id, "FREQ=WEEKLY;COUNT=8", null,
+                description = "Agenda in the doc", location = "Room 4",
+            ),
+        )
+        model.planSync!!.enable(app.pokeplan.app.integrations.TargetCalendar(4, "Family", "sophia@example.com"))
+        model.integrations.setNotes(app.pokeplan.app.integrations.EventKeys.device(1, 5), "Booked the room for 8 people.", app.pokeplan.app.integrations.SourceSnapshot("Birthday dinner", day.toString(), "Work"))
+        model.integrations.markUnavailable(setOf(app.pokeplan.app.integrations.EventKeys.device(1, 5)))
+        listOf(false, true).forEach { dark ->
+            val mode = if (dark) "dark" else "light"
+            render("plan-event-panel-$mode", height = 2300) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.EventPanel(model, store.data.events.first { it.id == choir.id }, {}) {} } }
+            }
+            render("plan-device-readonly-$mode", height = 1800) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.DeviceEventPanel(model, dentist) {} } }
+            }
+            render("plan-device-editable-$mode", frames = 6, height = 2300) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { app.pokeplan.ui.plan.DeviceEventPanel(model, sync) {} } }
+            }
+            render("plan-kept-notes-$mode", height = 1500) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) { androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) { app.pokeplan.ui.plan.KeptNotesBox(model, startOpen = true) } } }
+            }
+        }
+    }
+
     private class FakeCalendar : CalendarSource, app.pokeplan.app.integrations.CalendarWriter, CalendarWriteAccess {
         val rows = mutableMapOf<Long, app.pokeplan.app.integrations.ProviderRow>()
         override fun permitted() = true

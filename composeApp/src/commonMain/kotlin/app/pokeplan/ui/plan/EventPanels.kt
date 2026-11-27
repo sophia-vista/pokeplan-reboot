@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,7 +74,7 @@ import app.pokeplan.ui.screens.short
 @Composable
 internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Unit, today: LocalDate = draft.day, party: List<app.pokeplan.core.pokemon.OwnedPokemon> = emptyList(), model: AppModel? = null, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
-    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null || draft.companion != null || draft.people.isNotEmpty()) }
+    var more by remember { mutableStateOf(draft.repeat != null || draft.color != null || draft.companion != null || draft.people.isNotEmpty() || draft.description.isNotBlank() || draft.location.isNotBlank() || draft.reminder != null) }
     FormBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.L)) {
             PixelTitle("New event")
@@ -84,6 +85,12 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
             val details: @Composable () -> Unit = {
                 FormDisclosure("Additional details", more, { more = !more }) {
                     FormGroup {
+                        PixelField(draft.location, { change(draft.copy(location = it)) }, Modifier.fillMaxWidth(), label = "Location", singleLine = true)
+                        PixelField(
+                            draft.description, { change(draft.copy(description = it)) }, Modifier.fillMaxWidth(), label = "Description", minLines = 2, maxLines = 6,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences),
+                        )
+                        ReminderPicker(draft.reminder) { change(draft.copy(reminder = it)) }
                         FieldLabel("Colour")
                         EventColors(draft.color) { change(draft.copy(color = it)) }
                         RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
@@ -130,8 +137,18 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
     var title by remember(PlanEvent.seriesOf(event.id)) { mutableStateOf(event.title) }
     val series = model.data.events.firstOrNull { it.id == PlanEvent.seriesOf(event.id) } ?: event
     val repeats = event.repeat != null
+    var description by remember(series.id) { mutableStateOf(series.description) }
+    var location by remember(series.id) { mutableStateOf(series.location) }
+    // The words are saved as they are typed, so Back never loses them.
+    LaunchedEffect(description, location) {
+        kotlinx.coroutines.delay(600)
+        val live = model.data.events.firstOrNull { it.id == series.id }
+        if (live != null && (live.description != description.trim() || live.location != location.trim())) store.setEventDetails(series.id, description, location, live.reminderMinutes)
+    }
+    val synced = model.integrationData.calendarSync.takeIf { s -> s.enabled && s.links.any { it.eventId == series.id } }
     FormBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            SourceTag(EntrySource.EVENT, OwnEventColor, synced?.let { "kept in step with ${it.calendarName}" })
             PixelField(
                 title, { title = it }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, placeholder = "Event",
             )
@@ -140,7 +157,12 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
             if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
             if (!event.allDay) CompanionPicker(model.data.player.partyOf(app.pokeplan.core.pokemon.PartyIds.PLAN), series.companionId) { store.setEventCompanion(event.id, it) }
-            app.pokeplan.ui.integrations.SavedEventPeople(model, event.id)
+            PixelField(location, { location = it }, Modifier.fillMaxWidth(), label = "Location", singleLine = true)
+            PixelField(
+                description, { description = it }, Modifier.fillMaxWidth(), label = "Description", minLines = 2, maxLines = 6,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Sentences),
+            )
+            ReminderPicker(series.reminderMinutes) { store.setEventDetails(series.id, description, location, it) }
             val deletes: @Composable () -> Unit = {
                 if (repeats) {
                     PixelButton("Delete this one", { val before = model.data.events; store.deleteOccurrence(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, color = Pixel.Red, compact = true)
@@ -154,6 +176,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
                     deletes()
                     PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
                 }
+                EventEnrichmentSection(model, series.id, null)
                 return@Column
             }
             PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = PlanDays.presets(store.today), pickLabel = "Pick a day")
@@ -170,8 +193,15 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
                 deletes()
                 PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
             }
+            EventEnrichmentSection(model, series.id, null)
         }
     }
+}
+
+@Composable
+private fun ReminderPicker(minutes: Int?, pick: (Int?) -> Unit) {
+    val options = listOf<Int?>(null) + app.pokeplan.plan.EventReminders.PRESETS + listOfNotNull(minutes?.takeIf { it !in app.pokeplan.plan.EventReminders.PRESETS })
+    PixelChoice(options, minutes, { if (it == null) "None" else app.pokeplan.plan.EventReminders.label(it) }, pick, label = "Reminder")
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -221,7 +251,7 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
 }
 
 @Composable
-private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
+internal fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
     FieldLabel("Starts")
     PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
     FieldLabel("Ends")

@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.DeviceCalendar
+import app.pokeplan.plan.PlanEvent
 import app.pokeplan.app.integrations.CalendarWriter
 import app.pokeplan.app.integrations.ProviderEvent
 import app.pokeplan.app.integrations.ProviderRow
@@ -59,7 +60,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
         if (!permitted()) return emptyList()
         val columns = arrayOf(
             CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-            CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_COLOR,
+            CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.ACCOUNT_TYPE,
         )
         val out = mutableListOf<DeviceCalendar>()
         try {
@@ -68,7 +69,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
                 "${CalendarContract.Calendars.ACCOUNT_NAME}, ${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME}",
             )?.use { c ->
                 while (c.moveToNext()) {
-                    out += DeviceCalendar(c.getLong(0), c.getString(1) ?: "Calendar", c.getString(2) ?: "", c.getInt(3).toLong() and 0xFFFFFFFFL)
+                    out += DeviceCalendar(c.getLong(0), c.getString(1) ?: "Calendar", c.getString(2) ?: "", c.getInt(3).toLong() and 0xFFFFFFFFL, google = c.getString(4) == "com.google")
                 }
             }
         } catch (e: SecurityException) {
@@ -90,6 +91,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END,
             CalendarContract.Instances.TITLE, CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.CALENDAR_ID,
             CalendarContract.Instances.ACCESS_LEVEL, CalendarContract.Instances.DISPLAY_COLOR,
+            CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION,
         )
         val status = CalendarContract.Instances.STATUS
         val mine = CalendarContract.Instances.SELF_ATTENDEE_STATUS
@@ -110,6 +112,7 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
                         start = start, end = finish, allDay = allDay,
                         private = c.getInt(6) == CalendarContract.Events.ACCESS_PRIVATE,
                         color = c.getInt(7).toLong() and 0xFFFFFFFFL,
+                        location = c.getString(8).orEmpty().take(PlanEvent.MAX_TEXT), description = c.getString(9).orEmpty().take(PlanEvent.MAX_TEXT),
                     )
                 }
             }
@@ -117,6 +120,20 @@ class AndroidCalendars(private val activity: ComponentActivity) : CalendarSource
             return emptyList()
         }
         return out
+    }
+
+    override fun eventExists(calendarId: Long, providerId: Long): Boolean? {
+        if (!permitted()) return null
+        return try {
+            activity.contentResolver.query(
+                CalendarContract.Events.CONTENT_URI, arrayOf(CalendarContract.Events._ID),
+                "${CalendarContract.Events._ID} = $providerId AND ${CalendarContract.Events.CALENDAR_ID} = $calendarId AND ${CalendarContract.Events.DELETED} = 0" +
+                    " AND (${CalendarContract.Events.STATUS} IS NULL OR ${CalendarContract.Events.STATUS} != ${CalendarContract.Events.STATUS_CANCELED})",
+                null, null,
+            )?.use { it.count > 0 }
+        } catch (e: SecurityException) {
+            null
+        }
     }
 
     // The two-way sync of PLAN's own events (PLAN 8.1). Only calendars the player may write to are offered, only the rows
