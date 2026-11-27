@@ -238,6 +238,29 @@ class AppModel(
 
     var integrationData: app.pokeplan.app.integrations.IntegrationData by mutableStateOf(integrations.data)
 
+    /** Counts up after PLAN writes to the phone's calendar, so the Calendar reads its events again. */
+    var calendarRevision: Int by mutableStateOf(0)
+        private set
+
+    fun calendarChanged() { calendarRevision++ }
+
+    /**
+     * After the Calendar reads phone-calendar events: remembers what the events that carry additions look like now, and marks the
+     * additions of an event the provider says is gone (they are kept, never deleted; PLAN 8.4).
+     */
+    fun noteDeviceEvents(events: List<app.pokeplan.plan.CalendarEvent>, range: ClosedRange<kotlinx.datetime.LocalDate>, shown: Set<Long>) {
+        val source = calendars ?: return
+        val names = source.calendars().associate { it.id to it.name }
+        val loaded = events.filter { it.calendarId >= 0 }.mapNotNull { e ->
+            app.pokeplan.app.integrations.EventKeys.ofDeviceEvent(e.calendarId, e.id)?.let { key ->
+                key to app.pokeplan.app.integrations.SourceSnapshot(e.shownTitle, e.start.date.toString(), names[e.calendarId].orEmpty())
+            }
+        }.toMap()
+        val result = app.pokeplan.app.integrations.EventSources.reconcile(integrations.data, loaded, range, shown) { c, id -> source.eventExists(c, id) }
+        integrations.seen(result.seen)
+        integrations.markUnavailable(result.missing)
+    }
+
     /** The two-way sync of PLAN events with one phone calendar; only where the platform can write to the calendar. */
     val planSync: app.pokeplan.app.integrations.PlanCalendarSync? =
         (calendars as? app.pokeplan.app.integrations.CalendarWriter)?.let { app.pokeplan.app.integrations.PlanCalendarSync(store, integrations, it) }
@@ -377,7 +400,7 @@ class AppModel(
         link.observe { linkData = it }
         integrations.observe { integrationData = it }
         // Links to an event or a person that is gone are dropped when the app opens, not while an Undo might still bring them back.
-        integrations.prune(store.data.events.map { it.id }.toSet(), link.data.people.map { it.id }.toSet())
+        integrations.prune(store.data.events.map { it.id }.toSet(), link.data.people.map { it.id }.toSet(), store.data.tasks.map { it.id }.toSet())
     }
 }
 

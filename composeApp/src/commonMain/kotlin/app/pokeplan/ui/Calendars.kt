@@ -31,4 +31,7 @@ interface CalendarSource {
     fun calendars(): List<DeviceCalendar>
 
     fun events(calendarIds: Set<Long>, from: LocalDate, to: LocalDate): List<CalendarEvent>
+
+    /** Whether the provider still holds this event (PLAN 8.4: a note whose event is gone is kept, not deleted). Null when it cannot tell. */
+    fun eventExists(calendarId: Long, providerId: Long): Boolean? = null
 }

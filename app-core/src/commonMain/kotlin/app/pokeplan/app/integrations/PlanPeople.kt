@@ -17,6 +17,8 @@ data class EventPeople(val eventId: String, val personIds: List<String>)
 @Serializable
 data class IntegrationData(
     val eventPeople: List<EventPeople> = emptyList(),
+    /** Private notes, checklist and links on calendar events, kept apart from the events (PLAN 8.4). */
+    val enrichments: List<EventEnrichment> = emptyList(),
     /** LINK dates (birthdays, anniversaries and the rest) as read-only entries in the PLAN calendar. */
     val linkDatesInCalendar: Boolean = true,
     /** Open LINK follow-ups with a due day, the same way. */
@@ -48,10 +50,75 @@ class IntegrationStore(storage: Storage) {
     }
 
     /** Drops links to events or people that no longer exist; changes nothing (and writes nothing) when all are live. */
-    fun prune(eventIds: Set<String>, personIds: Set<String>) {
-        val next = prune(data, eventIds, personIds)
+    fun prune(eventIds: Set<String>, personIds: Set<String>, taskIds: Set<String>? = null) {
+        val next = prune(data, eventIds, personIds, taskIds)
         if (next != data) document.update { next }
     }
+
+    // Event enrichment (PLAN 8.4): notes, a checklist, related tasks and records, kept per event key.
+
+    fun enrichmentOf(key: String): EventEnrichment? = data.enrichmentOf(key)
+
+    private fun edit(key: String, snapshot: SourceSnapshot? = null, change: (EventEnrichment) -> EventEnrichment) = document.update { d ->
+        val current = d.enrichmentOf(key) ?: EventEnrichment(key)
+        val next = change(current).let { if (snapshot != null) it.copy(seen = snapshot, unavailable = false) else it }
+        val others = d.enrichments.filterNot { it.key == key }
+        // A record with nothing left in it (and no people on the event) is dropped.
+        d.copy(enrichments = if (next.isEmpty && d.eventPeople.none { it.eventId == key }) others else others + next)
+    }
+
+    /** Makes sure a record exists for [key] with what its source looks like now (used when people are tied to a phone-calendar event). */
+    fun track(key: String, snapshot: SourceSnapshot) = edit(key, snapshot) { it }
+
+    fun setNotes(key: String, notes: String, snapshot: SourceSnapshot? = null) =
+        edit(key, snapshot) { it.copy(notes = notes.take(MAX_NOTES)) }
+
+    fun addLine(key: String, text: String, id: String, snapshot: SourceSnapshot? = null) {
+        val clean = text.trim().take(MAX_LINE)
+        if (clean.isEmpty()) return
+        edit(key, snapshot) { if (it.checklist.size >= MAX_LINES) it else it.copy(checklist = it.checklist + ChecklistLine(id, clean)) }
+    }
+
+    fun tickLine(key: String, id: String) = edit(key) { e -> e.copy(checklist = e.checklist.map { if (it.id == id) it.copy(done = !it.done) else it }) }
+
+    fun removeLine(key: String, id: String) = edit(key) { e -> e.copy(checklist = e.checklist.filterNot { it.id == id }) }
+
+    fun linkTask(key: String, taskId: String, snapshot: SourceSnapshot? = null) =
+        edit(key, snapshot) { if (taskId in it.taskIds || it.taskIds.size >= MAX_LINKS) it else it.copy(taskIds = it.taskIds + taskId) }
+
+    fun unlinkTask(key: String, taskId: String) = edit(key) { it.copy(taskIds = it.taskIds - taskId) }
+
+    fun linkRecord(key: String, ref: RecordRef, snapshot: SourceSnapshot? = null) =
+        edit(key, snapshot) { if (ref in it.records || it.records.size >= MAX_LINKS) it else it.copy(records = it.records + ref) }
+
+    fun unlinkRecord(key: String, ref: RecordRef) = edit(key) { it.copy(records = it.records - ref) }
+
+    /** Remembers what a source event looks like now, for the records that already exist for it (nothing is created). Clears "source unavailable". */
+    fun seen(updates: Map<String, SourceSnapshot>) {
+        if (updates.isEmpty()) return
+        document.update { d ->
+            d.copy(enrichments = d.enrichments.map { e -> updates[e.key]?.let { e.copy(seen = it, unavailable = false) } ?: e })
+        }
+    }
+
+    /** Marks the enrichments of events that are gone from the calendar. Nothing is deleted. */
+    fun markUnavailable(keys: Set<String>) {
+        if (keys.isEmpty()) return
+        document.update { d -> d.copy(enrichments = d.enrichments.map { if (it.key in keys) it.copy(unavailable = true) else it }) }
+    }
+
+    /** A PLAN event the calendar deleted (through the sync) keeps its enrichment as a kept note, with what it was. */
+    fun keepAsUnavailable(key: String, snapshot: SourceSnapshot) {
+        val e = data.enrichmentOf(key) ?: return
+        if (e.isEmpty && peopleOf(key).isEmpty()) return
+        document.update { d -> d.copy(enrichments = d.enrichments.map { if (it.key == key) it.copy(seen = snapshot, unavailable = true) else it }) }
+    }
+
+    /** Kept notes: enrichments whose source event is gone, newest day first. */
+    fun kept(): List<EventEnrichment> = data.enrichments.filter { it.unavailable }.sortedByDescending { it.seen?.day.orEmpty() }
+
+    /** Deletes an enrichment for good, with its people: only ever on the player's own tap. */
+    fun discard(key: String) = document.update { d -> d.copy(enrichments = d.enrichments.filterNot { it.key == key }, eventPeople = d.eventPeople.filterNot { it.eventId == key }) }
 
     fun setLinkDates(on: Boolean) = document.update { it.copy(linkDatesInCalendar = on) }
 
@@ -66,15 +133,26 @@ class IntegrationStore(storage: Storage) {
 
     companion object {
         const val MAX_PEOPLE = 12
+        const val MAX_LINKS = 12
+        const val MAX_LINES = 30
+        const val MAX_LINE = 200
+        const val MAX_NOTES = 4_000
 
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
-        fun prune(d: IntegrationData, eventIds: Set<String>, personIds: Set<String>): IntegrationData {
+        fun prune(d: IntegrationData, eventIds: Set<String>, personIds: Set<String>, taskIds: Set<String>? = null): IntegrationData {
+            // A phone-calendar event's key is never in PLAN's events: its people and notes stay until the player discards them (PLAN 8.4).
+            val live = { key: String -> key in eventIds || EventKeys.isDevice(key) || d.enrichmentOf(key)?.unavailable == true }
             val kept = d.eventPeople.mapNotNull { link ->
-                if (link.eventId !in eventIds) null
+                if (!live(link.eventId)) null
                 else link.personIds.filter { it in personIds }.takeIf { it.isNotEmpty() }?.let { link.copy(personIds = it) }
             }
-            return if (kept == d.eventPeople) d else d.copy(eventPeople = kept)
+            val notes = d.enrichments.mapNotNull { e ->
+                if (!live(e.key)) null
+                else if (taskIds == null) e
+                else e.copy(taskIds = e.taskIds.filter { it in taskIds }).takeIf { !it.isEmpty || it.unavailable }
+            }
+            return if (kept == d.eventPeople && notes == d.enrichments) d else d.copy(eventPeople = kept, enrichments = notes)
         }
     }
 }

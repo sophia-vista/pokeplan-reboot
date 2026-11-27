@@ -25,9 +25,15 @@ data class PlanEvent(
     val companionId: String? = null,
     val companionSince: Long = 0L,
     val paid: Set<LocalDate> = emptySet(),
+    /** Where and what, in the player's words; both sync to the calendar with the event (PLAN 8.2). */
+    val description: String = "",
+    val location: String = "",
+    /** Minutes before the start to remind, or null for no reminder. PLAN's own: it is never written to a phone calendar. */
+    val reminderMinutes: Int? = null,
 ) {
     init {
         require(title.isNotBlank()) { "an event needs a title" }
+        require(reminderMinutes == null || reminderMinutes in 0..MAX_REMINDER_MINUTES) { "a reminder is up to a week ahead" }
         require(minutes > 0) { "an event lasts at least a minute" }
         require(lastDay == null || lastDay >= day) { "an event ends on or after the day it starts" }
     }
@@ -68,6 +74,8 @@ data class PlanEvent(
 
     companion object {
         const val DEFAULT_MINUTES = 60
+        const val MAX_REMINDER_MINUTES = 7 * 24 * 60
+        const val MAX_TEXT = 4_000
 
         const val OWN_CALENDAR = -1L
 
@@ -109,5 +117,8 @@ val CalendarEvent.isOwn: Boolean get() = calendarId == PlanEvent.OWN_CALENDAR
 /** An entry an integration adds (its calendar id is below PLAN's own): read-only here, and the integration decides what a tap opens. */
 val CalendarEvent.isOverlay: Boolean get() = calendarId < PlanEvent.OWN_CALENDAR
 
-/** Whether a tap on this entry does anything: PLAN's own opens the editor, an integration's opens what it points at. */
-val CalendarEvent.isOpenable: Boolean get() = isOwn || isOverlay
+/** Whether a tap on this entry does anything: PLAN's own opens the editor, an integration's opens what it points at, a phone calendar's opens its details. */
+val CalendarEvent.isOpenable: Boolean get() = isOwn || isOverlay || isDevice
+
+/** An event read from a phone calendar: its details open, with the player's own additions, and it is editable only in the synced calendar (PLAN 8.1B). */
+val CalendarEvent.isDevice: Boolean get() = calendarId >= 0

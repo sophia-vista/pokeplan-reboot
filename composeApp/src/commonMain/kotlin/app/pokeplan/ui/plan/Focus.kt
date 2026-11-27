@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.text.style.TextOverflow
 import app.pokeplan.core.reward.Reward
@@ -57,6 +58,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
@@ -116,7 +118,11 @@ private fun SessionSummary(model: AppModel, end: app.pokeplan.app.FocusEnd) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             PixelTitle(if (end.completed) "${end.minutes} min focused" else "${end.minutes} of ${end.plannedMinutes} min focused")
-            if (task != null) Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (task != null) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text(task.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                val listName = task.listId?.let { id -> model.data.lists.firstOrNull { it.id == id }?.name }
+                if (listName != null) Text(listName, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
             if (end.deepFocus) Text("Deep Focus", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
@@ -124,14 +130,14 @@ private fun SessionSummary(model: AppModel, end: app.pokeplan.app.FocusEnd) {
 
 @Composable
 private fun FailedBox(model: AppModel, reason: FailReason?) {
-    SpeakerBox(model, if (reason == FailReason.MOVED_PHONE) Emotion.DIZZY else Emotion.SIGH) {
+    SpeakerBox(model, Emotion.NORMAL) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
                 when (reason) {
-                    FailReason.LEFT_APP -> "You left the app for more than 10 seconds." // copy-ok: result
+                    FailReason.LEFT_APP -> "The app was away for over 10 seconds." // copy-ok: result
                     FailReason.MOVED_PHONE -> "The phone moved during Deep Focus."
-                    else -> "You stopped early."
+                    else -> "The session ended early."
                 },
                 style = MaterialTheme.typography.bodyLarge,
             )
@@ -153,6 +159,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     val settings = model.data.settings
     var minutes by remember { mutableStateOf(settings.defaultFocusMinutes) }
     var deep by remember { mutableStateOf(settings.deepFocus) }
+    var deepFocusRules by remember { mutableStateOf(false) }
     var taskId by remember { mutableStateOf(model.focusTaskId) }
     val tasks = store.todayTasks().filter { it.id !in model.data.pending.map { p -> p.original.id } }
 
@@ -174,8 +181,8 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 app.pokeplan.ui.theme.FieldLabel("How long?")
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    listOf(FocusRules.RETRY_MINUTES, 15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(FocusRules.RETRY_MINUTES, 10, 15, 25, 45, 60, 90).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }) }
                 }
                 PixelDurationField(
                     minutes, { if (it != null) minutes = it }, Pixel.Tone, presets = emptyList(),
@@ -184,24 +191,44 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
 
-        TextBox { ToggleRow("Deep Focus", deep) { deep = it } }
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    ToggleRow("Deep Focus", deep, Modifier.weight(1f)) { deep = it }
+                    PixelIconButton(if (deepFocusRules) "close" else "info-box", if (deepFocusRules) "Hide Deep Focus rules" else "Deep Focus rules", { deepFocusRules = !deepFocusRules }, Pixel.InkSoft)
+                }
+                if (deepFocusRules) Text(
+                    "Leaving the app for over 10 seconds, or moving the phone, ends the session and pays nothing. Two 3-minute pauses a day, a call, and Magic Guard are allowed.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+            }
+        }
 
         val everyOpen = planTasks(model).filter { it.isOpen }
         if (everyOpen.isNotEmpty()) {
             var searching by remember { mutableStateOf(false) }
             var query by remember { mutableStateOf("") }
-            val chosen = taskId?.let { id -> everyOpen.firstOrNull { it.id == id } }
-            val shown = tasks.take(4).let { first -> if (chosen != null && first.none { it.id == chosen.id }) listOf(chosen) + first.take(3) else first }
-            val found = if (!searching) emptyList() else everyOpen.filter { t -> query.lowercase().split(' ').filter { it.isNotEmpty() }.all { it in t.title.lowercase() } && shown.none { it.id == t.id } }.take(6)
+            var listFilter by remember { mutableStateOf<String?>(null) }
+            val activeLists = model.data.lists.filter { !it.archived }
+            fun listName(t: app.pokeplan.plan.Task): String? = t.listId?.let { id -> activeLists.firstOrNull { it.id == id }?.name }
+            val pool = everyOpen.filter { listFilter == null || it.listId == listFilter }
+            val chosen = taskId?.let { id -> pool.firstOrNull { it.id == id } }
+            val todayPool = tasks.filter { listFilter == null || it.listId == listFilter }
+            val shown = todayPool.take(4).let { first -> if (chosen != null && first.none { it.id == chosen.id }) listOf(chosen) + first.take(3) else first }
+            val found = if (!searching) emptyList() else pool.filter { t -> query.lowercase().split(' ').filter { it.isNotEmpty() }.all { it in t.title.lowercase() } && shown.none { it.id == t.id } }.take(6)
             TextBox {
                 Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelTitle("Working on")
-                    TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
-                    shown.forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
-                    if (everyOpen.size > shown.size) PixelButton(if (searching) "Hide search" else "Another task", { searching = !searching }, color = Pixel.InkSoft, compact = true)
+                    TaskChoice("Nothing in particular", null, null, taskId == null) { taskId = null }
+                    shown.forEach { t -> TaskChoice(t.title, t.rank, listName(t), taskId == t.id) { taskId = t.id } }
+                    if (pool.size > shown.size) PixelButton(if (searching) "Hide search" else "Another task", { searching = !searching }, color = Pixel.InkSoft, compact = true)
                     if (searching) {
+                        if (activeLists.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            TabButton("Any list", listFilter == null, { listFilter = null })
+                            activeLists.forEach { l -> TabButton(l.name, listFilter == l.id, { listFilter = l.id }) }
+                        }
                         app.pokeplan.ui.theme.PixelField(query, { query = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Search open tasks")
-                        found.forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+                        found.forEach { t -> TaskChoice(t.title, t.rank, listName(t), taskId == t.id) { taskId = t.id } }
                     }
                 }
             }
@@ -233,9 +260,12 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 }
 
 @Composable
-private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, selected: Boolean, onClick: () -> Unit) {
+private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, listName: String?, selected: Boolean, onClick: () -> Unit) {
     ChoiceRow(selected, onClick, lead = { if (rank != null) RankBadge(rank) }) {
-        Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (listName != null) Text(listName, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }
 
@@ -301,7 +331,7 @@ private fun RunningView(model: AppModel) {
             val status = when {
                 paused && (session.phase as Phase.Paused).reason == app.pokeplan.plan.PauseReason.CALL -> "Paused for a call"
                 paused -> "Paused. Resume within ${FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000} minutes."
-                away -> "Come back! The egg is getting cold."
+                away -> "Away. Return to continue."
                 else -> null
             }
             if (status != null) Text(status, style = MaterialTheme.typography.bodyLarge)
@@ -318,7 +348,7 @@ private fun RunningView(model: AppModel) {
         }
         var sure by remember { mutableStateOf(false) }
         LaunchedEffect(sure) { if (sure) { kotlinx.coroutines.delay(4_000); sure = false } }
-        PixelButton(if (sure) "Really give up?" else "Give up", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)
+        PixelButton(if (sure) "End session?" else "End session", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)
     }
 }
 

@@ -33,6 +33,15 @@ interface CalendarWriter {
      * series that has edited occurrences), not deleted or cancelled. Empty where the platform cannot say; the sync then imports nothing.
      */
     fun importable(calendarId: Long): List<ProviderRow> = emptyList()
+
+    /**
+     * One occurrence of a repeating event changed (an exception row: the series' id, the occurrence's original start, and the
+     * occurrence's own fields, with no repeat). False where the platform cannot, or the provider refused. PLAN 8.1B.
+     */
+    fun saveOccurrence(seriesId: Long, originalStartMillis: Long, event: ProviderEvent): Boolean = false
+
+    /** One occurrence of a repeating event removed (a cancelled exception); the series and its other occurrences stay. */
+    fun cancelOccurrence(seriesId: Long, originalStartMillis: Long): Boolean = false
 }
 
 /** One PLAN event (by series id) tied to one provider event, and what both held when they last agreed. */
@@ -184,7 +193,7 @@ object CalendarSync {
     /** Takes the calendar's version of the fields PLAN syncs and keeps everything that is PokéLife's own. */
     private fun PlanEvent.withFieldsOf(seen: PlanEvent): PlanEvent = copy(
         title = seen.title, day = seen.day, start = seen.start, minutes = seen.minutes, allDay = seen.allDay, lastDay = seen.lastDay,
-        repeat = seen.repeat, until = seen.until, skipped = seen.skipped,
+        repeat = seen.repeat, until = seen.until, skipped = seen.skipped, description = seen.description, location = seen.location,
     )
 
     private fun recent(e: PlanEvent, today: LocalDate): Boolean {

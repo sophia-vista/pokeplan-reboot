@@ -29,6 +29,8 @@ data class ProviderEvent(
     val exdate: String?,
     /** Opaque ARGB colour as the provider stores it; only ever written, never read back into PLAN. */
     val color: Int? = null,
+    val description: String? = null,
+    val location: String? = null,
 )
 
 /**
@@ -47,11 +49,11 @@ object CalendarEventMapping {
         if (e.allDay) {
             val start = e.day.atStartOfDayIn(UTC).toEpochMilliseconds()
             val end = e.endDay.plus(DatePeriod(days = 1)).atStartOfDayIn(UTC).toEpochMilliseconds()
-            return ProviderEvent(e.title.trim(), true, start, if (recurring) null else end, if (recurring) "P${e.spanDays + 1}D" else null, UTC.id, rrule, exdate, color)
+            return ProviderEvent(e.title.trim(), true, start, if (recurring) null else end, if (recurring) "P${e.spanDays + 1}D" else null, UTC.id, rrule, exdate, color, e.description.trim().ifEmpty { null }, e.location.trim().ifEmpty { null })
         }
         val start = LocalDateTime(e.day, e.start).toInstant(zone).toEpochMilliseconds()
         val end = start + e.minutes * 60_000L
-        return ProviderEvent(e.title.trim(), false, start, if (recurring) null else end, if (recurring) durationOf(e.minutes) else null, zone.id, rrule, exdate, color)
+        return ProviderEvent(e.title.trim(), false, start, if (recurring) null else end, if (recurring) durationOf(e.minutes) else null, zone.id, rrule, exdate, color, e.description.trim().ifEmpty { null }, e.location.trim().ifEmpty { null })
     }
 
     /** The PLAN fields of a provider event, or null when it uses something PLAN cannot show (a count, a weekday set, a bad span). */
@@ -70,7 +72,7 @@ object CalendarEventMapping {
             }
             if (last < day) return null
             val until = untilText?.let { parseUntil(it, true, zone) }
-            PlanEvent(id, title, day, LocalTime(0, 0), allDay = true, lastDay = last.takeIf { it > day }, repeat = repeat, until = until?.let { maxOf(it, day) }, skipped = skipped)
+            PlanEvent(id, title, day, LocalTime(0, 0), allDay = true, lastDay = last.takeIf { it > day }, repeat = repeat, until = until?.let { maxOf(it, day) }, skipped = skipped, description = words(p.description), location = words(p.location))
         } else {
             val begin = Instant.fromEpochMilliseconds(p.startMillis).toLocalDateTime(zone)
             val minutes = when {
@@ -81,15 +83,17 @@ object CalendarEventMapping {
             if (minutes <= 0) return null
             val start = LocalTime(begin.hour, begin.minute)
             val until = untilText?.let { parseUntil(it, false, zone) }
-            PlanEvent(id, title, begin.date, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), repeat = repeat, until = until?.let { maxOf(it, begin.date) }, skipped = skipped)
+            PlanEvent(id, title, begin.date, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), repeat = repeat, until = until?.let { maxOf(it, begin.date) }, skipped = skipped, description = words(p.description), location = words(p.location))
         }
     }
+
+    private fun words(text: String?): String = text.orEmpty().trim().take(PlanEvent.MAX_TEXT)
 
     /** What makes two events the same as far as the sync is concerned; colour is left out on purpose (it only goes one way). */
     fun fingerprint(e: PlanEvent): String = listOf(
         e.title.trim(), e.day, e.allDay, if (e.allDay) "" else e.start, if (e.allDay) 0 else e.minutes, e.endDay,
         e.repeat?.name.orEmpty(), if (e.repeat == null) "" else e.until ?: "", if (e.repeat == null) "" else e.skipped.sorted().joinToString(","),
-    ).joinToString("|")
+    ).joinToString("|") + (if (e.description.isBlank()) "" else "|d:" + e.description.trim()) + (if (e.location.isBlank()) "" else "|l:" + e.location.trim())
 
     // The rules the six repeats map to, and back. Anything else (COUNT, BYSETPOS, a weekday set) is not understood.
     private val WEEKDAYS = setOf("MO", "TU", "WE", "TH", "FR")
@@ -169,6 +173,8 @@ object CalendarEventMapping {
         return dateText(t.date) + "T" + t.hour.toString().padStart(2, '0') + t.minute.toString().padStart(2, '0') + t.second.toString().padStart(2, '0') + "Z"
     }
 
+    internal fun durationText(minutes: Int): String = durationOf(minutes)
+
     private fun durationOf(minutes: Int): String {
         val h = minutes / 60
         val m = minutes % 60
@@ -176,7 +182,7 @@ object CalendarEventMapping {
     }
 
     /** `P3D`, `P1W` and `P1W2D` forms; null for anything with a time part, which an all-day event never has. */
-    private fun daysOf(duration: String): Int? {
+    internal fun daysOf(duration: String): Int? {
         if (!duration.startsWith("P") || 'T' in duration) return null
         var days = 0
         var number = ""
@@ -190,7 +196,7 @@ object CalendarEventMapping {
     }
 
     /** `PT1H30M`, `PT45M`, `P3600S`, `PT1H`; null if it names days (a timed event that long is not one PLAN can hold). */
-    private fun minutesOf(duration: String): Int? {
+    internal fun minutesOf(duration: String): Int? {
         if (!duration.startsWith("P") || 'D' in duration || 'W' in duration) return null
         var seconds = 0L
         var number = ""

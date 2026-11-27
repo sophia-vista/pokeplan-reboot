@@ -240,7 +240,7 @@ private fun DayAgenda(
             }
             timed.forEach { e ->
                 Row(
-                    Modifier.fillMaxWidth().then(if (e.isOwn) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${e.title}") { pick(e.id) } else Modifier),
+                    Modifier.fillMaxWidth().then(if (e.isOpenable) Modifier.clickable(role = Role.Button, onClickLabel = "${if (e.isOwn) "Edit" else "Open"} ${e.title}") { pick(e.id) } else Modifier),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
                     Box(Modifier.size(10.dp).background(eventColor(e), PixelShape))

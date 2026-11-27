@@ -49,6 +49,33 @@ class PlanCalendarSync(
         } else integrations.setCalendarSync(state.copy(enabled = false, lastNote = ""))
     }
 
+    // Direct edits of the other events in the chosen calendar (PLAN 8.1B). They read and write the provider row and keep no PLAN
+    // copy, never touch the sync links, and report only what the provider really did.
+
+    /** Whether the event [providerId] shown from [calendarId] may be edited from PLAN: the sync is on, it is the chosen calendar, and PLAN does not already hold it (a linked event is a PLAN event). */
+    fun canEdit(calendarId: Long, providerId: Long): Boolean =
+        enabled && state.calendarId == calendarId && state.links.none { it.providerId == providerId }
+
+    /** The provider's row for an editable event, or null if it is gone, not editable or unreadable. */
+    fun open(calendarId: Long, providerId: Long): ProviderRow? {
+        if (!canEdit(calendarId, providerId)) return null
+        return writer.read(calendarId, setOf(providerId))?.get(providerId)?.takeUnless { it.deleted }
+    }
+
+    /** The whole event, or the whole series. */
+    fun saveEvent(calendarId: Long, providerId: Long, event: ProviderEvent): Boolean =
+        canEdit(calendarId, providerId) && writer.update(providerId, event)
+
+    fun deleteEvent(calendarId: Long, providerId: Long): Boolean =
+        canEdit(calendarId, providerId) && writer.delete(providerId)
+
+    /** Only the occurrence that began at [originalStartMillis]. */
+    fun saveOccurrence(calendarId: Long, providerId: Long, originalStartMillis: Long, event: ProviderEvent): Boolean =
+        canEdit(calendarId, providerId) && writer.saveOccurrence(providerId, originalStartMillis, event)
+
+    fun deleteOccurrence(calendarId: Long, providerId: Long, originalStartMillis: Long): Boolean =
+        canEdit(calendarId, providerId) && writer.cancelOccurrence(providerId, originalStartMillis)
+
     /** One pass. Null when it is off, already running, or the calendar cannot be read. Safe to call from any thread. */
     fun sync(): SyncReport? {
         val taken = lock.withLock { if (running) false else { running = true; true } }
@@ -65,7 +92,12 @@ class PlanCalendarSync(
             val replace = outcome.changes.filterIsInstance<LocalChange.Replace>().map { it.old to it.new }
             val remove = outcome.changes.filterIsInstance<LocalChange.Remove>().map { it.old }
             val add = outcome.changes.filterIsInstance<LocalChange.Add>().map { it.event }
+            // An event the calendar deleted keeps its enrichment as a kept note (PLAN 8.4): marked before the events change, so the pruning that follows leaves it.
+            val calendarName = s.calendarName
+            remove.forEach { integrations.keepAsUnavailable(it.id, SourceSnapshot(it.title, it.day.toString(), calendarName)) }
             val applied = store.applyEventChanges(replace, remove, add)
+            val stillHere = store.data.events.map { it.id }.toSet()
+            remove.filter { it.id in stillHere }.forEach { integrations.seen(mapOf(it.id to SourceSnapshot(it.title, it.day.toString(), calendarName))) }
             // An event that did not land here must not stay linked, or the next pass would read it as deleted here and delete it in the calendar.
             val landed = store.data.events.map { it.id }.toSet()
             val links = outcome.links.filter { l -> l.eventId in landed || add.none { it.id == l.eventId } }

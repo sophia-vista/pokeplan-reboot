@@ -22,7 +22,7 @@ class DayPlanTapTest {
     @Test
     fun tapATaskThenAnHour() {
         val clock = object : Clock { override fun nowMillis() = 1_760_000_000_000L }
-        val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.markRewardsSeen() }
+        val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.markRewardsSeen(); it.changeSettings { s -> s.copy(calendarHintDismissed = true) } }
         store.addTask("Reply to mail", app.pokeplan.plan.Rank.E, planned = store.today)
         val model = AppModel(store)
         val scene = ImageComposeScene(width = 540, height = 2400, density = Density(1.5f, 1f)) {
@@ -34,9 +34,9 @@ class DayPlanTapTest {
         fun tap(x: Float, y: Float) { scene.sendPointerEvent(PointerEventType.Press, Offset(x, y)); settle(2); scene.sendPointerEvent(PointerEventType.Release, Offset(x, y)); settle() }
         settle()
         shot("daytap-0")
-        tap(180f, 604f)
+        tap(180f, 651f)
         shot("daytap-1")
-        tap(300f, 1640f)
+        tap(300f, 1766f)
         shot("daytap-2")
         scene.close()
         val picked = store.data.tasks.first { it.title == "Finish your first task" }

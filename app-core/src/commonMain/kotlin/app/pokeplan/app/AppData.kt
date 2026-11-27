@@ -38,6 +38,8 @@ data class AppData(
     val settings: Settings = Settings(),
     val tasks: List<Task> = emptyList(),
     val lists: List<TaskList> = emptyList(),
+    /** Tasks the player makes again and again (PLAN 3.5B). No day, deadline or reminder; never paid for. */
+    val taskTemplates: List<app.pokeplan.plan.TaskTemplate> = emptyList(),
     val events: List<PlanEvent> = emptyList(),
     val series: List<TaskSeries> = emptyList(),
     val habits: List<Habit> = emptyList(),
@@ -225,7 +227,8 @@ data class Settings(
     val streakReminderHour: Int = 20,
     val weeklyRecap: Boolean = true,
     val worldScroll: Boolean = true,
-    val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP
+    val defaultReward: app.pokeplan.core.reward.RewardFocus = app.pokeplan.core.reward.RewardFocus.EXP,
+    val calendarHintDismissed: Boolean = false
 ) {
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
 

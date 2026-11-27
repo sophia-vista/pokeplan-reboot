@@ -5,7 +5,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.minus
 
-data class DeviceCalendar(val id: Long, val name: String, val account: String, val color: Long? = null)
+data class DeviceCalendar(val id: Long, val name: String, val account: String, val color: Long? = null, val google: Boolean = false)
 
 data class CalendarEvent(
     val id: String,
@@ -16,6 +16,9 @@ data class CalendarEvent(
     val allDay: Boolean = false,
     val private: Boolean = false,
     val color: Long? = null,
+    /** What the provider holds for a phone-calendar event (empty for PLAN's own and overlays); shown read-only (PLAN 8.5). */
+    val location: String = "",
+    val description: String = "",
 ) {
     fun isOn(day: LocalDate): Boolean =
         if (allDay) day >= start.date && (day < end.date || (day == start.date && end.date <= start.date))
