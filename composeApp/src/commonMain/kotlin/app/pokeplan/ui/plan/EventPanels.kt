@@ -46,6 +46,8 @@ import app.pokeplan.plan.DayTimeline
 import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.integrations.EventMemoryDraft
+import app.pokeplan.ui.integrations.peopleOfEvent
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
@@ -176,7 +178,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
                     deletes()
                     PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
                 }
-                EventEnrichmentSection(model, series.id, null)
+                EventEnrichmentSection(model, series.id, null, EventMemoryDraft(title.ifBlank { event.title }, event.day, peopleOfEvent(model, series.id)))
                 return@Column
             }
             PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = PlanDays.presets(store.today), pickLabel = "Pick a day")
@@ -193,7 +195,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
                 deletes()
                 PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Tone)
             }
-            EventEnrichmentSection(model, series.id, null)
+            EventEnrichmentSection(model, series.id, null, EventMemoryDraft(title.ifBlank { event.title }, event.day, peopleOfEvent(model, series.id)))
         }
     }
 }

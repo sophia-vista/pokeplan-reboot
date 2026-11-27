@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.integrations.EventKeys
 import app.pokeplan.app.integrations.IntegrationStore
 import app.pokeplan.app.integrations.RecordRef
+import app.pokeplan.ui.integrations.EventMemoryDraft
+import app.pokeplan.ui.integrations.EventMemoryLinks
 import app.pokeplan.app.integrations.SourceSnapshot
 import app.pokeplan.app.integrations.enrichmentOf
 import app.pokeplan.plan.TaskState
@@ -69,7 +71,7 @@ internal fun SourceTag(source: EntrySource, color: androidx.compose.ui.graphics.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun EventEnrichmentSection(model: AppModel, key: String, snapshot: SourceSnapshot?) {
+internal fun EventEnrichmentSection(model: AppModel, key: String, snapshot: SourceSnapshot?, memoryDraft: EventMemoryDraft? = null) {
     val store = model.integrations
     val saved = model.integrationData.enrichmentOf(key)
     var notes by remember(key) { mutableStateOf(saved?.notes.orEmpty()) }
@@ -118,6 +120,9 @@ internal fun EventEnrichmentSection(model: AppModel, key: String, snapshot: Sour
                 { id -> if (id != null) store.linkRecord(key, RecordRef(GOAL, id), snapshot) }, Modifier.fillMaxWidth(), label = "Goal",
             )
         }
+
+        // Memories (REP-088): Save as Memory after the event, or attach one the player already keeps.
+        EventMemoryLinks(model, key, snapshot, memoryDraft)
 
         // Checklist.
         FieldLabel("Checklist")

@@ -93,6 +93,19 @@ class IntegrationStore(storage: Storage) {
 
     fun unlinkRecord(key: String, ref: RecordRef) = edit(key) { it.copy(records = it.records - ref) }
 
+    // Event and memory (REP-088): a LINK memory is attached to an event by its opaque id, in this document only. Neither record
+    // is edited or deleted by the link, by changing the other, or by breaking it; a deleted memory just stops showing.
+
+    /** The ids of the memories attached to the event under [key], oldest link first. */
+    fun memoriesOf(key: String): List<String> = enrichmentOf(key)?.records.orEmpty().filter { it.module == RecordRef.MEMORY }.map { it.id }
+
+    /** The event keys a memory is attached to (a PLAN series id, or a phone-calendar key). */
+    fun eventsOfMemory(memoryId: String): List<String> = data.enrichments.filter { RecordRef(RecordRef.MEMORY, memoryId) in it.records }.map { it.key }
+
+    fun linkMemory(key: String, memoryId: String, snapshot: SourceSnapshot? = null) = linkRecord(key, RecordRef(RecordRef.MEMORY, memoryId), snapshot)
+
+    fun unlinkMemory(key: String, memoryId: String) = unlinkRecord(key, RecordRef(RecordRef.MEMORY, memoryId))
+
     /** Remembers what a source event looks like now, for the records that already exist for it (nothing is created). Clears "source unavailable". */
     fun seen(updates: Map<String, SourceSnapshot>) {
         if (updates.isEmpty()) return

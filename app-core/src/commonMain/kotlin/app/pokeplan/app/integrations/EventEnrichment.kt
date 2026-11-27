@@ -28,7 +28,15 @@ data class ChecklistLine(val id: String, val text: String, val done: Boolean = f
 
 /** A record in another module, by module name and id; the title comes from the owning module when the UI shows it. */
 @Serializable
-data class RecordRef(val module: String, val id: String)
+data class RecordRef(val module: String, val id: String) {
+    companion object {
+        /** A PLAN goal. */
+        const val GOAL = "goal"
+
+        /** A LINK memory (REP-088): the event keeps only the memory's id, the memory is LINK's and independent of the event. */
+        const val MEMORY = "memory"
+    }
+}
 
 @Serializable
 data class SourceSnapshot(val title: String, val day: String, val calendar: String = "")
