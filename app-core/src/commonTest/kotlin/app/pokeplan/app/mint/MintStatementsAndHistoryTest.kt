@@ -112,6 +112,8 @@ class MintStatementsAndHistoryTest {
         assertNotNull(m.record(TxType.EXPENSE, 100_000, c, atMillis = millisAt(LocalDate(2026, 12, 1))).record)
         assertNull(m.payStatement(c, 200_000, b).record, "more than is owed")
         assertNull(m.payStatement(c, 10_000, c).record, "a credit line does not pay itself")
+        assertNull(m.closeAccount(b))
+        assertNull(m.payStatement(c, 10_000, b).record, "a closed account does not pay")
         assertNull(m.payStatement(c, 0, b).record)
     }
 
@@ -189,7 +191,19 @@ class MintStatementsAndHistoryTest {
         val edit = history.first { it.kind == "edited" }
         assertTrue(edit.detail.contains("amount"), edit.detail)
         assertTrue(edit.detail.contains("name"), edit.detail)
+        assertEquals("posted to excluded", history.first { it.kind == "status" }.detail)
         assertNotNull(edited)
+    }
+
+    @Test
+    fun editingARefundCannotPushItsTotalPastTheExpense() {
+        val (m, _) = store()
+        val b = bank(m)
+        val purchase = assertNotNull(m.record(TxType.EXPENSE, 100_000, b, payee = "Shop").record)
+        val first = assertNotNull(m.record(TxType.REFUND, 40_000, b, refundOf = purchase.id).record)
+        assertNotNull(m.record(TxType.REFUND, 50_000, b, refundOf = purchase.id).record)
+        assertNull(m.updateTransaction(first.copy(amountMinor = 60_000)).record, "60 + 50 is more than the expense")
+        assertNotNull(m.updateTransaction(first.copy(amountMinor = 50_000)).record, "50 + 50 fits, and the edited refund is not counted twice")
     }
 
     private fun LocalDate.minusDays(n: Int) = LocalDate.fromEpochDays(toEpochDays() - n)

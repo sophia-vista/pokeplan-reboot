@@ -150,6 +150,8 @@ data class Budget(
     val categoryId: String? = null,
     val status: PlanStatus = PlanStatus.ACTIVE,
     val createdMillis: Long = 0,
+    /** The day the budget was made (null for one made before this was kept); a rollover never reaches back before it. */
+    val createdDay: LocalDate? = null,
     /** Carry what was not spent, and what was overspent, into the next period (MINT.md 7.3). */
     val rollover: Boolean = false,
 )

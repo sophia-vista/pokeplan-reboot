@@ -44,9 +44,20 @@ class MintInsightsBudgetsTest {
         val budget = assertNotNull(m.addBudget(10_000, "PHP", BudgetPeriod.MONTHLY, "cat-food").record)
         assertNotNull(m.record(TxType.EXPENSE, 4_000, a.id, categoryId = "cat-food", atMillis = millisAt(LocalDate(2026, 10, 10))).record)
         assertEquals(0L, app.pokeplan.mint.MintRules.progress(m.data, m.data.budgets.single { it.id == budget.id }, today).carriedMinor, "no rollover, no carry")
+        // A budget older than the period it carries from (made before this was kept: no creation day).
+        m.restore(m.data.copy(budgets = m.data.budgets.map { it.copy(createdDay = null) }))
         assertTrue(m.setBudgetRollover(budget.id, true))
         assertEquals(6_000L, app.pokeplan.mint.MintRules.progress(m.data, m.data.budgets.single { it.id == budget.id }, today).carriedMinor)
         assertEquals(16_000L, app.pokeplan.mint.MintRules.progress(m.data, m.data.budgets.single { it.id == budget.id }, today).remainingMinor)
+    }
+
+    @Test
+    fun aNewBudgetCarriesNothingFromBeforeItExisted() {
+        val (m, _) = store()
+        val budget = assertNotNull(m.addBudget(10_000, "PHP", BudgetPeriod.MONTHLY, "cat-food").record)
+        assertTrue(m.setBudgetRollover(budget.id, true))
+        assertEquals(0L, app.pokeplan.mint.MintRules.progress(m.data, m.data.budgets.single(), today).carriedMinor, "made today: no full period before it")
+        assertEquals(10_000L, app.pokeplan.mint.MintRules.progress(m.data, m.data.budgets.single(), today).remainingMinor)
     }
 
     @Test

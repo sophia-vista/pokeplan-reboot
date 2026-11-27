@@ -305,18 +305,21 @@ class MintStore(
                 Installments.allowedFor(target.type) && Installments.views(data, today).any { it.plan.accountId == target.id && it.remainingMinor > 0 }
             } == true)
             return Logged(null, "Repayments to this account must be allocated to its unpaid installment plans.")
-        if (type == TxType.REFUND && refundOf != null) {
-            val original = data.transactions.firstOrNull { it.id == refundOf } ?: return Logged(null, "That earlier record is gone.")
-            if (original.type != TxType.EXPENSE) return Logged(null, "Only an expense can be refunded.")
-            if (original.accountId != accountId) return Logged(null, "A refund goes back to the account the expense was on.")
-            val already = data.transactions.filter { it.type == TxType.REFUND && it.refundOf == refundOf }.sumOf { it.amountMinor }
-            if (amountMinor + already > original.amountMinor) return Logged(null, "That is more than the expense is worth.")
-        }
+        if (type == TxType.REFUND && refundOf != null) refundProblem(refundOf, accountId, amountMinor, exceptId = null)?.let { return Logged(null, it) }
         val tx = Transaction(newId(), type, amountMinor, currency, atMillis, dayOf(atMillis), accountId, toAccountId, categoryId, payee.trim().take(MintRules.NAME_MAX * 2), note.trim().take(MintRules.NOTE_MAX), status, TxSource.MANUAL, up, refundOf, createdMillis = nowMillis, splits = splits, feeMinor = feeMinor,
             iou = iou)
         (MintRules.checkTransaction(data, tx) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(transactions = it.transactions + tx) }
         return Logged(tx, rewards = payForLog(tx))
+    }
+
+    /** Why a refund of [refundOf] cannot be saved, or null; [exceptId] is the refund being edited, not counted twice. */
+    private fun refundProblem(refundOf: String, accountId: String, amountMinor: Long, exceptId: String?): String? {
+        val original = data.transactions.firstOrNull { it.id == refundOf } ?: return "That earlier record is gone."
+        if (original.type != TxType.EXPENSE) return "Only an expense can be refunded."
+        if (original.accountId != accountId) return "A refund goes back to the account the expense was on."
+        val already = data.transactions.filter { it.type == TxType.REFUND && it.refundOf == refundOf && it.id != exceptId }.sumOf { it.amountMinor }
+        return if (amountMinor + already > original.amountMinor) "That is more than the expense is worth." else null
     }
 
     fun updateTransaction(t: Transaction): Logged<Transaction> {
@@ -335,6 +338,8 @@ class MintStore(
         if ((old.planId != null || old.planAllocations.isNotEmpty()) && (next.type != old.type || next.amountMinor != old.amountMinor || next.accountId != old.accountId || next.toAccountId != old.toAccountId))
             return Logged(null, "This record belongs to an installment plan. Change the plan instead.")
         (MintRules.checkAmount(next.amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val refundOf = next.refundOf
+        if (next.type == TxType.REFUND && refundOf != null) refundProblem(refundOf, next.accountId, next.amountMinor, exceptId = next.id)?.let { return Logged(null, it) }
         val open = data.copy(accounts = data.accounts.map { it.copy(status = AccountStatus.ACTIVE) })
         (MintRules.checkTransaction(open, next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d ->
@@ -534,6 +539,7 @@ class MintStore(
         val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
+        if (from.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
         if (day > today) return Logged(null, "A payment cannot be dated in the future.")
         if (from.currency != to.currency) return Logged(null, "Pay from an account in the same currency.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
@@ -622,8 +628,11 @@ class MintStore(
         return true
     }
 
-    private fun setStatus(id: String, status: TxStatus) = update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }.also {
-        data.transactions.firstOrNull { it.id == id }?.let { tx -> logChange(id, "status", tx.status.name.lowercase() + " to " + status.name.lowercase()) }
+    private fun setStatus(id: String, status: TxStatus) {
+        // Read the old status first: the update applies at once, so afterwards it would say "excluded to excluded".
+        val was = data.transactions.firstOrNull { it.id == id }?.status
+        update { d -> d.copy(transactions = d.transactions.map { if (it.id == id) it.copy(status = status) else it }) }
+        if (was != null && was != status) logChange(id, "status", was.name.lowercase() + " to " + status.name.lowercase())
     }
 
     fun planOfPurchase(id: String): InstallmentPlan? = data.plans.firstOrNull { it.purchaseTxId != null && it.purchaseTxId == id }
@@ -649,7 +658,7 @@ class MintStore(
         if (categoryId != null && data.categories.none { it.id == categoryId }) return Logged(null, "That category is gone.")
         if (data.budgets.any { it.status != PlanStatus.ARCHIVED && it.currency == currency && it.period == period && it.categoryId == categoryId })
             return Logged(null, "There is already a budget for that.")
-        val b = Budget(newId(), plannedMinor, currency, period, categoryId, createdMillis = nowMillis)
+        val b = Budget(newId(), plannedMinor, currency, period, categoryId, createdMillis = nowMillis, createdDay = today)
         update { it.copy(budgets = it.budgets + b) }
         return Logged(b)
     }
@@ -831,6 +840,7 @@ class MintStore(
         val to = creditAccount(plan.accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
+        if (from.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
         if (day > today) return Logged(null, "A payment cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (amountMinor > view.remainingMinor) return Logged(null, "That is more than is left on this plan.")
@@ -855,6 +865,7 @@ class MintStore(
         val to = creditAccount(accountId, allowInactive = true) ?: return Logged(null, "That account is not a credit line.")
         val from = data.accounts.firstOrNull { it.id == fromAccountId } ?: return Logged(null, "Choose where the money comes from.")
         if (from.type.liability) return Logged(null, "Pay from a bank, wallet or cash account.")
+        if (from.status != AccountStatus.ACTIVE) return Logged(null, "That account is not open.")
         if (day > today) return Logged(null, "A payment cannot be dated in the future.")
         (MintRules.checkAmount(amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val allocations = Installments.allocatePayment(data, accountId, amountMinor, today, firstBill)

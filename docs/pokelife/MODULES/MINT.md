@@ -484,7 +484,7 @@ Use semantic status labels and accessible indicators. Exceeding a budget is info
 
 **Built (27 November 2026).** A budget may roll over: what the period before planned but did not spend — or overspent — moves into this period (`MintRules.budgetCarry`; one period only, so a quiet month does not grow the budget without bound), and the planned amount, the remaining amount and the percent used all count it. It is off by default and switched from the budget's own options.
 
-Rollover is opt-in per budget. Define whether positive remaining amount, overspend or both carry forward. Do not assume all budgets should roll over. Period calculations must be deterministic across time-zone changes and month-length differences.
+Rollover is opt-in per budget. Define whether positive remaining amount, overspend or both carry forward. Do not assume all budgets should roll over. Period calculations must be deterministic across time-zone changes and month-length differences. **Built (0.259.2):** a rollover carries from the one period before it and only when the budget existed for that whole period (the budget keeps the day it was made; one made before that was kept carries as before), so turning it on for a new budget never adds an extra period of allowance.
 
 ### 7.4 Savings targets
 

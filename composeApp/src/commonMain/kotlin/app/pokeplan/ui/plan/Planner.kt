@@ -377,6 +377,8 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
     var noDate by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
     var repeat by remember { mutableStateOf<Repeat?>(null) }
+    // The day a monthly repeat was derived from; while it stands untouched the repeat follows the task's date.
+    var repeatAnchor by remember { mutableStateOf<LocalDate?>(null) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(model.addTaskRequested) {
         if (model.addTaskRequested) {
@@ -406,7 +408,12 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
                 plannedTime = parsed.plannedTime, evening = parsed.evening,
             )
-            repeat?.let { model.store.makeRepeating(made.id, it) }
+            repeat?.let { r ->
+                val monthlyDay = (r as? Repeat.Monthly)?.rule as? MonthlyRule.DayOfMonth
+                val start = planned ?: model.store.today
+                val followed = if (r is Repeat.Monthly && monthlyDay != null && monthlyDay.day == repeatAnchor?.day) r.copy(rule = MonthlyRule.DayOfMonth(start.day)) else r
+                model.store.makeRepeating(made.id, followed)
+            }
             val filed = made.listId?.let { id -> model.data.lists.firstOrNull { it.id == id }?.name }
             model.say("Added to " + when {
                 filed != null -> filed
@@ -414,7 +421,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 made.planned != null -> made.planned!!.short()
                 else -> "Tasks"
             })
-            text = ""; day = null; noDate = false; picking = false; more = false; repeat = null; reward = defaultReward
+            text = ""; day = null; noDate = false; picking = false; more = false; repeat = null; repeatAnchor = null; reward = defaultReward
         }
     }
     TextBox {
@@ -452,7 +459,12 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null, 
                 PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
                 if (more) {
                     DifficultyPicker(rank) { rank = it }
-                    RepeatEditor(repeat, day ?: today, model.store.data.settings.weekStart) { repeat = it }
+                    RepeatEditor(repeat, day ?: today, model.store.data.settings.weekStart) { r ->
+                        val before = repeat
+                        if (RepeatKind.of(r) != RepeatKind.of(before)) repeatAnchor = day ?: today
+                        else if (r is Repeat.Monthly && before is Repeat.Monthly && r.rule != before.rule) repeatAnchor = null
+                        repeat = r
+                    }
                     PixelChoice(app.pokeplan.core.reward.RewardFocus.entries.toList(), reward, { it?.label ?: "" }, { r -> if (r != null) reward = r }, label = "Reward")
                 }
             }

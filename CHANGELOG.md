@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.259.2
+
+- **Review fixes for Mint and the Tasks quick add (27 November 2026).**
+  - A record's history now says what its status really changed from ("posted to excluded"); it read "excluded to excluded" because the old status was read after the change was applied.
+  - A rollover budget carries nothing from before it existed: turning rollover on for a budget made today no longer adds a whole extra period of allowance. A budget made before the creation day was kept still carries as before.
+  - Editing a refund is checked against the expense the same way adding one is, so its total can no longer pass the expense; paying a card statement from a closed account is refused.
+  - In the Tasks quick add, a Monthly repeat follows the task's date until the day is typed by hand (picking Monthly on the 27th and then the 5th repeated on the 27th).
+  - The Mint table tests (`:data:jvmTest`) were red: one still reconciled without the reason an adjustment now needs, one counted writes without the history entry an edit now leaves. Both are updated, and new tests cover each fix above.
+
 ## 0.259.1
 
 - **The Review's This month box no longer stacks its labels one letter per line (27 November 2026).** A long value — the cash flow sentence, "In … · Out … · Net …" — took its full width first and left the label a single character wide, so "Cash flow" ran down the left edge and the row became eight lines tall. A label/value row now shares its width between the two, with the value right-aligned, and the cash flow is shown as three rows (**Cash in**, **Cash out**, **Net movement**) instead of one sentence. Every other place that uses the same row gets the same fix (insights, cards, accounts, savings).
