@@ -547,8 +547,12 @@ fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
 }
 
 @Composable
-internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false, day: kotlinx.datetime.LocalDate? = null) {
-    TextBox {
+internal fun NextUp(
+    task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?,
+    picked: Boolean = false, day: kotlinx.datetime.LocalDate? = null, boxed: Boolean = true,
+) {
+    // `boxed = false` lets the PLAN home keep the next task inside its Quick actions box, as PLAN.md 3 asks.
+    val content: @Composable () -> Unit = {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (picked) Text("Picked for you: +10% candies", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -565,6 +569,7 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
             }
         }
     }
+    if (boxed) TextBox { content() } else content()
 }
 
 @Composable

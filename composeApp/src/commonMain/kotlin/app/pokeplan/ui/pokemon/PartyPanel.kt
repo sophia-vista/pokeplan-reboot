@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -83,7 +84,7 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     PartyPanel(
         model, player.party, player.planLead?.id, lead = "Lead", perksTitle = "Party perks",
         perks = if (opened) PerkBucket.entries.filter { totals[it] > 0 }.map { PerkLine(it.label(), totals[it]) } else emptyList(),
-        onOpen = onOpen,
+        onOpen = onOpen, dense = true,
     )
 }
 
@@ -131,14 +132,17 @@ private val COMPACT_SPRITE = 40.dp
 @Composable
 private fun PartyPanel(
     model: AppModel, members: List<OwnedPokemon>, leadId: String?, lead: String,
-    perksTitle: String, perks: List<PerkLine>, onOpen: (String) -> Unit,
+    perksTitle: String, perks: List<PerkLine>, onOpen: (String) -> Unit, dense: Boolean = false,
 ) {
     val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
-    TextBox {
+    // `dense` is the PLAN home's short row (DESIGN_SYSTEM.md 5.1): the slots and their tap targets only, no heading.
+    TextBox(contentPadding = PaddingValues(horizontal = Spacing.BoxX, vertical = if (dense) Spacing.S else Spacing.BoxY)) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row {
-                Text("Party", Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.titleSmall)
-                Text("${ordered.size} of $PARTY_SIZE", Modifier.alignByBaseline(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            if (!dense) {
+                Row {
+                    Text("Party", Modifier.weight(1f).alignByBaseline(), style = MaterialTheme.typography.titleSmall)
+                    Text("${ordered.size} of $PARTY_SIZE", Modifier.alignByBaseline(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                }
             }
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 (0 until PARTY_SIZE).forEach { i ->
