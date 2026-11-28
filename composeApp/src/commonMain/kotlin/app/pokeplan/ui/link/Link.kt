@@ -549,7 +549,6 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     var asking by remember(p.id) { mutableStateOf(false) }
     var addingDate by remember(p.id) { mutableStateOf(false) }
     var addingMemory by remember(p.id) { mutableStateOf(false) }
-    var viewingPhoto by remember(p.id) { mutableStateOf<MemoryPhoto?>(null) }
     var keepDates by remember(p.id) { mutableStateOf(true) }
     var keepFollowUps by remember(p.id) { mutableStateOf(true) }
     val dates = data.dates.filter { it.personId == p.id }
@@ -580,12 +579,6 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         FormBox { MemoryForm(model, existing = null, presetPersonId = p.id, onDone = { addingMemory = false }) }
         return
     }
-    val photo = viewingPhoto
-    if (photo != null) {
-        UpTo { viewingPhoto = null }
-        PhotoViewer(photo, onOpenMemory = { viewingPhoto = null; openMemory(model, photo.memoryId) }) { viewingPhoto = null }
-        return
-    }
     val lines = listOf("Phone" to p.phone, "Email" to p.email, "Address" to p.address).filter { it.second.isNotBlank() }
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -599,7 +592,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     if (photos.isNotEmpty()) {
         FieldLabel("Photos")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            photos.take(8).forEach { ph -> PhotoThumb(ph, 80.dp) { viewingPhoto = ph } }
+            photos.take(8).forEach { ph -> PhotoThumb(ph, 80.dp) { openPhotos(model, photos, ph) { id -> openMemory(model, id) } } }
         }
     }
     PersonConnections(model, p)
