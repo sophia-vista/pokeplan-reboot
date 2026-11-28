@@ -84,6 +84,16 @@ data class Era(
     val updatedMillis: Long = 0,
 )
 
+/**
+ * An explicit connection between two people the player recorded (REP-084): "family", "colleague", the player's own word. It has no
+ * direction (the one word is shown on both profiles), is never inferred, and is never a score. [aId] and [bId] are two different people.
+ */
+@Serializable
+data class PersonConnection(val id: String, val aId: String, val bId: String, val label: String, val createdMillis: Long = 0) {
+    fun involves(personId: String): Boolean = aId == personId || bId == personId
+    fun otherThan(personId: String): String = if (aId == personId) bId else aId
+}
+
 @Serializable
 data class PersonNote(val id: String, val personId: String, val text: String, val atMillis: Long = 0)
 
@@ -152,6 +162,7 @@ data class LinkData(
     val memories: List<Memory> = emptyList(),
     val eras: List<Era> = emptyList(),
     val photos: List<MemoryPhoto> = emptyList(),
+    val connections: List<PersonConnection> = emptyList(),
     val settings: LinkSettings = LinkSettings(),
 )
 
