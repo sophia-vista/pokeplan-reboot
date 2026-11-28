@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.263.2
+
+- **Search is behind the pull-down everywhere a list has one.** CARE's journal and BASE's notes had a search box sitting on the page; both now open by pulling down at the top of the list, with a close key, like LINK, PLAN, MINT, GEAR, Pokémon and Modules (DESIGN_SYSTEM 12B). A picker inside a form or dialogue (a Pokémon, a contact, a unit, a currency) keeps its inline field. Screenshots added for both open states in both palettes.
+
 ## 0.263.1
 
 - **Fix: the arrival cutscene no longer replays every time the app opens.** The played-scene list lived in memory only, and a reward stays unseen until its OK is tapped, so each restart played the hatch or arrival scene again. The reward entry now saves a `scenePlayed` flag when the scene starts (the reward card still waits for its OK).
