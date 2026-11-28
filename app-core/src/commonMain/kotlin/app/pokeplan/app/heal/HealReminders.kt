@@ -62,8 +62,7 @@ object HealReminders {
 
     fun upcoming(heal: HealData, app: AppData, nowMillis: Long, zone: TimeZone): List<HydrationReminder> {
         if (heal.settings.hydrationReminders.isEmpty()) return emptyList()
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val today = nowMillis.toLocalDateTime(zone).date
         return (0..DAYS_AHEAD).flatMap { offset ->
             val day = today.plus(DatePeriod(days = offset))
@@ -87,8 +86,7 @@ object HealReminders {
         val today = nowMillis.toLocalDateTime(zone).date
         var day = huaweiDueDay(heal, today, zone) ?: return null
         if (LocalDateTime(day, heal.settings.huaweiRemindAt).toEpochMillis(zone) <= nowMillis) day = day.plus(DatePeriod(days = 1))
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val at = LocalDateTime(day, heal.settings.huaweiRemindAt).toEpochMillis(zone)
         val request = ReminderRequest(ReminderModule.HEAL, HuaweiReadReminder.REF, "huawei", at, occurrence = day.toString())
         return HuaweiReadReminder(day, ReminderPolicy.deliverAt(request, app.settings.quietHours, zone, focus))
@@ -103,8 +101,7 @@ object HealReminders {
     fun medicationUpcoming(heal: HealData, app: AppData, nowMillis: Long, zone: TimeZone): List<MedicationReminder> {
         val medications = heal.medications.filter { it.remind && it.status == MedicationStatus.ACTIVE }
         if (medications.isEmpty()) return emptyList()
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val today = nowMillis.toLocalDateTime(zone).date
         return (0..DAYS_AHEAD).flatMap { offset ->
             val day = today.plus(DatePeriod(days = offset))

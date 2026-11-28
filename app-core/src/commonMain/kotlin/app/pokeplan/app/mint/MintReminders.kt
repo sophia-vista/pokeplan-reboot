@@ -29,8 +29,7 @@ object MintReminders {
     fun upcoming(mint: MintData, app: AppData, nowMillis: Long, zone: TimeZone): List<BillReminder> {
         val settings = mint.settings
         if (!settings.billReminders) return emptyList()
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val today = nowMillis.toLocalDateTime(zone).date
         val lead = settings.billReminderDays.coerceIn(0, MintStore.MAX_REMIND_DAYS)
         val to = today.plus(lead + DAYS_AHEAD, DateTimeUnit.DAY)

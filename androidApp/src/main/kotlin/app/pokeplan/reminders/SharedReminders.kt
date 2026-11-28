@@ -22,6 +22,7 @@ import app.pokeplan.app.reminders.FireDecision
 import app.pokeplan.app.reminders.FocusWindow
 import app.pokeplan.app.plan.Nudges
 import app.pokeplan.app.reminders.PlanReminderAdapter
+import app.pokeplan.app.reminders.ReminderPolicy
 import app.pokeplan.ui.Place
 import app.pokeplan.app.reminders.ReminderActions
 import app.pokeplan.app.reminders.ReminderCoordinator
@@ -84,8 +85,7 @@ object SharedReminders {
                 },
             ),
         )
-        val session = game.data.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(game.data.focus)
         return Live(coordinator, game.data.settings.quietHours, focus)
     }
 

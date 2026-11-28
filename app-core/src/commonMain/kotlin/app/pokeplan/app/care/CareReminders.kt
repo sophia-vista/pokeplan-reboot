@@ -23,8 +23,7 @@ object CareReminders {
 
     fun upcoming(care: CareData, app: AppData, nowMillis: Long, zone: TimeZone): List<RoutineReminder> {
         if (!care.settings.reminders) return emptyList()
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val today = nowMillis.toLocalDateTime(zone).date
         return (0..DAYS_AHEAD).flatMap { offset ->
             val day = today.plus(DatePeriod(days = offset))
