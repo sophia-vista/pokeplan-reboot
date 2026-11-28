@@ -2,6 +2,7 @@ package app.pokeplan.ui.media
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
@@ -17,9 +18,7 @@ class PhotoViewerState(val items: List<MediaItem>, initialIndex: Int, val config
     var fit: ImageFitMode by mutableStateOf(config.fitMode)
         private set
 
-    /** Quarter turns the picture on show is turned (0 to 3). A view only: the file is never touched. */
-    var rotation: Int by mutableIntStateOf(0)
-        private set
+    private val rotations = mutableStateMapOf<String, Int>()
 
     /** The picture on show is zoomed in, so a drag pans it and the pages do not turn. */
     var zoomed: Boolean by mutableStateOf(false)
@@ -38,11 +37,14 @@ class PhotoViewerState(val items: List<MediaItem>, initialIndex: Int, val config
             index = next
             notice = null
         }
-        rotation = 0
         zoomed = false
     }
 
-    fun rotate() { rotation = (rotation + 1) % 4 }
+    /** Quarter turns clockwise a picture is turned: what its module stored ([MediaItem.rotation]) plus what was pressed since. A view only: the file is never touched. */
+    fun rotationOf(item: MediaItem): Int = rotations[item.id] ?: (((item.rotation % 4) + 4) % 4)
+
+    /** One more quarter turn of [item]; returns the new total (0 to 3). */
+    fun rotate(item: MediaItem): Int = ((rotationOf(item) + 1) % 4).also { rotations[item.id] = it }
 
     fun markZoomed(on: Boolean) { zoomed = on }
 

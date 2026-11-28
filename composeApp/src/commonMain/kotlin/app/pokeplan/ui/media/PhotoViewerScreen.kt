@@ -128,7 +128,7 @@ internal fun PhotoViewerScreen(state: PhotoViewerState, onClose: () -> Unit, sha
     fun stepZoom(it: MediaItem, factor: Float) {
         val bitmap = cache[it.id] ?: return
         val (vw, vh) = viewport.value.let { v -> v.x to v.y }
-        val (cw, ch) = ViewerMath.drawnSize(vw, vh, bitmap.width.toFloat(), bitmap.height.toFloat(), fitOf(it, state), state.rotation)
+        val (cw, ch) = ViewerMath.drawnSize(vw, vh, bitmap.width.toFloat(), bitmap.height.toFloat(), fitOf(it, state), state.rotationOf(it))
         zoomOf(it).transform(0f, 0f, factor, 0f, 0f, cw, ch, vw, vh)
         state.markZoomed(zoomOf(it).zoomed)
     }
@@ -181,7 +181,8 @@ internal fun PhotoViewerScreen(state: PhotoViewerState, onClose: () -> Unit, sha
                     PixelIconButton("zoom-in", "Zoom in", { stepZoom(item, ZOOM_STEP) }, enabled = zoom.scale < ViewerMath.MAX_SCALE)
                 }
                 if (config.allowRotation) PixelIconButton("reload", "Rotate", {
-                    state.rotate()
+                    val turns = state.rotate(item)
+                    config.onRotate?.invoke(item, turns)
                     zoom.reset()
                     state.markZoomed(false)
                 })
@@ -221,7 +222,7 @@ private fun ViewerPage(
 ) {
     val load by produceState<Load>(cache[item.id]?.let { Load.Ready(it) } ?: Load.Loading, item.id) {
         if (value is Load.Ready) return@produceState
-        val bitmap = withContext(Dispatchers.Default) { runCatching { decodeUpright(item.source.read()) }.getOrNull() }
+        val bitmap = withContext(Dispatchers.Default) { runCatching { decodePicture(item.source.read()) }.getOrNull() }
         value = if (bitmap == null) Load.Failed else { cache[item.id] = bitmap; Load.Ready(bitmap) }
     }
     val ink = if (light) Color.Black else Color.White
@@ -230,7 +231,7 @@ private fun ViewerPage(
         when (val l = load) {
             Load.Loading -> LoadingState("Opening the picture", Modifier.padding(Spacing.L), color = ink)
             Load.Failed -> Text("That picture is not available", Modifier.padding(Spacing.L), style = MaterialTheme.typography.bodyLarge, color = ink, textAlign = TextAlign.Center)
-            is Load.Ready -> ZoomableImage(l.bitmap, item, state, zoom, if (active) state.rotation else 0, onViewport)
+            is Load.Ready -> ZoomableImage(l.bitmap, item, state, zoom, state.rotationOf(item), onViewport)
         }
     }
 }

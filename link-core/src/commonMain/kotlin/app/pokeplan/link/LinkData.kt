@@ -70,6 +70,8 @@ data class MemoryPhoto(
     /** The image bytes as standard base64, with no `data:` prefix. */
     val data: String,
     val addedMillis: Long = 0,
+    /** Quarter turns clockwise the player gave the photo (0 to 3); the stored image is never changed, so a turn can always be undone. */
+    val rotation: Int = 0,
 )
 
 /** A life chapter the player makes by hand; [start] and [end] may each be partial or open. Eras may overlap. */

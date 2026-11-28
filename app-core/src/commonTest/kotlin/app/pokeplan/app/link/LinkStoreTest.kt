@@ -687,6 +687,23 @@ class LinkStoreTest {
         assertTrue(s.link.photosOf(m.id).isEmpty(), "deleting a memory deletes its photos")
     }
 
+    @Test
+    fun aPhotoKeepsItsTurnWithoutChangingTheImage() {
+        val s = setup()
+        val m = assertNotNull(s.link.addMemory("Lunch", PartialDate(2024)).record)
+        val photo = assertNotNull(s.link.addPhoto(m.id, image = "AQID").record)
+        assertEquals(0, photo.rotation, "a new photo is not turned")
+        assertEquals(3, assertNotNull(s.link.setPhotoRotation(photo.id, 3).record).rotation)
+        assertEquals(3, assertNotNull(s.link.setPhotoRotation(photo.id, -1).record).rotation, "any integer is stored as 0 to 3")
+        assertEquals(2, assertNotNull(s.link.setPhotoRotation(photo.id, 6).record).rotation)
+        assertNotNull(s.link.updatePhotoCaption(photo.id, "Upside down").record)
+        s.reopen()
+        val kept = s.link.photosOf(m.id).single()
+        assertEquals(2, kept.rotation, "the turn survives a caption edit and a reopen")
+        assertEquals("AQID", kept.data, "the stored image is never changed")
+        assertNull(s.link.setPhotoRotation("gone", 1).record, "a missing photo is refused")
+    }
+
     private val picture = LinkStore.NewPhoto("AQID", "image/png")
 
     @Test
