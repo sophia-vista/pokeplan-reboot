@@ -253,6 +253,14 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
 - Destructive or consequential actions explain the outcome and require deliberate confirmation. Reversible actions remain low-friction.
 - Support back dismissal where safe, focus trapping where appropriate, TalkBack announcement and keyboard behavior.
 
+### 6.8A Photo viewer (owner, 28 November 2026; built 0.264.0)
+
+- One shared viewer for every module's pictures (`composeApp/.../ui/media/`): a module calls `model.photoViewer.open(items, index, config)`; `PhotoViewerHost` sits once at the App root and shows a full-screen dialog, so Back returns to the module's screen and its scroll position. A module never builds its own full-screen picture screen.
+- Layout: back, a centred counter and a details key ("...") on top; zoom out, zoom in, rotate and share below (previous and next chevrons when there are several pictures); the caption (title, description, date) underneath. Pixelarticons glyphs. A tap hides the bars.
+- Behaviour: swipe between pictures (only the visible page and one neighbour are loaded; the bitmap cache is 64 MB and released on close); pinch zoom, double-tap zoom and pan, where swiping turns pages only when the picture is not zoomed; Fit and Fill; EXIF orientation applied; rotate is view-only in quarter turns and never touches the file; loading, unavailable and empty states.
+- The details key lists Info rows, Fit/Fill and the module's own keys (LINK's "Open memory"). Share is optional (the config turns it on). `brightScreen` and a light backdrop are for MINT QR codes.
+- Sources are `MediaSource` (a suspend `read()` returning bytes), not Android Uri; `MediaSources.base64` covers LINK photos and MINT's QR and receipt. The date label is a pre-formatted string (LINK dates are flexible).
+
 ### 6.9 Progress indicators
 
 - Shared linear, circular and compact progress indicators use semantic colors and accessible value descriptions.
