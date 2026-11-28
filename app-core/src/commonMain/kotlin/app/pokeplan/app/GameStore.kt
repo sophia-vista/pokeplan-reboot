@@ -294,6 +294,11 @@ class GameStore(
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
+    /** The arrival cutscene for [pokemonId] has started: saved, so opening the app again does not replay it. */
+    fun markScenePlayed(pokemonId: String) = update { d ->
+        d.copy(rewardLog = d.rewardLog.map { e -> if (e.rewards.any { it is Reward.Hatched && it.pokemon.id == pokemonId }) e.copy(scenePlayed = true) else e })
+    }
+
     private fun achieve(d: AppData, tier: Int, source: String, eventId: String, ref: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false, focus: RewardFocus = RewardFocus.EXP): AppData {
         val warmed = Counters.WARM.get(d.counters, streakDay)
         val event = AchievementEvent(
