@@ -127,6 +127,7 @@ import app.pokeplan.ui.screens.PixelMomentField
 import app.pokeplan.ui.screens.ScreenLockGate
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
+import app.pokeplan.ui.screens.ChoiceChip
 import app.pokeplan.ui.screens.TabButton
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.short
@@ -143,9 +144,6 @@ internal fun percentText(basisPoints: Int): String {
     val fraction = (basisPoints % 100).toString().padStart(2, '0').trimEnd('0')
     return if (fraction.isEmpty()) (basisPoints / 100).toString() else "${basisPoints / 100}.$fraction"
 }
-
-@Composable
-private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
 @Composable
 internal fun MintLine(onClick: (() -> Unit)? = null, onClickLabel: String? = null, trail: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
@@ -1152,7 +1150,7 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                         if (recentPayees.isNotEmpty()) {
                             Text("Used before", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                recentPayees.forEach { p -> Chip(p.take(MintRules.NAME_MAX), payee == p, { payee = p.take(MintRules.NAME_MAX * 2) }) }
+                                recentPayees.forEach { p -> ChoiceChip(p.take(MintRules.NAME_MAX), payee == p, { payee = p.take(MintRules.NAME_MAX * 2) }, key = accent) }
                             }
                         }
                     }
@@ -2378,8 +2376,8 @@ private fun CategoriesContent(model: AppModel) {
     run {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Chip("Spending", kind == CategoryKind.EXPENSE, { kind = CategoryKind.EXPENSE }, Modifier.weight(1f))
-                Chip("Income", kind == CategoryKind.INCOME, { kind = CategoryKind.INCOME }, Modifier.weight(1f))
+                ChoiceChip("Spending", kind == CategoryKind.EXPENSE, { kind = CategoryKind.EXPENSE }, Modifier.weight(1f), key = accent)
+                ChoiceChip("Income", kind == CategoryKind.INCOME, { kind = CategoryKind.INCOME }, Modifier.weight(1f), key = accent)
             }
             Column {
                 data.categories.filter { it.kind == kind }.sortedBy { it.archived }.forEachIndexed { i, c ->

@@ -1,5 +1,6 @@
 package app.pokeplan.app.plan
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.AppData
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
@@ -27,10 +28,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EventCompanionTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceMinutes(m: Int) { millis += m * 60_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()

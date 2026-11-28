@@ -1,5 +1,6 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.mint.AccountType
@@ -21,7 +22,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class MintImportTest {
-    private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<MintEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)

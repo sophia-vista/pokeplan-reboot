@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.plan.MonthlyRule
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Recurrence
@@ -17,10 +18,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class RecurringReminderTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()

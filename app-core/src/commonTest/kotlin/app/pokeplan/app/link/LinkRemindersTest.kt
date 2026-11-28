@@ -1,5 +1,6 @@
 package app.pokeplan.app.link
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUpStatus
 import kotlinx.datetime.LocalDate
@@ -23,11 +24,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class LinkRemindersTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-        fun advanceHours(n: Int) { millis += n * 3_600_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val saturdayEvening = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()

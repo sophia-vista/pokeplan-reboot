@@ -1,5 +1,6 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
@@ -22,9 +23,6 @@ import kotlin.test.assertTrue
 
 /** An IOU is income someone owes the player back (MINT.md 5.8A): it takes its amount off the spending it was for, is no income, pays nothing, and moves the balance only once received. */
 class MintIouTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private val day = LocalDateTime(2026, 11, 21, 18, 0).toInstant(utc).toEpochMilliseconds()

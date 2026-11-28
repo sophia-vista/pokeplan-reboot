@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.TransferBlock
@@ -35,10 +36,6 @@ import app.pokeplan.app.world.worldBuy
 import app.pokeplan.app.world.worldStart
 
 class GameStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advance(ms: Long) { millis += ms }
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()
