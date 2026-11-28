@@ -1244,6 +1244,14 @@ private fun NotesView(model: AppModel, query: String, onQuery: (String) -> Unit,
     var title by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
+    // Records first (DESIGN_SYSTEM 12B 3): the add form opens from one key, closes after saving, and is open by itself with no notes yet.
+    var adding by remember { mutableStateOf(false) }
+    val showForm = adding || data.references.isEmpty()
+    fun deleteNote(id: String) {
+        val before = model.baseData
+        home.deleteReference(id)
+        model.offerUndo("Deleted: note") { home.restore(before) }
+    }
     val matching = if (query.isBlank()) null else home.search(query).filter { it.kind == HitKind.REFERENCE }.map { it.id }.toSet()
     val notes = data.references.filter { matching == null || it.id in matching }.sortedByDescending { it.updatedMillis }
     if (data.references.isNotEmpty()) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) {
@@ -1254,22 +1262,27 @@ private fun NotesView(model: AppModel, query: String, onQuery: (String) -> Unit,
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FormGroup {
+            if (showForm) FormGroup {
                 PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Note", placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
-                FormSave("Add", {
-                    val out = home.addReference(title)
-                    if (out.record == null) message = out.refused else { title = ""; message = null; openId = out.record!!.id; model.haptic() }
-                }, accent, enabled = title.isNotBlank())
-            }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (data.references.isNotEmpty()) PixelButton("Cancel", { adding = false; title = ""; message = null }, Modifier.weight(1f), Pixel.InkSoft)
+                    FormSave("Add", {
+                        val out = home.addReference(title)
+                        if (out.record == null) message = out.refused else { title = ""; message = null; adding = false; openId = out.record!!.id; model.haptic() }
+                    }, accent, Modifier.weight(1f), enabled = title.isNotBlank())
+                }
+            } else PixelButton("Add a note", { adding = true }, Modifier.fillMaxWidth(), accent)
             message?.let { Report(model, it, NoticeTone.WARNING) }
-            if (data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
+            if (showForm && data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
             if (notes.isEmpty() && data.references.isNotEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             notes.forEachIndexed { i, n ->
                 if (i > 0) Rule()
-                RecordRow(
-                    n.title, listOfNotNull(n.category.takeIf { it.isNotBlank() }, n.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)).joinToString(" · "),
-                    onClick = { openId = if (openId == n.id) null else n.id }, onClickLabel = if (openId == n.id) "Close the note" else "Open the note",
-                )
+                androidx.compose.runtime.key(n.id) { app.pokeplan.ui.screens.SwipeRow({ deleteNote(n.id) }, "Delete note", model.data.settings.reduceMotion) {
+                    RecordRow(
+                        n.title, listOfNotNull(n.category.takeIf { it.isNotBlank() }, n.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)).joinToString(" · "),
+                        onClick = { openId = if (openId == n.id) null else n.id }, onClickLabel = if (openId == n.id) "Close the note" else "Open the note",
+                    )
+                } }
                 if (openId == n.id) NoteEditor(model, n) { openId = null }
             }
         }

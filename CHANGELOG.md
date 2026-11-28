@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.269.1
+
+- **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
+- **Swipe a row left to delete it, with an Undo.** Journal entries and notes lose their trailing keys; the row opens on tap (the journal editor gains a Delete key, notes already had one), and screen readers get a "Delete entry" or "Delete note" action. New `SwipeRow` component with its own tests. Screenshots added for the closed, open, prompt, empty and mid-swipe states.
+
 ## 0.269.0
 
 - **Shared names, archived list and number boxes (refactor only).** kit-core `Names` (`tidy`, `isTaken`, `addTo`, `distinct`) is the one rule for trimming, capping, refusing a blank and refusing a repeat ignoring case; BaseStore (areas, units), MintStore (categories), LinkStore (categories) and LinkRules.tags use it (`NamesTest`). UI: `ArchivedRecords` (the "Archived (n)" key with Restore and Delete rows) is used three times in Base (chores, supplies, items); `DigitsField` and `DecimalField` replace 64 hand-rolled number `PixelField` calls across Base, Heal, Link, Mint, Gear and Plan and four private `numberKeys` vals. Checked in screenshots, light and dark, on Base, Heal and Mint forms. Looked at and not built: an on-screen keypad or stepper (design rule: exact entry, no nudge keys), swipe row actions (another session), a shared photo model, a shared status enum, a shared decimal parser, Care's "Put away" and Mint's category archive; 17 number fields stay `PixelField` on purpose (raw decimal text with an error line, a minus sign, clamped day fields, a fee filter). Reasons in IMPLEMENTATION_BACKLOG row 36b. No reward change, no schema change.

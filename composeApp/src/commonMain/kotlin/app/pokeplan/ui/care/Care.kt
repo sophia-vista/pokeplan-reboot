@@ -97,6 +97,7 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.BuddyStage
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.SwipeRow
 import app.pokeplan.ui.screens.PullRevealSlot
 import app.pokeplan.ui.screens.pullReveal
 import app.pokeplan.ui.screens.FormDisclosure
@@ -714,26 +715,35 @@ private fun JournalView(model: AppModel, query: String, onQuery: (String) -> Uni
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var writtenAt by remember { mutableStateOf<Long?>(null) }
     var editingId by remember { mutableStateOf<String?>(null) }
+    // Records first (DESIGN_SYSTEM 12B 3): the entry form opens from one key, closes after saving, and is open by itself
+    // when there is nothing yet, a draft waits, or another screen asked to write.
+    var adding by remember { mutableStateOf(model.reflectJournal || text.isNotBlank() || data.journal.isEmpty()) }
     fun save() {
-        if (care.write(text, answering, tags, writtenAt) != null) { text = ""; model.journalDraft = ""; answering = null; tags = emptySet(); writtenAt = null }
+        if (care.write(text, answering, tags, writtenAt) != null) { text = ""; model.journalDraft = ""; answering = null; tags = emptySet(); writtenAt = null; adding = false }
+    }
+    fun deleteEntry(id: String) {
+        val before = model.careData
+        care.deleteEntry(id)
+        model.offerUndo("Deleted: journal entry") { care.restore(before) }
     }
 
-    if (prompt != null && answering == null) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(prompt.text, style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Write about this", { answering = prompt.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Another question", { care.skipPrompt() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
-        }
-    }
     var moreEntry by remember { mutableStateOf(false) }
-    FormBox {
+    if (!adding) PixelButton("Add an entry", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent)
+    else FormBox {
         FormStack {
             val asked = answering?.let { Prompts.byId(it) }
             if (asked != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(asked.text, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 PixelButton("Not this", { answering = null }, color = Pixel.InkSoft, compact = true)
+            }
+            if (prompt != null && answering == null) Accordion("Need a prompt?") {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(prompt.text, style = MaterialTheme.typography.titleSmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        PixelButton("Write about this", { answering = prompt.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Another question", { care.skipPrompt() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
             }
             PixelField(
                 text, { text = it.take(5_000); model.journalDraft = text }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry",
@@ -751,7 +761,10 @@ private fun JournalView(model: AppModel, query: String, onQuery: (String) -> Uni
                     PixelMomentField(writtenAt ?: model.store.nowMillis, { writtenAt = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
                 }
             }
-            FormSave("Save entry", ::save, ModuleAccent.CARE.accent, enabled = text.isNotBlank())
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                if (data.journal.isNotEmpty()) PixelButton("Cancel", { adding = false }, Modifier.weight(1f), Pixel.InkSoft)
+                FormSave("Save entry", ::save, ModuleAccent.CARE.accent, Modifier.weight(1f), enabled = text.isNotBlank())
+            }
         }
     }
     var shown by remember { mutableStateOf(30) }
@@ -759,25 +772,25 @@ private fun JournalView(model: AppModel, query: String, onQuery: (String) -> Uni
     val entries = found.take(shown)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.REFLECT.icon, action = "Clear the search" to { onQuery(""); clearSearch() })
     entries.forEach { e ->
+        androidx.compose.runtime.key(e.id) { SwipeRow({ deleteEntry(e.id) }, "Delete entry", model.data.settings.reduceMotion) {
         ListRow(
-            trail = {
-                PixelIconButton("pencil", "Edit", { editingId = if (editingId == e.id) null else e.id }, Pixel.InkSoft)
-                PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteEntry(e.id); model.offerUndo("Deleted: journal entry") { care.restore(before) } }, Pixel.InkSoft)
-            },
+            onClick = { editingId = if (editingId == e.id) null else e.id },
+            onClickLabel = if (editingId == e.id) "Close the entry" else "Edit the entry",
         ) {
             Text(e.day.short() + " " + ExactInput.formatMinuteOfDay(e.atMillis.toLocalDateTime(TimeZone.currentSystemDefault()).let { it.hour * 60 + it.minute }), style = MaterialTheme.typography.bodyMedium)
             e.promptId?.let { Prompts.byId(it) }?.let { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
             Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             if (e.tags.isNotEmpty()) Text(e.tags.sorted().joinToString(", "), style = MaterialTheme.typography.bodyMedium)
         }
-        if (editingId == e.id) JournalEditor(model, e) { editingId = null }
+        } }
+        if (editingId == e.id) JournalEditor(model, e, onDelete = { editingId = null; deleteEntry(e.id) }) { editingId = null }
     }
     if (found.size > shown) PixelButton("Show older", { shown += 30 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) {
+private fun JournalEditor(model: AppModel, e: JournalEntry, onDelete: () -> Unit, onDone: () -> Unit) {
     var text by remember(e.id) { mutableStateOf(e.text) }
     var at by remember(e.id) { mutableStateOf(e.atMillis) }
     var tags by remember(e.id) { mutableStateOf(e.tags) }
@@ -795,6 +808,7 @@ private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) 
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft)
+                PixelButton("Delete", onDelete, Modifier.weight(1f), Pixel.InkSoft)
                 FormSave("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, ModuleAccent.CARE.accent, Modifier.weight(1f), enabled = text.isNotBlank())
             }
         }
