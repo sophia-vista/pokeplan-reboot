@@ -219,10 +219,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val hasRecords = LinkRules.hasRecords(data)
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.LINK.label, onBack = onBack, color = Module.LINK.look.header, trailing = {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                if (hasRecords) PixelIconButton("search", "Search Link", { reveal.show() }, Pixel.Ink)
-                SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) }
-            }
+            SectionsKey(Module.LINK.label, sections) { key -> model.linkSection = LinkSection.valueOf(key) }
         })
         Column(
             Modifier.weight(1f).pullReveal(reveal).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),

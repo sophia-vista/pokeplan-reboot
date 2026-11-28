@@ -313,6 +313,8 @@ data class RewardEntry(
     val source: String,
     val rewards: List<Reward>,
     val seen: Boolean = false,
+    /** The arrival cutscene for a Pokémon in this entry has played; `seen` still waits for the reward card's OK, so a restart does not replay it. */
+    val scenePlayed: Boolean = false,
 )
 
 @Serializable
