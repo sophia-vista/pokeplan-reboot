@@ -12,19 +12,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import app.pokeplan.core.dex.Evolution
 import app.pokeplan.core.pokemon.DeviceAction
+import app.pokeplan.core.pokemon.EvolutionRules
 import app.pokeplan.core.pokemon.EvolutionOption
 import app.pokeplan.core.pokemon.EvolutionTrials
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
+import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.time.TimeSource
 import app.pokeplan.ui.screens.long
+import app.pokeplan.world.Dungeons
+import app.pokeplan.world.TrialSite
 
 private const val UPSIDE_DOWN_MILLIS = 1_500L
 private const val SPIN_MILLIS = 5_000L
@@ -101,5 +107,32 @@ internal fun DeviceTrial(model: AppModel, p: OwnedPokemon, option: EvolutionOpti
             Text("Or ${app.pokeplan.world.EvolutionTrialSites.WALK_FLOORS} World floors on a team", style = soft, color = Pixel.InkSoft)
         }
         message?.let { Text(it, style = soft, color = Pixel.InkSoft) }
+    }
+}
+
+/** A WORLD Evolution Trial: where it is, what it needs, how far this Pokémon is, and a key to the dungeon. */
+@Composable
+internal fun WorldTrial(model: AppModel, p: OwnedPokemon, evolution: Evolution, site: TrialSite, done: Boolean) {
+    val soft = MaterialTheme.typography.bodyMedium
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        Text("Trial: ${site.title}", style = soft)
+        if (done) {
+            Text("Trial done", style = soft, color = Pixel.Green)
+            return@Column
+        }
+        val dungeon = Dungeons.byId(site.dungeonId)
+        Text("Floor ${site.floor}, ${dungeon?.name ?: site.dungeonId} (${dungeon?.layer?.label})", style = soft, color = Pixel.InkSoft)
+        val level = EvolutionRules.requiredLevel(evolution) ?: 0
+        val levelMet = p.level >= level
+        val onTeam = model.data.world.teams.any { p.id in it.members }
+        Text(
+            (if (levelMet) "Level $level reached" else "Needs level $level, now ${p.level}") + ", " + (if (onTeam) "on a team" else "not on a team"),
+            style = soft, color = if (levelMet && onTeam) Pixel.Green else Pixel.InkSoft,
+        )
+        if (dungeon != null) PixelButton("Show in WORLD", {
+            model.worldLayer = dungeon.layer
+            model.worldTeamDungeon = dungeon.id
+            model.open(Place.WORLD, focusTab = false)
+        }, Modifier.fillMaxWidth(), color = Pixel.InkSoft, compact = true)
     }
 }

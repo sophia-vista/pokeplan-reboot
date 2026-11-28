@@ -755,6 +755,11 @@ private fun WorldTeamsView(model: AppModel) {
             when (stage) {
                 1 -> {
                     WorldLayerSwitch(model) { dungeonId = null; model.worldTeamDungeon = null }
+                    val trialSites = remember(roster, world.evolutionTrials) {
+                        roster.filter { it.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }
+                            .flatMap { p -> app.pokeplan.world.EvolutionTrialSites.open(p, world.evolutionTrials).map { (_, site) -> site.dungeonId to p.nickname } }
+                            .groupBy({ it.first }, { it.second })
+                    }
                     Dungeons.of(model.worldLayer).forEach { d ->
                         val reasons = app.pokeplan.world.WorldGuide.lockReasons(world, d)
                         val open = reasons.isEmpty()
@@ -769,6 +774,7 @@ private fun WorldTeamsView(model: AppModel) {
                                 Text(d.name, style = MaterialTheme.typography.bodyLarge)
                                 Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                                 reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Color(0xFFFFB4A8)) }
+                                if (open) trialSites[d.id]?.let { names -> Text("Evolution Trial: ${names.distinct().take(3).joinToString(", ")}", style = MaterialTheme.typography.bodyMedium, color = Module.WORLD.look.accent) }
                             }
                             val deepest = world.deepest[d.id] ?: 0
                             Text(if (d.id == dungeonId) "Chosen" else if (open) "Choose" else "Locked", style = MaterialTheme.typography.bodyMedium, color = if (d.id == dungeonId) Module.WORLD.look.accent else Pixel.InkSoft)
