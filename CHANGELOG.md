@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.271.0
+
+- **LINK slambook question sets per category (REP-085).** Each relationship category has its own set of slambook questions: Family, Friends, Work, School and Services start as shorter subsets of the 16 classic questions, and any other or blank category uses the general set of all 16 (Colleagues share Work's). In LINK Settings a new Question sets box picks General or a category and, per question, moves it Up or Down or hides it; hidden questions are keys to show them again; the player can add their own question and go back to the starting set. The About form's "Add a question" now offers the person's category set. Hiding or removing a question never deletes an answer already written, and customising one set changes no other. Stored as JSON in the LINK document (`LinkSettings.questionSets`, no schema step); settings, so not in the export or erase kinds. No reward change.
+- **Person Overview: "Last met" and "Show all".** The Overview shows the latest memory with a full date as "Last met" and a "Show all N" key for memories beyond the first four (REP-084 remainder; the grouped profile, simpler tabs and connections in search are still open).
+- **Tests.** `LinkStoreTest` `slambookQuestionSetsAreOneCopyPerCategoryAndNeverTouchAnswers`; `ScreenshotTest` `linkQuestionSets`.
+
 ## 0.270.0
 
 - **Evolution Trials are visible.** The Pokémon detail Evolution box shows a WORLD trial's title, "Floor N, dungeon (layer)", a requirement line ("Level X reached" or "Needs level X, now Y", and on a team or not, green when both are met) and a Show in WORLD key that opens WORLD on that dungeon's layer; a green "Trial done" line appears once done (phone trials too). WORLD's dungeon picker shows "Evolution Trial: names" under a dungeon holding an open trial for an owned Pokémon (Everstone holders excluded). The expedition report lists "Trial done: A to B" and opens itself when a trial was done. No reward change.
