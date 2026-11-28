@@ -1368,6 +1368,11 @@ class ScreenshotTest {
         scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
     }
 
+    private fun tap(scene: ImageComposeScene, x: Float, y: Float) {
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, androidx.compose.ui.geometry.Offset(x, y), type = androidx.compose.ui.input.pointer.PointerType.Touch)
+    }
+
     @Test
     fun modulesSearch() = meStore("modules-search", prepare = { it.module = null }, interact = ::pullToSearch) { model ->
         app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
@@ -2512,6 +2517,33 @@ class ScreenshotTest {
 
     @Test
     fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)
+
+    @Test
+    fun careJournalList() = care("care-journal-list", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalEntries = 3, interact = { scene -> tap(scene, 390f, 168f) })
+
+    @Test
+    fun careJournalListDark() = care("care-journal-list-dark", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, dark = true, journalEntries = 3, interact = { scene -> tap(scene, 390f, 168f) })
+
+    @Test
+    fun careJournalPrompt() = care("care-journal-prompt", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalDraft = "Walked by the river.", journalEntries = 2, interact = { scene -> tap(scene, 270f, 330f) })
+
+    /** A row held half-way through a swipe to the left: the trash mark shows behind it. */
+    @Test
+    fun careJournalSwipe() = care("care-journal-swipe", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalDraft = "Walked by the river.", journalEntries = 2, interact = { scene ->
+        val to = androidx.compose.ui.input.pointer.PointerType.Touch
+        var x = 470f
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, androidx.compose.ui.geometry.Offset(x, 855f), type = to)
+        repeat(12) { x -= 8f; scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move, androidx.compose.ui.geometry.Offset(x, 855f), type = to) }
+    })
+
+    @Test
+    fun baseNotesList() = household("base-notes-list", app.pokeplan.ui.base.BaseSection.NOTES, height = 900)
+
+    @Test
+    fun baseNotesListDark() = household("base-notes-list-dark", app.pokeplan.ui.base.BaseSection.NOTES, height = 900, dark = true)
+
+    @Test
+    fun baseNotesEmpty() = household("base-notes-empty", app.pokeplan.ui.base.BaseSection.NOTES, height = 900, empty = true)
 
     @Test
     fun careJournalSearch() = care("care-journal-search", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalDraft = "Walked by the river after work.", journalEntries = 4, interact = ::pullToSearch)

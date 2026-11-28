@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.263.3
+
+- **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
+- **Swipe a row left to delete it, with an Undo.** Journal entries and notes lose their trailing keys; the row opens on tap (the journal editor gains a Delete key, notes already had one), and screen readers get a "Delete entry" or "Delete note" action. New `SwipeRow` component with its own tests. Screenshots added for the closed, open, prompt, empty and mid-swipe states.
+
 ## 0.263.2
 
 - **Search is behind the pull-down everywhere a list has one.** CARE's journal and BASE's notes had a search box sitting on the page; both now open by pulling down at the top of the list, with a close key, like LINK, PLAN, MINT, GEAR, Pokémon and Modules (DESIGN_SYSTEM 12B). A picker inside a form or dialogue (a Pokémon, a contact, a unit, a currency) keeps its inline field. Screenshots added for both open states in both palettes.

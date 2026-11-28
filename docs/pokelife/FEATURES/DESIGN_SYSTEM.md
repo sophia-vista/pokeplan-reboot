@@ -371,6 +371,7 @@ Owner decision, 23 November 2026: a screen shows its records first, and what is 
 4. **Secondary information that can grow** (history, stats, a second chart, readings, earlier imports) goes in an `Accordion` (title, and a summary shown while closed). It starts open only when it holds the one thing the person came for or something waiting for a decision.
 5. **Exports, erase and other rare or destructive controls** sit in closed accordions at the bottom of their page.
 6. **Rare actions on a record** (rename, star, transfer) sit in one "More" accordion on its screen, transfer last.
+7. **A swipe to the left on a list row deletes it, with an Undo** (`SwipeRow.kt`; owner, 28 November 2026), so a row carries no trailing delete key. A swipe is never the only way (12A rule on accessible alternatives): the row also offers the action to screen readers, and opening the row shows a visible Delete. Under Reduce motion the row snaps back instead of sliding. Built on CARE's journal and BASE's notes; other lists follow it one at a time.
 
 ## 13. Change control
 
