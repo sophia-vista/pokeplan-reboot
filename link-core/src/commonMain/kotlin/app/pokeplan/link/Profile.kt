@@ -22,6 +22,10 @@ data class Profile(
 @Serializable
 data class Social(val platform: String, val handle: String)
 
+/** The player's own version of one category's slambook questions (REP-085); [category] is [ProfileKit.GENERAL] for the general set. */
+@Serializable
+data class QuestionSet(val category: String, val questions: List<String>)
+
 @Serializable
 data class Answer(val question: String, val answer: String)
 
@@ -64,6 +68,38 @@ object ProfileKit {
         "Nickname", "Favourite colour", "Favourite food", "Favourite song", "Favourite movie or show", "Favourite Pokémon", "Hobby",
         "Dream job", "Dream place to visit", "Best memory with me", "Motto", "Pet peeve", "Hidden talent", "Biggest fear", "Comfort food", "One word for me",
     )
+
+    /** The set a person without a (known) category is offered, and the key its customisation is stored under. */
+    const val GENERAL = ""
+
+    /** The classic questions each starting category begins with (REP-085); a category the player made starts with the general set. */
+    private val starting: Map<String, List<String>> = mapOf(
+        "family" to listOf("Nickname", "Favourite food", "Comfort food", "Favourite song", "Favourite movie or show", "Favourite Pokémon", "Hobby", "Best memory with me", "Motto", "One word for me"),
+        "friends" to listOf("Nickname", "Favourite colour", "Favourite food", "Favourite song", "Favourite movie or show", "Favourite Pokémon", "Hobby", "Dream place to visit", "Best memory with me", "Hidden talent", "Pet peeve", "One word for me"),
+        "work" to listOf("Nickname", "Hobby", "Dream job", "Motto", "Pet peeve", "Hidden talent", "Comfort food", "Favourite song", "Favourite Pokémon"),
+        "school" to listOf("Nickname", "Favourite food", "Favourite song", "Favourite movie or show", "Favourite Pokémon", "Hobby", "Dream job", "Best memory with me", "Motto", "One word for me"),
+        "services" to listOf("Nickname", "Hobby", "Favourite food", "Motto"),
+    )
+
+    private fun setKey(category: String): String = category.trim().lowercase()
+
+    /** The questions a category's set starts with, before the player customises it. */
+    fun defaultQuestions(category: String): List<String> = starting[setKey(category)] ?: questions
+
+    /**
+     * The questions offered for a person of [category] (REP-085): the player's own set for that category if they made one, else its
+     * starting set. A set the player customised is theirs alone; no other category's set, and no answer already written, changes with it.
+     */
+    fun questionsFor(settings: LinkSettings, category: String): List<String> =
+        settings.questionSets.firstOrNull { setKey(it.category) == setKey(category) }?.questions ?: defaultQuestions(category)
+
+    fun isCustomised(settings: LinkSettings, category: String): Boolean = settings.questionSets.any { setKey(it.category) == setKey(category) }
+
+    /** The settings with [category]'s set replaced by [list] (cleaned), or back to its starting set when [list] is null. */
+    fun withQuestions(settings: LinkSettings, category: String, list: List<String>?): LinkSettings {
+        val rest = settings.questionSets.filterNot { setKey(it.category) == setKey(category) }
+        return settings.copy(questionSets = if (list == null) rest else rest + QuestionSet(category.trim(), clean(list)))
+    }
 
     val mbtiTypes = listOf(
         "INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP",

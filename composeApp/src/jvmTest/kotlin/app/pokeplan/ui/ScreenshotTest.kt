@@ -1802,7 +1802,7 @@ class ScreenshotTest {
         link("link-person", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, prepare = open(0))
         link("link-person-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, dark = true, prepare = open(0))
         link("link-person-photo", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1900, prepare = open(0), interact = { scene ->
-            tapAt(scene, 126f, 1272f)
+            tapAt(scene, 126f, 1420f)
         })
         link("link-person-notes", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(2))
         link("link-person-followups", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = open(3))
@@ -1821,6 +1821,15 @@ class ScreenshotTest {
         }
         link("link-person-connections", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = ::open)
         link("link-person-connections-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, dark = true, prepare = ::open)
+    }
+
+    @Test
+    fun linkQuestionSets() {
+        fun seed(m: AppModel) {
+            m.link.setQuestions("Family", listOf("Nickname", "Favourite food", "One word for me", "What do you want everyone to remember about the summer we spent together by the lake"))
+        }
+        link("link-question-sets", app.pokeplan.ui.link.LinkSection.SETTINGS, height = 2600, prepare = ::seed)
+        link("link-question-sets-dark", app.pokeplan.ui.link.LinkSection.SETTINGS, height = 2600, dark = true, prepare = ::seed)
     }
 
     @Test

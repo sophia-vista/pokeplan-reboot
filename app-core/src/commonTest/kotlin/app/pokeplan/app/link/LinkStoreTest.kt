@@ -644,6 +644,28 @@ class LinkStoreTest {
     }
 
     @Test
+    fun slambookQuestionSetsAreOneCopyPerCategoryAndNeverTouchAnswers() {
+        val s = setup()
+        val general = s.link.questionsFor("")
+        assertEquals(app.pokeplan.link.ProfileKit.questions, general)
+        assertTrue(s.link.questionsFor("Family").size < general.size, "a starting category begins with its own, shorter set")
+        assertEquals(general, s.link.questionsFor("My climbing club"), "a category the player made starts with the general set")
+        val ana = assertNotNull(s.link.addPerson("Ana", category = "Family").record)
+        s.link.updateProfile(ana.id, app.pokeplan.link.Profile(answers = listOf(app.pokeplan.link.Answer("Hobby", "Chess"))))
+        val family = s.link.questionsFor("Family")
+        s.link.setQuestions("family", listOf("Nickname", " Favourite soup ", "nickname", ""))
+        assertEquals(listOf("Nickname", "Favourite soup"), s.link.questionsFor("Family"), "set cleaned, matched without case")
+        assertEquals(general, s.link.questionsFor(""), "no other set changes")
+        assertEquals(app.pokeplan.link.ProfileKit.defaultQuestions("Work"), s.link.questionsFor("Work"))
+        assertEquals("Chess", s.link.data.people.first { it.id == ana.id }.profile.answers.single().answer, "an answer to a hidden question stays")
+        s.reopen()
+        assertEquals(listOf("Nickname", "Favourite soup"), s.link.questionsFor("Family"), "the set survives a reopen")
+        s.link.resetQuestions("Family")
+        assertEquals(family, s.link.questionsFor("Family"))
+        assertTrue(s.link.data.settings.questionSets.isEmpty())
+    }
+
+    @Test
     fun memoriesExportAndEraseAsTheirOwnKind() {
         val s = setup()
         val ana = assertNotNull(s.link.addPerson("Ana").record)
