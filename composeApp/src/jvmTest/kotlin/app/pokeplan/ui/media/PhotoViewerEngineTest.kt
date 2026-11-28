@@ -70,12 +70,18 @@ class PhotoViewerEngineTest {
     }
 
     @Test
-    fun rotationTurnsInQuartersAndResetsWithThePage() {
-        val s = PhotoViewerState(listOf(item("a"), item("b")), 0, PhotoViewerConfig())
-        repeat(5) { s.rotate() }
-        assertEquals(1, s.rotation)
+    fun rotationStartsFromTheStoredTurnAndIsKeptPerPicture() {
+        val a = item("a").copy(rotation = 3)
+        val b = item("b").copy(rotation = -1)
+        val s = PhotoViewerState(listOf(a, b), 0, PhotoViewerConfig())
+        assertEquals(3, s.rotationOf(a))
+        assertEquals(3, s.rotationOf(b))
+        assertEquals(0, s.rotate(a))
+        assertEquals(1, s.rotate(a))
         s.show(1)
-        assertEquals(0, s.rotation)
+        s.show(0)
+        assertEquals(1, s.rotationOf(a))
+        assertEquals(3, s.rotationOf(b))
     }
 
     @Test
@@ -117,31 +123,6 @@ class PhotoViewerEngineTest {
         assertEquals(ViewerMath.DOUBLE_TAP_SCALE, z.scale)
     }
 
-    private fun jpegWithOrientation(value: Int, little: Boolean): ByteArray {
-        fun u16(v: Int) = if (little) byteArrayOf(v.toByte(), (v shr 8).toByte()) else byteArrayOf((v shr 8).toByte(), v.toByte())
-        fun u32(v: Int) = if (little) byteArrayOf(v.toByte(), 0, 0, 0) else byteArrayOf(0, 0, 0, v.toByte())
-        val tiff = (if (little) "II".encodeToByteArray() else "MM".encodeToByteArray()) + u16(42) + u32(8) + u16(1) + u16(0x0112) + u16(3) + u32(1) + u16(value) + u16(0) + u32(0)
-        val body = "Exif".encodeToByteArray() + byteArrayOf(0, 0) + tiff
-        val len = body.size + 2
-        return byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE1.toByte(), (len shr 8).toByte(), len.toByte()) + body + byteArrayOf(0xFF.toByte(), 0xD9.toByte())
-    }
-
-    @Test
-    fun exifOrientationIsReadInBothByteOrders() {
-        for (v in 1..8) {
-            assertEquals(v, Exif.orientation(jpegWithOrientation(v, little = true)))
-            assertEquals(v, Exif.orientation(jpegWithOrientation(v, little = false)))
-        }
-    }
-
-    @Test
-    fun anythingThatIsNotAnExifJpegIsUpright() {
-        assertEquals(1, Exif.orientation(byteArrayOf()))
-        assertEquals(1, Exif.orientation(byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0, 0, 0, 0, 0, 0, 0, 0)))
-        assertEquals(1, Exif.orientation(byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE1.toByte(), 0, 4, 0, 0)))
-        assertEquals(1, Exif.orientation(jpegWithOrientation(9, true)))
-    }
-
     @Test
     fun base64SourcesReadOrReportUnavailable() = runBlocking {
         assertNull(MediaSources.base64("").read())
@@ -149,30 +130,28 @@ class PhotoViewerEngineTest {
         assertEquals(listOf<Byte>(1, 2, 3), MediaSources.base64("AQID").read()!!.toList())
     }
 
-    /** A 2 x 1 picture, red then blue, turned by every EXIF orientation: the corner each colour lands in is the proof. */
+    /** A 2 x 1 picture, red then blue, turned clockwise: the cell each colour lands in is the proof. */
     @Test
-    fun uprightMovesPixelsWhereTheOrientationSays() {
+    fun turnedMovesPixelsClockwise() {
         val src = ImageBitmap(2, 1)
         androidx.compose.ui.graphics.Canvas(src).apply {
             drawRect(androidx.compose.ui.geometry.Rect(0f, 0f, 1f, 1f), androidx.compose.ui.graphics.Paint().apply { color = androidx.compose.ui.graphics.Color.Red })
             drawRect(androidx.compose.ui.geometry.Rect(1f, 0f, 2f, 1f), androidx.compose.ui.graphics.Paint().apply { color = androidx.compose.ui.graphics.Color.Blue })
         }
-        assertSame(src, src.upright(1))
-        fun at(o: Int): List<androidx.compose.ui.graphics.Color> {
-            val out = src.upright(o)
+        assertSame(src, src.turned(0))
+        assertSame(src, src.turned(4))
+        fun at(t: Int): List<androidx.compose.ui.graphics.Color> {
+            val out = src.turned(t)
             val m = out.toPixelMap()
             return (0 until out.height).flatMap { y -> (0 until out.width).map { x -> m[x, y] } }
         }
         val r = androidx.compose.ui.graphics.Color.Red
         val b = androidx.compose.ui.graphics.Color.Blue
+        assertEquals(listOf(r, b), at(1))
         assertEquals(listOf(b, r), at(2))
         assertEquals(listOf(b, r), at(3))
-        assertEquals(listOf(r, b), at(4))
-        assertEquals(listOf(r, b), at(5))
-        assertEquals(listOf(r, b), at(6))
-        assertEquals(listOf(b, r), at(7))
-        assertEquals(listOf(b, r), at(8))
-        assertEquals(1, src.upright(6).width)
-        assertEquals(2, src.upright(6).height)
+        assertEquals(listOf(b, r), at(-1))
+        assertEquals(1, src.turned(1).width)
+        assertEquals(2, src.turned(1).height)
     }
 }

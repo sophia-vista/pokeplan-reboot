@@ -21,7 +21,8 @@ import app.pokeplan.ui.media.MediaItem
 import app.pokeplan.ui.media.MediaSources
 import app.pokeplan.ui.media.PhotoViewerConfig
 import app.pokeplan.ui.media.ViewerAction
-import app.pokeplan.ui.media.decodeUpright
+import app.pokeplan.ui.media.decodePicture
+import app.pokeplan.ui.media.turned
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -122,12 +123,12 @@ private fun photoMime(bytes: ByteArray): String = when {
 
 @OptIn(ExperimentalEncodingApi::class)
 private fun decodePhoto(data: String): ImageBitmap? =
-    if (data.isEmpty()) null else runCatching { decodeUpright(Base64.decode(data)) }.getOrNull()
+    if (data.isEmpty()) null else runCatching { decodePicture(Base64.decode(data)) }.getOrNull()
 
 /** A photo at thumbnail size; tapping it opens the full view when [onClick] is given. */
 @Composable
 internal fun PhotoThumb(photo: MemoryPhoto, size: Dp = 96.dp, onClick: (() -> Unit)? = null) {
-    val bitmap = remember(photo.data) { decodePhoto(photo.data) }
+    val bitmap = remember(photo.data, photo.rotation) { decodePhoto(photo.data)?.turned(photo.rotation) }
     PhotoImage(bitmap, photo.caption.ifBlank { "Photo" }, Modifier.size(size), onClick, "Open the photo")
 }
 
@@ -153,11 +154,14 @@ internal fun openPhotos(model: AppModel, photos: List<MemoryPhoto>, start: Memor
             title = memory?.let { link.memoryLabel(it) },
             description = p.caption.ifBlank { null },
             dateLabel = memory?.takeIf { it.date.year != null }?.let { LinkRules.dateLabel(it.date) },
+            rotation = p.rotation,
         )
     }
     val memoryOf = photos.associate { it.id to it.memoryId }
     val config = PhotoViewerConfig(
         showMetadata = true, module = ModuleAccent.LINK, shareLabel = "photo",
+        // A turn is kept with the photo (the stored image is never changed), so thumbnails and the gallery show it too.
+        onRotate = { item, turns -> link.setPhotoRotation(item.id, turns) },
         actions = if (onOpenMemory == null) emptyList() else listOf(ViewerAction("Open memory") { item -> memoryOf[item.id]?.let(onOpenMemory) }),
     )
     model.photoViewer.open(items, photos.indexOfFirst { it.id == start.id }.coerceAtLeast(0), config)
@@ -166,7 +170,7 @@ internal fun openPhotos(model: AppModel, photos: List<MemoryPhoto>, start: Memor
 /** One tile of the archive's gallery: the picture, the memory it belongs to, and its caption or date. */
 @Composable
 private fun PhotoTile(photo: MemoryPhoto, title: String, detail: String, onOpen: () -> Unit) {
-    val bitmap = remember(photo.data) { decodePhoto(photo.data) }
+    val bitmap = remember(photo.data, photo.rotation) { decodePhoto(photo.data)?.turned(photo.rotation) }
     Column(
         Modifier.width(128.dp).clip(PixelShape).focusRing(PixelShape).clickable(role = Role.Button, onClickLabel = "Open the photo", onClick = onOpen),
         verticalArrangement = Arrangement.spacedBy(Spacing.XS),

@@ -370,6 +370,14 @@ class LinkStore(
         return Logged(next)
     }
 
+    /** Keeps the photo turned [turns] quarter turns clockwise (any integer; stored as 0 to 3). The image itself is untouched. */
+    fun setPhotoRotation(id: String, turns: Int): Logged<MemoryPhoto> {
+        val old = data.photos.firstOrNull { it.id == id } ?: return Logged(null, "That picture is gone.")
+        val next = old.copy(rotation = ((turns % 4) + 4) % 4)
+        if (next != old) update { d -> d.copy(photos = d.photos.map { if (it.id == id) next else it }) }
+        return Logged(next)
+    }
+
     fun deletePhoto(id: String) = update { d -> d.copy(photos = d.photos.filterNot { it.id == id }) }
 
     fun addEra(title: String, start: PartialDate = PartialDate(), end: PartialDate = PartialDate(), note: String = ""): Logged<Era> {

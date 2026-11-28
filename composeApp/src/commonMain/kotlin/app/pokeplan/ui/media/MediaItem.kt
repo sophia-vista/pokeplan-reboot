@@ -38,6 +38,8 @@ data class MediaItem(
     val dateLabel: String? = null,
     val fileName: String? = null,
     val metadata: Map<String, String> = emptyMap(),
+    /** Quarter turns clockwise the module has stored for this picture (0 to 3); the viewer starts there. */
+    val rotation: Int = 0,
     /** Overrides the config's fit mode for this picture. */
     val fitMode: ImageFitMode? = null,
 )
@@ -58,7 +60,7 @@ class ViewerAction(val label: String, val closesViewer: Boolean = true, val onCl
 /** What the viewer offers for one opening; the module decides, the engine never needs to change. */
 data class PhotoViewerConfig(
     val allowZoom: Boolean = true,
-    /** Adds a Rotate key: a quarter turn of the view, never of the file. */
+    /** Adds a Rotate key: a quarter turn of the view, never of the file (a module may keep it, see [onRotate]). */
     val allowRotation: Boolean = true,
     val allowShare: Boolean = false,
     val showImageCounter: Boolean = true,
@@ -74,6 +76,8 @@ data class PhotoViewerConfig(
     /** The module whose colour the [actions] and Share keys take. */
     val module: ModuleAccent? = null,
     val actions: List<ViewerAction> = emptyList(),
+    /** Called with the picture and its new total of quarter turns after each Rotate press; a module that keeps the turn stores it here. Null keeps rotation view-only. */
+    val onRotate: ((MediaItem, Int) -> Unit)? = null,
     /** What the system calls the picture when it is shared: "Receive money QR code", "Receipt". */
     val shareLabel: String = "picture",
 )
