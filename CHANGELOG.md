@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.268.0
+
+- **Evolution Trials are visible.** The Pokémon detail Evolution box shows a WORLD trial's title, "Floor N, dungeon (layer)", a requirement line ("Level X reached" or "Needs level X, now Y", and on a team or not, green when both are met) and a Show in WORLD key that opens WORLD on that dungeon's layer; a green "Trial done" line appears once done (phone trials too). WORLD's dungeon picker shows "Evolution Trial: names" under a dungeon holding an open trial for an owned Pokémon (Everstone holders excluded). The expedition report lists "Trial done: A to B" and opens itself when a trial was done. No reward change.
+- **Test: collection coverage.** `CollectionCoverageTest` (app-core) checks that all 1,025 species, 57 regional forms, gender forms and 99 Mega forms have a way in (module eggs, WORLD finds, evolution, legend quests, Plan quests, Mega Stones), and pins Gigantamax (35) and alternate forms (132) as the two kinds with no source yet, as in design.md "Roster".
+
 ## 0.263.1
 
 - **Fix: the arrival cutscene no longer replays every time the app opens.** The played-scene list lived in memory only, and a reward stays unseen until its OK is tapped, so each restart played the hatch or arrival scene again. The reward entry now saves a `scenePlayed` flag when the scene starts (the reward card still waits for its OK).
