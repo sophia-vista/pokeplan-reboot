@@ -47,6 +47,10 @@ import app.pokeplan.ui.BackHandler
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
+import app.pokeplan.ui.media.MediaItem
+import app.pokeplan.ui.media.MediaSources
+import app.pokeplan.ui.media.PhotoViewerConfig
+import app.pokeplan.ui.media.ViewerBackdrop
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
@@ -795,19 +799,15 @@ private fun CreditStatements(model: AppModel, account: FinancialAccount) {
 private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?) -> Unit) {
     val hide = model.mintData.settings.hideValues
     val bitmap = remember(a.receiveQr) { if (a.receiveQr.isEmpty()) null else runCatching { Base64.decode(a.receiveQr).decodeToImageBitmap() }.getOrNull() }
-    var full by remember { mutableStateOf(false) }
-    if (full && !hide && bitmap != null) {
-        val viewer = model.imageViewer
-        DisposableEffect(Unit) {
-            viewer?.bright(true)
-            onDispose { viewer?.bright(false) }
-        }
-        Dialog({ full = false }, DialogProperties(usePlatformDefaultWidth = false)) {
-            BackHandler(true) { full = false }
-            QrFullScreen(a.name, bitmap, { full = false }, if (viewer == null) null else ({
-                problem(runCatching { Base64.decode(a.receiveQr).let { b -> viewer.share(b, receiveName(b)) } }.getOrDefault("That picture could not be shared."))
-            }))
-        }
+    // The QR opens in the shared viewer: light field, hard edges, full brightness while it is up, and Share.
+    val openFull = {
+        model.photoViewer.open(
+            listOf(MediaItem("receive-${a.id}", MediaSources.base64(a.receiveQr), title = "${a.name} QR code")),
+            config = PhotoViewerConfig(
+                allowShare = true, showImageCounter = false, backdrop = ViewerBackdrop.LIGHT, crisp = true, brightScreen = true,
+                module = ModuleAccent.MINT, shareLabel = "QR code",
+            ),
+        )
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -820,12 +820,12 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?
                 else if (bitmap != null) Image(
                     bitmap, desc,
                     Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height)
-                        .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { full = true },
+                        .clickable(role = Role.Button, onClickLabel = "Open receive money QR code full screen") { openFull() },
                     contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
                 )
                 else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            if (!hide && bitmap != null) PixelButton("Open", { full = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
+            if (!hide && bitmap != null) PixelButton("Open", openFull, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, compact = true)
         }
     }
 }
@@ -856,36 +856,8 @@ private fun ReceiveMoneyEdit(model: AppModel, a: FinancialAccount, removing: Boo
     }
 }
 
-private fun receiveName(b: ByteArray): String = when {
-    b.size > 3 && b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() && b[2] == 0xFF.toByte() -> "receive-qr.jpg"
-    b.size > 12 && b[0] == 'R'.code.toByte() && b[1] == 'I'.code.toByte() && b[8] == 'W'.code.toByte() && b[9] == 'E'.code.toByte() -> "receive-qr.webp"
-    else -> "receive-qr.png"
-}
-
 private fun qrFilter(b: androidx.compose.ui.graphics.ImageBitmap) =
     if (b.width.toFloat() / b.height in 0.9f..1.1f) FilterQuality.None else FilterQuality.Medium
-
-@Composable
-internal fun QrFullScreen(name: String, bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit, onShare: (() -> Unit)?) {
-    Column(Modifier.fillMaxSize().background(Color.White)) {
-        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val ratio = bitmap.width.toFloat() / bitmap.height
-            val fits = maxWidth / ratio <= maxHeight
-            val desc = "Receive money QR code for $name"
-            if (fits) Image(bitmap, desc, Modifier.fillMaxSize(), contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap))
-            else Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                Image(bitmap, desc, Modifier.fillMaxWidth().aspectRatio(ratio), contentScale = ContentScale.FillWidth, filterQuality = qrFilter(bitmap))
-            }
-        }
-        Row(
-            Modifier.fillMaxWidth().background(Pixel.Paper).padding(horizontal = Spacing.M, vertical = Spacing.S),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically,
-        ) {
-            PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            if (onShare != null) PixelButton("Share", onShare, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
-        }
-    }
-}
 
 private const val PAGE = 50
 
@@ -1439,24 +1411,13 @@ private fun ReceiptAttachment(model: AppModel, transaction: Transaction, onChang
     val image = transaction.receiptImage
     val bitmap = remember(image) { if (image.isEmpty()) null else runCatching { Base64.decode(image).decodeToImageBitmap() }.getOrNull() }
     val viewer = model.imageViewer
-    var full by remember(transaction.id) { mutableStateOf(false) }
-    var removing by remember(transaction.id) { mutableStateOf(false) }
-    if (full && !hide && bitmap != null) {
-        DisposableEffect(Unit) {
-            viewer?.bright(true)
-            onDispose { viewer?.bright(false) }
-        }
-        Dialog({ full = false }, DialogProperties(usePlatformDefaultWidth = false)) {
-            BackHandler(true) { full = false }
-            QrFullScreen(
-                "Receipt", bitmap, { full = false },
-                if (viewer == null) null else ({
-                    runCatching { viewer.share(Base64.decode(image), "receipt.png") }
-                        .getOrDefault("That receipt could not be shared.")
-                }),
-            )
-        }
+    val openFull = {
+        model.photoViewer.open(
+            listOf(MediaItem("receipt-${transaction.id}", MediaSources.base64(image), title = "Receipt")),
+            config = PhotoViewerConfig(allowShare = true, showImageCounter = false, module = ModuleAccent.MINT, shareLabel = "receipt"),
+        )
     }
+    var removing by remember(transaction.id) { mutableStateOf(false) }
     if (removing) Confirm(
         "Remove the receipt image from this record?", "Remove",
         onConfirm = { onChange(""); removing = false },
@@ -1470,7 +1431,7 @@ private fun ReceiptAttachment(model: AppModel, transaction: Transaction, onChang
                 bitmap != null -> Image(
                     bitmap, "Receipt image",
                     Modifier.fillMaxWidth(0.45f).aspectRatio(bitmap.width.toFloat() / bitmap.height)
-                        .clickable(role = Role.Button, onClickLabel = "Open receipt image") { full = true },
+                        .clickable(role = Role.Button, onClickLabel = "Open receipt image") { openFull() },
                     contentScale = ContentScale.Fit, filterQuality = qrFilter(bitmap),
                 )
                 image.isNotEmpty() -> Text("Could not show this receipt image.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -1484,7 +1445,7 @@ private fun ReceiptAttachment(model: AppModel, transaction: Transaction, onChang
                         }
                     }, Modifier.weight(1f), if (image.isEmpty()) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
                     if (image.isNotEmpty()) PixelButton("Remove", { removing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    if (bitmap != null) PixelButton("Open", { full = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    if (bitmap != null) PixelButton("Open", openFull, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
         }
