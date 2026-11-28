@@ -356,8 +356,8 @@ class CareStore(
     fun deleteEntry(id: String) = update { d -> d.copy(journal = d.journal.filterNot { it.id == id }) }
 
     fun searchJournal(query: String): List<JournalEntry> {
-        val q = query.trim()
-        return data.journal.filter { q.isEmpty() || it.text.contains(q, ignoreCase = true) || it.tags.any { t -> t.contains(q, ignoreCase = true) } }
+        val q = app.pokeplan.kit.SearchQuery.of(query)
+        return data.journal.filter { q.isEmpty || q.matchesAny(it.text) || q.matchesAny(it.tags) }
             .sortedByDescending { it.atMillis }
     }
 

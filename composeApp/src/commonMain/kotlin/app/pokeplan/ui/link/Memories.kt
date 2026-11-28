@@ -60,7 +60,7 @@ import app.pokeplan.ui.screens.FormStack
 import app.pokeplan.ui.screens.ModuleTabs
 import app.pokeplan.ui.screens.PixelDropdown
 import app.pokeplan.ui.screens.RecordRow
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.ChoiceChip
 import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.ModuleAccent
@@ -90,10 +90,6 @@ internal const val MEMORIES_CHAPTERS = 1
 
 private const val NO_YEAR = "No year"
 private const val NO_MONTH = "Month"
-
-@Composable
-private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) =
-    TabButton(label, selected, onClick, modifier, key = accent)
 
 /** The display names of the people a memory names, in the order it names them. */
 private fun peopleLine(data: LinkData, ids: List<String>): String =
@@ -432,13 +428,13 @@ internal fun MemoryForm(
         if (data.people.isNotEmpty()) {
             FieldLabel("People")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                data.people.forEach { p -> Chip(LinkRules.displayName(p), p.id in personIds, { personIds = if (p.id in personIds) personIds - p.id else personIds + p.id }) }
+                data.people.forEach { p -> ChoiceChip(LinkRules.displayName(p), p.id in personIds, { personIds = if (p.id in personIds) personIds - p.id else personIds + p.id }, key = accent) }
             }
         }
         if (data.eras.isNotEmpty()) {
             FieldLabel("Chapters")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                link.eras().forEach { e -> Chip(e.title, e.id in eraIds, { eraIds = if (e.id in eraIds) eraIds - e.id else eraIds + e.id }) }
+                link.eras().forEach { e -> ChoiceChip(e.title, e.id in eraIds, { eraIds = if (e.id in eraIds) eraIds - e.id else eraIds + e.id }, key = accent) }
             }
         }
         FormSave("Save", {

@@ -253,7 +253,7 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
 - Destructive or consequential actions explain the outcome and require deliberate confirmation. Reversible actions remain low-friction.
 - Support back dismissal where safe, focus trapping where appropriate, TalkBack announcement and keyboard behavior.
 
-### 6.8A Photo viewer (owner, 28 November 2026; built 0.264.0)
+### 6.8A Photo viewer (owner, 28 November 2026; built 0.266.0)
 
 - One shared viewer for every module's pictures (`composeApp/.../ui/media/`): a module calls `model.photoViewer.open(items, index, config)`; `PhotoViewerHost` sits once at the App root and shows a full-screen dialog, so Back returns to the module's screen and its scroll position. A module never builds its own full-screen picture screen.
 - Layout: back, a centred counter and a details key ("...") on top; zoom out, zoom in, rotate and share below (previous and next chevrons when there are several pictures); the caption (title, description, date) underneath. Pixelarticons glyphs. A tap hides the bars.

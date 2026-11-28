@@ -1,5 +1,6 @@
 package app.pokeplan.app.care
 
+import app.pokeplan.app.testing.FakeClock
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import app.pokeplan.care.CareAction
@@ -23,10 +24,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class CareStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val monday = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()

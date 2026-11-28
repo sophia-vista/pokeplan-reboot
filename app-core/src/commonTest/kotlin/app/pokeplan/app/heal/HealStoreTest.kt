@@ -1,5 +1,6 @@
 package app.pokeplan.app.heal
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
@@ -34,10 +35,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class HealStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()

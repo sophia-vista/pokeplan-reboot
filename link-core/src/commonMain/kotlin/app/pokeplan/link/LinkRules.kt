@@ -210,13 +210,9 @@ object LinkRules {
         return Check.Ok
     }
 
-    fun isLeap(year: Int): Boolean = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+    fun isLeap(year: Int): Boolean = app.pokeplan.kit.Calendars.isLeap(year)
 
-    fun daysInMonth(year: Int, month: Int): Int = when (month) {
-        2 -> if (isLeap(year)) 29 else 28
-        4, 6, 9, 11 -> 30
-        else -> 31
-    }
+    fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
     fun observed(month: Int, day: Int, year: Int): LocalDate =
         LocalDate(year, month, if (month == 2 && day == 29 && !isLeap(year)) 28 else day)
@@ -398,12 +394,12 @@ object LinkRules {
     }
 
     fun search(data: LinkData, text: String): List<Hit> {
-        val q = text.trim().lowercase()
-        if (q.isEmpty()) return emptyList()
-        fun has(vararg parts: String?): Boolean = parts.any { it != null && it.lowercase().contains(q) }
+        val query = app.pokeplan.kit.SearchQuery.of(text)
+        if (query.isEmpty) return emptyList()
+        fun has(vararg parts: String?): Boolean = query.matchesAny(*parts)
         fun person(id: String?): String? = id?.let { i -> data.people.firstOrNull { it.id == i }?.let(::displayName) }
         val hits = mutableListOf<Hit>()
-        data.people.filter { matches(it, q) }
+        data.people.filter { matches(it, query.text) }
             .forEach { hits += Hit(HitKind.PERSON, it.id, displayName(it), it.organization.ifBlank { it.category }) }
         data.notes.filter { has(it.text) }.forEach { n -> hits += Hit(HitKind.NOTE, n.personId, person(n.personId) ?: "Note", n.text.lineSequence().first().take(80)) }
         data.dates.filter { has(it.title, it.note, person(it.personId)) }.forEach { hits += Hit(HitKind.DATE, it.id, it.title, person(it.personId).orEmpty()) }

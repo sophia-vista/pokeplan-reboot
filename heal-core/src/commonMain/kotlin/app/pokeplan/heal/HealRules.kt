@@ -137,10 +137,7 @@ object HealRules {
     fun latestMeasurement(data: HealData, type: MeasureType): Measurement? =
         data.measurements.filter { it.type == type }.maxByOrNull { it.atMillis }
 
-    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate {
-        val back = (day.dayOfWeek.ordinal - first.ordinal + 7) % 7
-        return day.minus(DatePeriod(days = back))
-    }
+    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate = app.pokeplan.kit.Periods.weekStartOf(day, first)
 
     private fun weekDays(start: LocalDate): ClosedRange<LocalDate> = start..LocalDate.fromEpochDays(start.toEpochDays() + 6)
 

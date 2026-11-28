@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.Reward
 import kotlinx.datetime.TimeZone
@@ -14,7 +15,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class TutorialTest {
-    private class FakeClock(var millis: Long = 1_793_000_000_000L) : Clock { override fun nowMillis() = millis }
 
     private fun store(): GameStore = GameStore(MemoryStorage(), FakeClock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
 

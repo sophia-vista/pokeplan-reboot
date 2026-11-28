@@ -1,5 +1,6 @@
 package app.pokeplan.app.heal
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.Reward
@@ -23,7 +24,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class HealStepsAndVitalsTest {
-    private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<HealEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)

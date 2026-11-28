@@ -10,13 +10,9 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.plus
 
-internal fun LocalDate.plusDays(n: Int): LocalDate = plus(DatePeriod(days = n))
+internal fun LocalDate.plusDays(n: Int): LocalDate = app.pokeplan.kit.Calendars.plusDays(this, n)
 
-internal fun daysInMonth(year: Int, month: Int): Int = when (month) {
-    2 -> if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) 29 else 28
-    4, 6, 9, 11 -> 30
-    else -> 31
-}
+internal fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
 @Serializable
 sealed interface Repeat {
@@ -78,7 +74,7 @@ data class Recurrence(
     }
 
 
-    private fun monthsBetween(a: LocalDate, b: LocalDate) = (b.year - a.year) * 12 + (b.monthNumber - a.monthNumber)
+    private fun monthsBetween(a: LocalDate, b: LocalDate) = app.pokeplan.kit.Calendars.monthsBetween(a, b)
 
     private fun monthlyDate(rule: MonthlyRule, year: Int, month: Int): LocalDate {
         val length = daysInMonth(year, month)

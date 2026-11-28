@@ -16,8 +16,7 @@ object Streaks {
 
     const val WELCOME_BACK_DAYS = 7
 
-    fun weekStartOf(d: LocalDate, weekStart: DayOfWeek): LocalDate =
-        d.plusDays(-((d.dayOfWeek.isoDayNumber - weekStart.isoDayNumber + 7) % 7))
+    fun weekStartOf(d: LocalDate, weekStart: DayOfWeek): LocalDate = app.pokeplan.kit.Periods.weekStartOf(d, weekStart)
 
     data class Result(val current: Int, val longest: Int)
 
