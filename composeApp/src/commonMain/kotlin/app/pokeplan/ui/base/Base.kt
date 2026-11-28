@@ -92,6 +92,7 @@ import app.pokeplan.ui.screens.FormGroup
 import app.pokeplan.ui.screens.FormLabel
 import app.pokeplan.ui.screens.FormSave
 import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.ArchivedRecords
 import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
@@ -488,17 +489,7 @@ private fun ChoresView(model: AppModel) {
                         }
                         RecordRow(title, listOfNotNull("$word · ${e.day.short()}", e.note.takeIf { it.isNotBlank() }).joinToString(" · "))
                     }
-                    if (archived.isNotEmpty()) {
-                        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                        if (showArchived) archived.forEach { c ->
-                            RecordRow(c.title, "Archived", trail = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelButton("Restore", { home.setChoreStatus(c.id, RecordStatus.ACTIVE) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${c.title}", { val before = model.baseData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
-                                }
-                            })
-                        }
-                    }
+                    ArchivedRecords(archived, showArchived, { showArchived = !showArchived }, { it.title }, accent, { home.setChoreStatus(it.id, RecordStatus.ACTIVE) }) { c -> val before = model.baseData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }
                 }
             }
         }
@@ -652,17 +643,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.StockList(model: AppM
         )
         if (openId == s.id) SupplyOptions(model, s) { onOpen(null) }
     }
-    if (archived.isNotEmpty()) {
-        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (showArchived) archived.forEach { s ->
-            RecordRow(s.name, "Archived", trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
-                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
-                }
-            })
-        }
-    }
+    ArchivedRecords(archived, showArchived, { showArchived = !showArchived }, { it.name }, accent, { home.setSupplyArchived(it.id, false) }) { s -> val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }
 }
 
 /** Which way an adjust form changes the quantity. */
@@ -873,17 +854,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.ItemsTab(model: AppMo
         )
         if (openId == a.id) AssetDetail(model, a) { onOpen(null) }
     }
-    if (archivedAssets.isNotEmpty()) {
-        PixelButton(if (showArchived) "Hide archived" else "Archived (${archivedAssets.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (showArchived) archivedAssets.forEach { a ->
-            RecordRow(a.name, "Archived", trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
-                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
-                }
-            })
-        }
-    }
+    ArchivedRecords(archivedAssets, showArchived, { showArchived = !showArchived }, { it.name }, accent, { home.setAssetArchived(it.id, false) }) { a -> val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
