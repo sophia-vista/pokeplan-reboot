@@ -517,6 +517,14 @@ class LinkStore(
         Names.tidy(name, LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || Names.isTaken(n, LinkRules.categories(LinkData(settings = s)))) s else s.copy(categories = s.categories + n) }
     }
 
+    /** The slambook questions offered for a category (blank for the general set): the player's own set, else the starting one. */
+    fun questionsFor(category: String): List<String> = ProfileKit.questionsFor(data.settings, category)
+
+    /** Saves the player's version of a category's question set; answers already written are untouched, and no other set changes. */
+    fun setQuestions(category: String, questions: List<String>) = settings { ProfileKit.withQuestions(it, category, questions) }
+
+    fun resetQuestions(category: String) = settings { ProfileKit.withQuestions(it, category, null) }
+
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 
     fun setReminderHour(hour: Int) = settings { it.copy(reminderHour = hour.coerceIn(0, 23)) }
