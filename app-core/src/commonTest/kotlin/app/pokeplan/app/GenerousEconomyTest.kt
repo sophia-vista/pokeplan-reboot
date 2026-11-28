@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.Shop
@@ -18,9 +19,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class GenerousEconomyTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private val clock = FakeClock(LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds())

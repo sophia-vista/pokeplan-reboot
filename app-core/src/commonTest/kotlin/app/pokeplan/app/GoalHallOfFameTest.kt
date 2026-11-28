@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.app.storage.Clock
@@ -13,7 +14,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GoalHallOfFameTest {
-    private class FakeClock(var millis: Long = 1_793_000_000_000L) : Clock { override fun nowMillis() = millis }
 
     @Test
     fun finishingAGoalKeepsThePlanPartyLeadFirst() {

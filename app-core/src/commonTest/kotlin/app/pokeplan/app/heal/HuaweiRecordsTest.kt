@@ -1,5 +1,6 @@
 package app.pokeplan.app.heal
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.heal.ActivityType
@@ -119,7 +120,6 @@ class HuaweiRecordsTest {
         assertEquals(ids, HuaweiRecords.read(seen, now + 60_000, utc).map { it.id })
     }
 
-    private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
     private class Spy(val inner: GameStore) : World {
         val events = mutableListOf<HealEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)

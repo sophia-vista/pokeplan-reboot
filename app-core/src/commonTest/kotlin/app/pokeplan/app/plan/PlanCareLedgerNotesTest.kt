@@ -1,5 +1,6 @@
 package app.pokeplan.app.plan
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.plan.Rank
@@ -15,10 +16,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class PlanCareLedgerNotesTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advance(ms: Long) { millis += ms }
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 11, 3, 9, 0).toInstant(utc).toEpochMilliseconds()

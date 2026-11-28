@@ -1,5 +1,6 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
@@ -21,9 +22,6 @@ import kotlin.test.assertTrue
 
 /** Budgets that carry over and pace, and the account lifecycle and freshness (MINT.md 7.3, 4.4, 4.6). */
 class MintInsightsBudgetsTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 11, 27, 18, 0).toInstant(utc).toEpochMilliseconds()

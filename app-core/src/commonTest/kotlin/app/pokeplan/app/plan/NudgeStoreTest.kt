@@ -1,5 +1,6 @@
 package app.pokeplan.app.plan
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.plan.MiniQuests
 import app.pokeplan.plan.Rank
@@ -19,9 +20,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class NudgeStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private fun at(day: Int, hour: Int) = LocalDateTime(2026, 10, day, hour, 0).toInstant(utc).toEpochMilliseconds()

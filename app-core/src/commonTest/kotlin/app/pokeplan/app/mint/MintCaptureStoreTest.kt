@@ -1,5 +1,6 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
@@ -23,9 +24,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class MintCaptureStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 11, 25, 18, 0).toInstant(utc).toEpochMilliseconds()
