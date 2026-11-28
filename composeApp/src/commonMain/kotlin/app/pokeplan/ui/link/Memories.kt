@@ -17,6 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import app.pokeplan.ui.media.MediaItem
+import app.pokeplan.ui.media.MediaSources
+import app.pokeplan.ui.media.PhotoViewerConfig
+import app.pokeplan.ui.media.ViewerAction
+import app.pokeplan.ui.media.decodeUpright
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -122,7 +127,7 @@ private fun photoMime(bytes: ByteArray): String = when {
 
 @OptIn(ExperimentalEncodingApi::class)
 private fun decodePhoto(data: String): ImageBitmap? =
-    if (data.isEmpty()) null else runCatching { Base64.decode(data).decodeToImageBitmap() }.getOrNull()
+    if (data.isEmpty()) null else runCatching { decodeUpright(Base64.decode(data)) }.getOrNull()
 
 /** A photo at thumbnail size; tapping it opens the full view when [onClick] is given. */
 @Composable
@@ -139,19 +144,28 @@ private fun PhotoImage(bitmap: ImageBitmap?, description: String?, modifier: Mod
     else Box(box.background(Pixel.Shade))
 }
 
-/** The full view of one photo: the picture across the width, its caption, and one key to close it. */
-@Composable
-internal fun PhotoViewer(photo: MemoryPhoto, onOpenMemory: (() -> Unit)? = null, onClose: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        val bitmap = remember(photo.data) { decodePhoto(photo.data) }
-        if (bitmap != null) Image(
-            bitmap, photo.caption.ifBlank { "Photo" },
-            Modifier.fillMaxWidth().aspectRatio(bitmap.width.toFloat() / bitmap.height), contentScale = ContentScale.Fit,
-        ) else Text("Could not show it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        if (photo.caption.isNotBlank()) Text(photo.caption, style = MaterialTheme.typography.bodyLarge)
-        if (onOpenMemory != null) PixelButton("Open memory", onOpenMemory, Modifier.fillMaxWidth(), accent, compact = true)
-        PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+/**
+ * Opens [photos] in the shared viewer (`ui/media/`), starting at [start]: swipe between them, pinch to zoom, caption and date in the bar.
+ * The viewer is a dialog over the current screen, so Back returns to the same page and scroll position. [onOpenMemory], when given,
+ * adds an "Open memory" key that closes the viewer and opens the memory the photo on show belongs to.
+ */
+internal fun openPhotos(model: AppModel, photos: List<MemoryPhoto>, start: MemoryPhoto, onOpenMemory: ((String) -> Unit)? = null) {
+    val link = model.link
+    val items = photos.map { p ->
+        val memory = model.linkData.memories.firstOrNull { it.id == p.memoryId }
+        MediaItem(
+            p.id, MediaSources.base64(p.data), p.mime,
+            title = memory?.let { link.memoryLabel(it) },
+            description = p.caption.ifBlank { null },
+            dateLabel = memory?.takeIf { it.date.year != null }?.let { LinkRules.dateLabel(it.date) },
+        )
     }
+    val memoryOf = photos.associate { it.id to it.memoryId }
+    val config = PhotoViewerConfig(
+        showMetadata = true, module = ModuleAccent.LINK, shareLabel = "photo",
+        actions = if (onOpenMemory == null) emptyList() else listOf(ViewerAction("Open memory") { item -> memoryOf[item.id]?.let(onOpenMemory) }),
+    )
+    model.photoViewer.open(items, photos.indexOfFirst { it.id == start.id }.coerceAtLeast(0), config)
 }
 
 /** One tile of the archive's gallery: the picture, the memory it belongs to, and its caption or date. */
@@ -227,7 +241,6 @@ internal fun MemoriesScreen(model: AppModel) {
     var editingDetail by remember { mutableStateOf(false) }
     var openEraId by remember { mutableStateOf(jump?.id?.takeIf { jump.tab == MEMORIES_CHAPTERS }) }
     var adding by remember { mutableStateOf(model.addMemoryRequested) }
-    var viewing by remember { mutableStateOf<MemoryPhoto?>(null) }
     androidx.compose.runtime.LaunchedEffect(Unit) { model.addMemoryRequested = false }
 
     // The read-first page of one memory replaces the lists while it is open; its Edit key opens the form in the same place.
@@ -255,7 +268,7 @@ internal fun MemoriesScreen(model: AppModel) {
             }
         }
     }
-    ModuleTabs(listOf("Timeline", "Chapters", "Gallery"), tab, accent) { tab = it; openEraId = null; adding = false; viewing = null }
+    ModuleTabs(listOf("Timeline", "Chapters", "Gallery"), tab, accent) { tab = it; openEraId = null; adding = false }
     if (tab == 0) {
         if (memories.isEmpty()) Text("No memories yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         else TextBox {
@@ -290,19 +303,13 @@ internal fun MemoriesScreen(model: AppModel) {
         if (adding) FormBox { EraForm(model, existing = null, onDone = { adding = false }) }
         else PixelButton("Add an era", { adding = true }, Modifier.fillMaxWidth(), accent, compact = true)
     } else {
-        val photo = viewing
-        if (photo != null) {
-            UpTo { viewing = null }
-            TextBox { PhotoViewer(photo, onOpenMemory = { viewing = null; detailId = photo.memoryId }) { viewing = null } }
-        } else {
-            val photos = data.photos.sortedByDescending { it.addedMillis }
-            if (photos.isEmpty()) Text("No photos yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else TextBox {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    photos.forEach { p ->
-                        val memory = data.memories.firstOrNull { it.id == p.memoryId }
-                        PhotoTile(p, memory?.let { link.memoryLabel(it) } ?: "Photo", p.caption.ifBlank { memory?.let { LinkRules.dateLabel(it.date) }.orEmpty() }) { viewing = p }
-                    }
+        val photos = data.photos.sortedByDescending { it.addedMillis }
+        if (photos.isEmpty()) Text("No photos yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        else TextBox {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                photos.forEach { p ->
+                    val memory = data.memories.firstOrNull { it.id == p.memoryId }
+                    PhotoTile(p, memory?.let { link.memoryLabel(it) } ?: "Photo", p.caption.ifBlank { memory?.let { LinkRules.dateLabel(it.date) }.orEmpty() }) { openPhotos(model, photos, p) { id -> detailId = id } }
                 }
             }
         }
