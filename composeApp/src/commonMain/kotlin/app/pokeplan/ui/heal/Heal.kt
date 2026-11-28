@@ -29,7 +29,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import app.pokeplan.ui.BackHandler
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.app.Tutorials
 import app.pokeplan.heal.ActivityRecord
 import app.pokeplan.heal.ActivityType
@@ -59,6 +58,8 @@ import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.ItemIcon
 import androidx.compose.ui.unit.dp
@@ -294,9 +295,8 @@ private fun ActivityView(model: AppModel) {
             FormDisclosure("Additional details", more, { more = !more }) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelMomentField(endedAt ?: model.store.nowMillis, { endedAt = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It ended")
-                    PixelField(
-                        distance, { distance = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(7) }, Modifier.fillMaxWidth(), label = "Distance (km)", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    DecimalField(
+                        distance, { distance = it }, 7, Modifier.fillMaxWidth(), label = "Distance (km)",
                     )
                     PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                 }
@@ -397,9 +397,8 @@ private fun HydrationView(model: AppModel) {
                     if (!otherAmount) PixelButton("Other amount", { otherAmount = true }, color = Pixel.InkSoft, compact = true)
                 }
                 if (otherAmount) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-                    PixelField(
-                        custom, { custom = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), singleLine = true, label = "Another amount (ml)",
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    DigitsField(
+                        custom, { custom = it }, 4, Modifier.weight(1f), label = "Another amount (ml)",
                     )
                     PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Tone, enabled = custom.toIntOrNull() != null, compact = true)
                 }
@@ -459,7 +458,7 @@ private fun DrinkRow(model: AppModel, d: HydrationEntry) {
         Text(clockText(d.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
     if (editing) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(ml, { ml = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Amount (ml)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+        DigitsField(ml, { ml = it }, 4, Modifier.fillMaxWidth(), label = "Amount (ml)")
         PixelField(name, { name = it.take(60) }, Modifier.fillMaxWidth(), label = "What was it?", singleLine = true)
         PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
         error?.let { Report(model, it, NoticeTone.WARNING) }
@@ -588,9 +587,9 @@ private fun BodyView(model: AppModel) {
                 if (type == MeasureType.OTHER) PixelField(label, { label = it.take(40) }, Modifier.fillMaxWidth(), label = "What is it?", singleLine = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-                PixelField(
-                    value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", placeholder = "0", singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true,
+                DecimalField(
+                    value, { value = it }, 8, Modifier.weight(1f), label = "Value", placeholder = "0",
+                    large = true,
                 )
                 if (type.units.size > 1) type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
@@ -692,7 +691,7 @@ private fun MeasurementRow(model: AppModel, m: Measurement) {
     }
     if (editing) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            DecimalField(value, { value = it }, 8, Modifier.weight(1f), label = "Value")
             if (m.type.units.size > 1) m.type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
         }
         PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
@@ -747,7 +746,7 @@ private fun GoalsHealView(model: AppModel) {
         FormStack {
             FormGroup {
                 PixelDropdown(GoalKind.entries.toList(), kind, { it?.title ?: "" }, { k -> if (k != null) kind = k }, Modifier.fillMaxWidth(), label = "New goal")
-                PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                DigitsField(target, { target = it }, 5, Modifier.fillMaxWidth(), label = "Target (${kind.unit})")
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Cancel", { adding = false; target = "" }, Modifier.weight(1f), Pixel.InkSoft)
@@ -877,9 +876,8 @@ private fun MedicationOptions(model: AppModel, m: Medication, onEdit: () -> Unit
         )
         if (m.times.isNotEmpty()) ToggleRow("Remind me", m.remind) { heal.setMedicationRemind(m.id, it) }
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(
-                refillText, { refillText = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Doses left", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            DigitsField(
+                refillText, { refillText = it }, 6, Modifier.weight(1f), label = "Doses left",
             )
             PixelButton("Save count", {
                 val count = refillText.toIntOrNull()
@@ -988,13 +986,11 @@ private fun MedicationForm(model: AppModel, editing: Medication?, onDone: () -> 
                     FormLabel("Ends")
                     PixelDateField(endDay, today, ModuleAccent.HEAL.accent, { d -> endDay = d }, noneLabel = "No end date")
                     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelField(
-                            supply, { supply = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Doses left", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        DigitsField(
+                            supply, { supply = it }, 6, Modifier.weight(1f), label = "Doses left",
                         )
-                        PixelField(
-                            refillAt, { refillAt = it.filter(Char::isDigit).take(6) }, Modifier.weight(1f), label = "Warn at", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        DigitsField(
+                            refillAt, { refillAt = it }, 6, Modifier.weight(1f), label = "Warn at",
                         )
                     }
                 }
@@ -1025,9 +1021,8 @@ private fun HealSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Water")
-            PixelField(
-                target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Daily target (ml)", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            DigitsField(
+                target, { target = it }, 5, Modifier.fillMaxWidth(), label = "Daily target (ml)",
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save target", { heal.setHydrationTarget(target.toIntOrNull()) }, Modifier.weight(1f), Pixel.Tone, compact = true)

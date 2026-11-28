@@ -1809,6 +1809,21 @@ class ScreenshotTest {
     }
 
     @Test
+    fun linkPersonConnections() {
+        fun open(m: AppModel) {
+            val ana = m.link.addPerson("Ana Reyes", category = "Friend").record!!
+            val ben = m.link.addPerson("Benedict Maximilian Villanueva-Santos", category = "Colleague").record!!
+            val cy = m.link.addPerson("Cy").record!!
+            m.link.addConnection(ana.id, ben.id, "Flatmate from the second year")
+            m.link.addConnection(ana.id, cy.id, "Sister")
+            m.linkPersonTab = 0
+            m.linkPersonId = ana.id
+        }
+        link("link-person-connections", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, prepare = ::open)
+        link("link-person-connections-dark", app.pokeplan.ui.link.LinkSection.PEOPLE, height = 1500, dark = true, prepare = ::open)
+    }
+
+    @Test
     fun linkMemories() {
         fun seed(m: AppModel) {
             val ana = m.linkData.people.firstOrNull()
