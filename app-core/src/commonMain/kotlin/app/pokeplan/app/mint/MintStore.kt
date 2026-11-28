@@ -1,5 +1,6 @@
 package app.pokeplan.app.mint
 
+import app.pokeplan.kit.Names
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
 import app.pokeplan.mint.AccountStatus
@@ -273,15 +274,15 @@ class MintStore(
     fun setOverviewUpcoming(on: Boolean) = settings { it.copy(overviewUpcoming = on) }
 
     fun addCategory(name: String, kind: CategoryKind): Category? {
-        val n = name.trim().take(MintRules.NAME_MAX)
-        if (n.isEmpty() || data.categories.any { it.kind == kind && it.name.equals(n, ignoreCase = true) && !it.archived }) return null
+        val n = Names.tidy(name, MintRules.NAME_MAX)
+        if (n.isEmpty() || Names.isTaken(n, data.categories.filter { it.kind == kind && !it.archived }.map { it.name })) return null
         val c = Category(newId(), n, kind)
         update { it.copy(categories = it.categories + c) }
         return c
     }
 
     fun renameCategory(id: String, name: String) {
-        val n = name.trim().take(MintRules.NAME_MAX)
+        val n = Names.tidy(name, MintRules.NAME_MAX)
         if (n.isNotEmpty()) update { d -> d.copy(categories = d.categories.map { if (it.id == id) it.copy(name = n) else it }) }
     }
 

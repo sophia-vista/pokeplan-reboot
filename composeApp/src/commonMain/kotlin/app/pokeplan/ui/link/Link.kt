@@ -60,6 +60,7 @@ import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelShape
@@ -111,7 +112,6 @@ enum class LinkSection(val label: String, val icon: String) {
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
 
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val phoneKeys = KeyboardOptions(keyboardType = KeyboardType.Phone)
 private val emailKeys = KeyboardOptions(keyboardType = KeyboardType.Email)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
@@ -557,6 +557,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
         Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
+        if (data.connections.any { it.involves(p.id) }) Text("Their connections go; nobody else changes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         if (data.memories.any { p.id in it.personIds }) Text("Their memories stay, without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it } // copy-ok: result
         if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it } // copy-ok: result
@@ -594,6 +595,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
             photos.take(8).forEach { ph -> PhotoThumb(ph, 80.dp) { openPhotos(model, photos, ph) { id -> openMemory(model, id) } } }
         }
     }
+    PersonConnections(model, p)
     app.pokeplan.ui.integrations.PersonEvents(model, p.id)
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
@@ -806,8 +808,8 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
             val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.weight(1.2f), key = accent, label = "Month")
-                PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(0.8f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-                PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
+                DigitsField(day, { day = it }, 2, Modifier.weight(0.8f), label = "Day")
+                DigitsField(year, { year = it }, 4, Modifier.weight(1f), label = "Year", placeholder = "unknown")
             }
         }
         FormDisclosure("Additional details", more, { more = !more }) {
@@ -845,7 +847,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PersonPicker(people: List<Person>, selected: String?, onPick: (String?) -> Unit) {
+internal fun PersonPicker(people: List<Person>, selected: String?, onPick: (String?) -> Unit) {
     if (people.isEmpty()) return
     var query by remember { mutableStateOf("") }
     val chosen = people.firstOrNull { it.id == selected }

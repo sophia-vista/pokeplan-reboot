@@ -63,6 +63,8 @@ import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.ToggleRow
@@ -159,9 +161,9 @@ internal fun CreditLine(model: AppModel, a: FinancialAccount, problem: (String?)
                     }
                     if (recordingStatement) {
                         Text("The card's own figures: " + mint.show(c.billedMinor, a.currency) + " billed on " + c.statementDay.compact() + ", due " + c.dueDay.compact() + ". The lender's minimum is yours to enter.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        PixelField(
-                            statementMinimum, { statementMinimum = money(it) }, Modifier.fillMaxWidth(), label = "Minimum payment", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = a.currency,
+                        DecimalField(
+                            statementMinimum, { statementMinimum = it }, 16, Modifier.fillMaxWidth(), label = "Minimum payment",
+                            prefix = a.currency,
                         )
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelButton("Save statement", {
@@ -298,8 +300,8 @@ private fun PayForm(
     var from by remember(key) { mutableStateOf(sources.firstOrNull()?.id) }
     var payDay by remember(key) { mutableStateOf(today) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(
-            amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        DecimalField(
+            amount, { amount = it }, 16, Modifier.fillMaxWidth(), label = "Amount",
             large = true, prefix = cur, placeholder = "0.00",
         )
         if (sources.isNotEmpty()) {
@@ -343,7 +345,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         when {
             editingPlan -> {
-                PixelField(editAmount, { editAmount = money(it) }, Modifier.fillMaxWidth(), label = "Purchase amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = cur)
+                DecimalField(editAmount, { editAmount = it }, 16, Modifier.fillMaxWidth(), label = "Purchase amount", prefix = cur)
                 InstallmentTerms(model, planAccount, editTerms, Money.parse(editAmount, cur), data.transactions.firstOrNull { it.id == v.plan.purchaseTxId }?.day ?: v.plan.startDay)
                 Text("Only the schedule changes: the purchase stays one expense, and nothing already recorded is moved.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FormSave("Save plan", {
@@ -399,7 +401,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                 }
                 mint.installmentLockReason(planId, i.no)?.let { Text("Locked \u00b7 $it", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                 if (action == i.no to "late") {
-                    PixelField(late, { late = money(it) }, Modifier.fillMaxWidth(), label = "Late fee", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    DecimalField(late, { late = it }, 16, Modifier.fillMaxWidth(), label = "Late fee")
                     FormSave("Add late fee", {
                         val m = Money.parse(late, cur)
                         refused = if (m == null) "Check the amount." else mint.addLateFee(planId, i.no, m).note()
@@ -407,17 +409,17 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
                     }, ModuleAccent.MINT.accent, enabled = late.isNotBlank())
                 }
                 if (action == i.no to "edit") {
-                    PixelField(editPrincipal, { editPrincipal = money(it) }, Modifier.fillMaxWidth(), label = "Principal", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = cur)
+                    DecimalField(editPrincipal, { editPrincipal = it }, 16, Modifier.fillMaxWidth(), label = "Principal", prefix = cur)
                     FieldLabel("Due")
                     PixelDateField(editDue, today, ModuleAccent.MINT.accent, { editDue = it ?: editDue }, presets = emptyList())
-                    PixelField(editFee, { editFee = money(it) }, Modifier.fillMaxWidth(), label = "Fee", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    DecimalField(editFee, { editFee = it }, 16, Modifier.fillMaxWidth(), label = "Fee")
                     FormSave("Save", {
                         val principal = Money.parse(editPrincipal, cur)
                         val m = Money.parse(editFee.ifBlank { "0" }, cur)
                         refused = if (principal == null) "Check the principal."
                         else if (m == null) "Check the fee."
                         else if (mint.updateInstallment(planId, i.no, editDue, principal, m)) null
-                        else mint.installmentLockReason(planId, i.no) ?: "The due days must stay in order, and the principal above zero." 
+                        else mint.installmentLockReason(planId, i.no) ?: "The due days must stay in order, and the principal above zero."
                         if (refused == null) action = null
                     }, ModuleAccent.MINT.accent)
                 }
@@ -470,7 +472,7 @@ internal fun PlanOptions(model: AppModel, planId: String, problem: (String?) -> 
             "Remove schedule", "Keep it",
             onConfirm = { mint.deletePlan(planId); asking = false; problem(null) }, onKeep = { asking = false },
         ) else {
-            PixelField(refund, { refund = money(it) }, Modifier.fillMaxWidth(), label = "Refund", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            DecimalField(refund, { refund = it }, 16, Modifier.fillMaxWidth(), label = "Refund")
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Refund", {
                     val m = Money.parse(refund, cur)
@@ -565,8 +567,8 @@ private fun PurchaseFields(model: AppModel, a: FinancialAccount, startName: Stri
     FormStack {
         PixelTitle("New purchase plan")
         PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Purchase or order name", singleLine = true)
-        PixelField(
-            amount, { amount = money(it) }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        DecimalField(
+            amount, { amount = it }, 16, Modifier.fillMaxWidth(), label = "Amount",
             large = true, prefix = cur, placeholder = "0.00",
         )
         FormDivider()
@@ -606,7 +608,7 @@ internal fun InstallmentTerms(model: AppModel, a: FinancialAccount, t: TermsStat
     val schedule = if (total != null && total > 0 && count != null && fee != null && Installments.checkRequest(a.type, total, count, fee) == app.pokeplan.mint.Check.Ok) Installments.generate(total, count, t.every, firstDue, fee) else null
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(t.countText, { t.countText = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Installments (1 to ${Installments.MAX_COUNT})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            DigitsField(t.countText, { t.countText = it }, 2, Modifier.weight(1f), label = "Installments (1 to ${Installments.MAX_COUNT})")
             PixelDropdown(PlanEvery.entries.toList(), t.every, { it?.label ?: "" }, { e -> if (e != null) t.every = e }, Modifier.weight(1f), key = ModuleAccent.MINT.accent, label = "Every")
         }
         FieldLabel("First due")
@@ -679,8 +681,8 @@ private fun ExistingScheduleForm(model: AppModel, a: FinancialAccount, amounts: 
                 if (rows.size > 1) PixelIconButton("close", "Remove month ${i + 1}", { rows.removeAt(i) }, Pixel.InkSoft)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-                PixelField(r.amount, { rows[i] = rows[i].copy(amount = money(it)) }, Modifier.weight(1f), label = "Amount owed", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                if (r.feeOpen) PixelField(r.fee, { rows[i] = rows[i].copy(fee = money(it)) }, Modifier.weight(1f), label = "Fee on top", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                DecimalField(r.amount, { rows[i] = rows[i].copy(amount = it) }, 16, Modifier.weight(1f), label = "Amount owed")
+                if (r.feeOpen) DecimalField(r.fee, { rows[i] = rows[i].copy(fee = it) }, 16, Modifier.weight(1f), label = "Fee on top")
                 else PixelButton("Fee", { rows[i] = rows[i].copy(feeOpen = true) }, color = Pixel.InkSoft, compact = true)
             }
         }

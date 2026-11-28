@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.mint.AccountType
 import app.pokeplan.mint.EarnSchedule
 import app.pokeplan.mint.Money
@@ -30,6 +28,7 @@ import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
@@ -58,13 +57,11 @@ internal fun EarnFields(type: AccountType, draft: EarnDraft) {
     PixelDropdown(EarnSchedule.entries.toList(), draft.schedule, { it?.label ?: "" }, { s -> if (s != null) draft.schedule = s }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent, label = "Interest earned")
     if (draft.schedule != EarnSchedule.OFF) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(
-                draft.rate, { draft.rate = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.weight(1f), label = "Yearly rate (%)", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            DecimalField(
+                draft.rate, { draft.rate = it }, 6, Modifier.weight(1f), label = "Yearly rate (%)",
             )
-            PixelField(
-                draft.tax, { draft.tax = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(5) }, Modifier.weight(1f), label = "Tax withheld (%)", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            DecimalField(
+                draft.tax, { draft.tax = it }, 5, Modifier.weight(1f), label = "Tax withheld (%)",
             )
         }
         ToggleRow("Post without review", draft.autoPost) { draft.autoPost = it }
@@ -131,10 +128,10 @@ private fun PendingRow(model: AppModel, t: Transaction, adjusting: Boolean, amou
         Text(if (from != null) "$from \u00b7 $account" else account, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
         Text(if (from != null) t.payee.ifBlank { t.note } else t.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
     }
-    if (adjusting) PixelField(
-        amount, { setAmount(it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16)) }, Modifier.fillMaxWidth(),
-        label = if (from != null) "Amount the bank moved" else "Amount the bank credited", singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency,
+    if (adjusting) DecimalField(
+        amount, { setAmount(it) }, 16, Modifier.fillMaxWidth(),
+        label = if (from != null) "Amount the bank moved" else "Amount the bank credited",
+        prefix = t.currency,
     )
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         PixelButton(if (adjusting) "Save" else "Confirm", {

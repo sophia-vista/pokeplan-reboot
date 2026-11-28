@@ -34,6 +34,9 @@ object LinkRules {
     val STARTING_GROUPS = STARTING_CATEGORIES
 
     const val GROUPS_MAX = 30
+    const val CONNECTION_LABEL_MAX = 30
+    /** Words offered when recording a connection; the player may write any other. */
+    val CONNECTION_SUGGESTIONS = listOf("Family", "Partner", "Friend", "Colleague", "Neighbour", "Classmate")
 
     fun checkName(name: String, what: String = "person"): Check = when {
         name.isBlank() -> Check.Refused("Give the $what a name.")
@@ -49,7 +52,7 @@ object LinkRules {
     }
 
     fun tags(text: String): List<String> =
-        text.split(',', '#', '\n').map { it.trim().take(TAG_MAX) }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }.take(TAGS_MAX)
+        app.pokeplan.kit.Names.distinct(text.split(',', '#', '\n'), TAG_MAX, TAGS_MAX)
 
     fun checkNote(text: String): Check = when {
         text.isBlank() -> Check.Refused("Write something first.")
@@ -84,6 +87,23 @@ object LinkRules {
      * photo-only or date-only moment can be kept now and finished later. [photoCount] is how many photos the memory
      * will hold once the save lands. Place and time alone are not enough: they only describe something.
      */
+    /** A connection needs two different, existing people and a word; the same pair may carry several words but not the same word twice. */
+    fun checkConnection(data: LinkData, aId: String, bId: String, label: String, exceptId: String? = null): Check {
+        if (aId == bId) return Check.Refused("Choose another person.")
+        if (data.people.none { it.id == aId } || data.people.none { it.id == bId }) return Check.Refused("That person is not here any more.")
+        val word = label.trim()
+        if (word.isEmpty()) return Check.Refused("Say how they are connected.")
+        if (word.length > CONNECTION_LABEL_MAX) return Check.Refused("That word is too long.")
+        if (data.connections.any { it.id != exceptId && it.involves(aId) && it.involves(bId) && it.label.equals(word, ignoreCase = true) }) return Check.Refused("They are already connected that way.")
+        return Check.Ok
+    }
+
+    /** A person's connections as (connection, the other person), the other person's name first; a connection whose other person is gone is left out. */
+    fun connectionsOf(data: LinkData, personId: String): List<Pair<PersonConnection, Person>> =
+        data.connections.filter { it.involves(personId) }
+            .mapNotNull { c -> data.people.firstOrNull { it.id == c.otherThan(personId) }?.let { c to it } }
+            .sortedWith(compareBy({ displayName(it.second).lowercase() }, { it.first.label.lowercase() }))
+
     fun checkMemory(m: Memory, photoCount: Int = 0): Check {
         if (m.title.isBlank() && m.note.isBlank() && !m.date.known && photoCount <= 0) {
             return Check.Refused("Add a title, a note, a date or a photo.")

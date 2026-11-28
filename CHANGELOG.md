@@ -5,10 +5,23 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.268.0
+## 0.270.0
 
 - **Evolution Trials are visible.** The Pokémon detail Evolution box shows a WORLD trial's title, "Floor N, dungeon (layer)", a requirement line ("Level X reached" or "Needs level X, now Y", and on a team or not, green when both are met) and a Show in WORLD key that opens WORLD on that dungeon's layer; a green "Trial done" line appears once done (phone trials too). WORLD's dungeon picker shows "Evolution Trial: names" under a dungeon holding an open trial for an owned Pokémon (Everstone holders excluded). The expedition report lists "Trial done: A to B" and opens itself when a trial was done. No reward change.
 - **Test: collection coverage.** `CollectionCoverageTest` (app-core) checks that all 1,025 species, 57 regional forms, gender forms and 99 Mega forms have a way in (module eggs, WORLD finds, evolution, legend quests, Plan quests, Mega Stones), and pins Gigantamax (35) and alternate forms (132) as the two kinds with no source yet, as in design.md "Roster".
+
+## 0.269.1
+
+- **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
+- **Swipe a row left to delete it, with an Undo.** Journal entries and notes lose their trailing keys; the row opens on tap (the journal editor gains a Delete key, notes already had one), and screen readers get a "Delete entry" or "Delete note" action. New `SwipeRow` component with its own tests. Screenshots added for the closed, open, prompt, empty and mid-swipe states.
+
+## 0.269.0
+
+- **Shared names, archived list and number boxes (refactor only).** kit-core `Names` (`tidy`, `isTaken`, `addTo`, `distinct`) is the one rule for trimming, capping, refusing a blank and refusing a repeat ignoring case; BaseStore (areas, units), MintStore (categories), LinkStore (categories) and LinkRules.tags use it (`NamesTest`). UI: `ArchivedRecords` (the "Archived (n)" key with Restore and Delete rows) is used three times in Base (chores, supplies, items); `DigitsField` and `DecimalField` replace 64 hand-rolled number `PixelField` calls across Base, Heal, Link, Mint, Gear and Plan and four private `numberKeys` vals. Checked in screenshots, light and dark, on Base, Heal and Mint forms. Looked at and not built: an on-screen keypad or stepper (design rule: exact entry, no nudge keys), swipe row actions (another session), a shared photo model, a shared status enum, a shared decimal parser, Care's "Put away" and Mint's category archive; 17 number fields stay `PixelField` on purpose (raw decimal text with an error line, a minus sign, clamped day fields, a fee filter). Reasons in IMPLEMENTATION_BACKLOG row 36b. No reward change, no schema change.
+
+## 0.267.0
+
+- **LINK person connections (REP-084, partly built).** Two people the player recorded can be connected with one word shown on both profiles, never inferred. link-core: `PersonConnection(id, aId, bId, label, createdMillis)` (no direction), `LinkData.connections` (JSON, defaults empty; LINK is the `link_state` JSON row, so no schema migration), `LinkRules.checkConnection` (two different existing people; a word up to `CONNECTION_LABEL_MAX = 30`; the same word twice for a pair is refused ignoring case, a second different word is allowed), `LinkRules.connectionsOf` and `CONNECTION_SUGGESTIONS` (Family, Partner, Friend, Colleague, Neighbour, Classmate). `LinkStore`: `connectionsOf`, `addConnection`, `updateConnection`, `removeConnection`; deleting a person removes only that person's connections; the People export carries `connections` and erasing People clears them. UI: new `ui/link/Connections.kt` (`PersonConnections` after Photos on the person Overview: rows open the other profile, Change edits the word or removes with Undo, Connect to someone with a person picker and the suggestions); the delete-person dialog says their connections go and nobody else changes; `PersonPicker` in `Link.kt` is now internal. Tests: `LinkStoreTest` and the `linkPersonConnections` screenshot (light and dark). Not yet (still open under REP-084): the grouped, shorter profile and simpler navigation, connections in search, a connections section in the export UI. No reward change, no schema change.
 
 ## 0.266.0
 

@@ -32,7 +32,6 @@ import app.pokeplan.ui.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
 import app.pokeplan.plan.LinkKind
@@ -68,6 +67,8 @@ import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelShape
@@ -92,6 +93,7 @@ import app.pokeplan.ui.screens.FormGroup
 import app.pokeplan.ui.screens.FormLabel
 import app.pokeplan.ui.screens.FormSave
 import app.pokeplan.ui.screens.FormStack
+import app.pokeplan.ui.screens.ArchivedRecords
 import app.pokeplan.ui.screens.PixelChoice
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.MenuEntry
@@ -120,8 +122,6 @@ enum class BaseSection(val label: String, val icon: String) {
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.BASE.accent
 
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
-private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
@@ -413,7 +413,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
     if (r.kind != RepeatKind.ONCE) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             Text("Every", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            PixelField(every, { t -> every = t.filter(Char::isDigit).take(2); onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, Modifier.width(88.dp), singleLine = true, keyboardOptions = numberKeys)
+            DigitsField(every, { t -> every = t; onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, 2, Modifier.width(88.dp))
             Text(r.kind.unit + if (r.every == 1) "" else "s", style = MaterialTheme.typography.bodyLarge)
         }
         if (r.kind == RepeatKind.WEEKLY) FormLabel("On")
@@ -488,17 +488,7 @@ private fun ChoresView(model: AppModel) {
                         }
                         RecordRow(title, listOfNotNull("$word · ${e.day.short()}", e.note.takeIf { it.isNotBlank() }).joinToString(" · "))
                     }
-                    if (archived.isNotEmpty()) {
-                        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-                        if (showArchived) archived.forEach { c ->
-                            RecordRow(c.title, "Archived", trail = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelButton("Restore", { home.setChoreStatus(c.id, RecordStatus.ACTIVE) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${c.title}", { val before = model.baseData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
-                                }
-                            })
-                        }
-                    }
+                    ArchivedRecords(archived, showArchived, { showArchived = !showArchived }, { it.title }, accent, { home.setChoreStatus(it.id, RecordStatus.ACTIVE) }) { c -> val before = model.baseData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }
                 }
             }
         }
@@ -600,7 +590,7 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
                 DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
                 AreaChips(data.areas, areaId) { areaId = it }
                 PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-                PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
+                DigitsField(minutes, { minutes = it }, 4, Modifier.fillMaxWidth(), label = "Minutes, optional")
                 PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
             }
         }
@@ -652,17 +642,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.StockList(model: AppM
         )
         if (openId == s.id) SupplyOptions(model, s) { onOpen(null) }
     }
-    if (archived.isNotEmpty()) {
-        PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (showArchived) archived.forEach { s ->
-            RecordRow(s.name, "Archived", trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
-                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
-                }
-            })
-        }
-    }
+    ArchivedRecords(archived, showArchived, { showArchived = !showArchived }, { it.name }, accent, { home.setSupplyArchived(it.id, false) }) { s -> val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }
 }
 
 /** Which way an adjust form changes the quantity. */
@@ -738,10 +718,9 @@ private fun AdjustStockForm(model: AppModel, s: Supply, onDone: () -> Unit) {
         FormGroup {
             FormLabel("Now ${quantityText(s)}")
             PixelChoice(StockChange.entries.toList(), change, { it?.label ?: "" }, { if (it != null) change = it }, key = accent)
-            PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+            DecimalField(
+                amount, { amount = it }, 12, Modifier.fillMaxWidth(),
                 label = when (change) { StockChange.SET -> "New quantity$unit"; StockChange.ADD -> "How much to add$unit"; StockChange.REMOVE -> "How much to remove$unit" },
-                singleLine = true, keyboardOptions = decimalKeys,
             )
             FormLabel("Reason, optional")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -812,10 +791,9 @@ private fun androidx.compose.foundation.layout.ColumnScope.RestockTab(model: App
                 val supply = line.supply
                 val needsNew = supply != null && (line.low || supply.quantityMilli == null)
                 val unit = if (supply != null && supply.unit.isNotEmpty()) " (${supply.unit})" else ""
-                PixelField(
-                    quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+                DecimalField(
+                    quantity, { quantity = it }, 12, Modifier.fillMaxWidth(),
                     label = if (needsNew) "How much is there now$unit" else "How much did you buy$unit, blank to just tick it off",
-                    singleLine = true, keyboardOptions = decimalKeys,
                 )
                 Actions {
                     PixelButton("Bought", {
@@ -873,17 +851,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.ItemsTab(model: AppMo
         )
         if (openId == a.id) AssetDetail(model, a) { onOpen(null) }
     }
-    if (archivedAssets.isNotEmpty()) {
-        PixelButton(if (showArchived) "Hide archived" else "Archived (${archivedAssets.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (showArchived) archivedAssets.forEach { a ->
-            RecordRow(a.name, "Archived", trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
-                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
-                }
-            })
-        }
-    }
+    ArchivedRecords(archivedAssets, showArchived, { showArchived = !showArchived }, { it.name }, accent, { home.setAssetArchived(it.id, false) }) { a -> val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -918,7 +886,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
         FormGroup {
             PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", placeholder = if (adding) "Add a supply" else null, singleLine = true, keyboardOptions = wordKeys)
             if (adding && data.supplies.isEmpty() && name.isEmpty()) ExampleChips(listOf("Dish soap", "Light bulbs", "Trash bags")) { name = it }
-            if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
+            if (adding) DecimalField(quantity, { quantity = it }, 12, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown")
         }
         FormDisclosure("Additional details", more, { more = !more }) {
             FormGroup {
@@ -927,7 +895,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
                     PixelField(newUnit, { newUnit = it.take(16) }, Modifier.weight(1f), label = "Another unit", singleLine = true)
                     PixelButton("Add unit", { home.addUnit(newUnit); if (newUnit.isNotBlank()) { unit = newUnit.trim(); newUnit = "" } }, color = Pixel.InkSoft, enabled = newUnit.isNotBlank(), compact = true)
                 }
-                PixelField(low, { low = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Low at or under, blank for none", singleLine = true, keyboardOptions = decimalKeys)
+                DecimalField(low, { low = it }, 12, Modifier.fillMaxWidth(), label = "Low at or under, blank for none")
                 AreaChips(data.areas, areaId) { areaId = it }
                 PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
                 PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
@@ -1276,6 +1244,14 @@ private fun NotesView(model: AppModel, query: String, onQuery: (String) -> Unit,
     var title by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
+    // Records first (DESIGN_SYSTEM 12B 3): the add form opens from one key, closes after saving, and is open by itself with no notes yet.
+    var adding by remember { mutableStateOf(false) }
+    val showForm = adding || data.references.isEmpty()
+    fun deleteNote(id: String) {
+        val before = model.baseData
+        home.deleteReference(id)
+        model.offerUndo("Deleted: note") { home.restore(before) }
+    }
     val matching = if (query.isBlank()) null else home.search(query).filter { it.kind == HitKind.REFERENCE }.map { it.id }.toSet()
     val notes = data.references.filter { matching == null || it.id in matching }.sortedByDescending { it.updatedMillis }
     if (data.references.isNotEmpty()) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) {
@@ -1286,22 +1262,27 @@ private fun NotesView(model: AppModel, query: String, onQuery: (String) -> Unit,
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FormGroup {
+            if (showForm) FormGroup {
                 PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Note", placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
-                FormSave("Add", {
-                    val out = home.addReference(title)
-                    if (out.record == null) message = out.refused else { title = ""; message = null; openId = out.record!!.id; model.haptic() }
-                }, accent, enabled = title.isNotBlank())
-            }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    if (data.references.isNotEmpty()) PixelButton("Cancel", { adding = false; title = ""; message = null }, Modifier.weight(1f), Pixel.InkSoft)
+                    FormSave("Add", {
+                        val out = home.addReference(title)
+                        if (out.record == null) message = out.refused else { title = ""; message = null; adding = false; openId = out.record!!.id; model.haptic() }
+                    }, accent, Modifier.weight(1f), enabled = title.isNotBlank())
+                }
+            } else PixelButton("Add a note", { adding = true }, Modifier.fillMaxWidth(), accent)
             message?.let { Report(model, it, NoticeTone.WARNING) }
-            if (data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
+            if (showForm && data.references.isEmpty() && title.isEmpty()) ExampleChips(listOf("Landlord contact", "Wi-Fi password", "Condo admin hours")) { title = it }
             if (notes.isEmpty() && data.references.isNotEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             notes.forEachIndexed { i, n ->
                 if (i > 0) Rule()
-                RecordRow(
-                    n.title, listOfNotNull(n.category.takeIf { it.isNotBlank() }, n.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)).joinToString(" · "),
-                    onClick = { openId = if (openId == n.id) null else n.id }, onClickLabel = if (openId == n.id) "Close the note" else "Open the note",
-                )
+                androidx.compose.runtime.key(n.id) { app.pokeplan.ui.screens.SwipeRow({ deleteNote(n.id) }, "Delete note", model.data.settings.reduceMotion) {
+                    RecordRow(
+                        n.title, listOfNotNull(n.category.takeIf { it.isNotBlank() }, n.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)).joinToString(" · "),
+                        onClick = { openId = if (openId == n.id) null else n.id }, onClickLabel = if (openId == n.id) "Close the note" else "Open the note",
+                    )
+                } }
                 if (openId == n.id) NoteEditor(model, n) { openId = null }
             }
         }

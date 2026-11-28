@@ -1,5 +1,6 @@
 package app.pokeplan.app.base
 
+import app.pokeplan.kit.Names
 import app.pokeplan.core.reward.BaseEvent
 import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.Reward
@@ -91,15 +92,15 @@ class BaseStore(
     fun removeDecoration(id: String): String? = arrange(Room.remove(data.room, id))
 
     fun addArea(name: String): BaseArea? {
-        val n = name.trim().take(BaseRules.TITLE_MAX)
-        if (n.isEmpty() || data.areas.any { it.name.equals(n, ignoreCase = true) && !it.archived }) return null
+        val n = Names.tidy(name, BaseRules.TITLE_MAX)
+        if (n.isEmpty() || Names.isTaken(n, data.areas.filterNot { it.archived }.map { it.name })) return null
         val a = BaseArea(newId(), n)
         update { it.copy(areas = it.areas + a) }
         return a
     }
 
     fun renameArea(id: String, name: String) {
-        val n = name.trim().take(BaseRules.TITLE_MAX)
+        val n = Names.tidy(name, BaseRules.TITLE_MAX)
         if (n.isNotEmpty()) update { d -> d.copy(areas = d.areas.map { if (it.id == id) it.copy(name = n) else it }) }
     }
 
@@ -428,7 +429,7 @@ class BaseStore(
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
 
-    fun addUnit(unit: String) = settings { s -> unit.trim().take(16).let { u -> if (u.isEmpty() || s.units.any { it.equals(u, ignoreCase = true) }) s else s.copy(units = s.units + u) } }
+    fun addUnit(unit: String) = settings { s -> Names.addTo(s.units, unit, 16).let { units -> if (units === s.units) s else s.copy(units = units) } }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
 
