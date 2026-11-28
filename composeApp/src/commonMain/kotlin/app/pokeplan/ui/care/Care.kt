@@ -97,6 +97,8 @@ import app.pokeplan.ui.pokemon.label
 import app.pokeplan.ui.screens.BuddyStage
 import app.pokeplan.ui.screens.FirstRecordEgg
 import app.pokeplan.ui.screens.FormBox
+import app.pokeplan.ui.screens.PullRevealSlot
+import app.pokeplan.ui.screens.pullReveal
 import app.pokeplan.ui.screens.FormDisclosure
 import app.pokeplan.ui.screens.FormDivider
 import app.pokeplan.ui.screens.FormGroup
@@ -142,15 +144,29 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.CARE.label, onBack = back, color = Module.CARE.look.header, trailing = { SectionsKey(Module.CARE.label, careSections(model)) { key -> model.careSection = CareSection.entries.firstOrNull { it.name == key } } })
         UpProvider(up) { ScreenSwitch(section) { page ->
+            // Journal search sits behind the pull-down at the top of the page (DESIGN_SYSTEM 12B), live only on the Journal tab.
+            val scroll = rememberScrollState()
+            var journal by remember { mutableStateOf(model.reflectJournal || model.journalDraft.isNotEmpty()) }
+            var journalQuery by remember { mutableStateOf("") }
+            val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { journalQuery.isNotBlank() }, onClose = { journalQuery = "" })
+            val pulling = page == CareSection.REFLECT && journal && model.careData.journal.size > 3
+            LaunchedEffect(pulling) { if (!pulling) reveal.close() }
             Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-                verticalArrangement = Arrangement.spacedBy(Spacing.M),
+                Modifier.fillMaxSize().then(if (pulling) Modifier.pullReveal(reveal) else Modifier).verticalScroll(scroll).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             ) {
-                when (page) {
-                    null -> TodayView(model, openPokemon)
-                    CareSection.PRACTICE -> PracticeView(model)
-                    CareSection.REFLECT -> ReflectView(model)
-                    CareSection.DREAM -> DreamView(model, openPokemon)
+                if (pulling) PullRevealSlot(reveal, model.data.settings.reduceMotion) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelField(journalQuery, { journalQuery = it.take(60) }, Modifier.weight(1f), singleLine = true, placeholder = "Search the journal")
+                        PixelIconButton("close", "Close search", reveal::close)
+                    }
+                }
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                    when (page) {
+                        null -> TodayView(model, openPokemon)
+                        CareSection.PRACTICE -> PracticeView(model)
+                        CareSection.REFLECT -> ReflectView(model, journal, { journal = it; if (!it) reveal.close() }, journalQuery, { journalQuery = it }, reveal::close)
+                        CareSection.DREAM -> DreamView(model, openPokemon)
+                    }
                 }
             }
         } }
@@ -219,14 +235,13 @@ private fun PracticeView(model: AppModel) {
 }
 
 @Composable
-private fun ReflectView(model: AppModel) {
-    var journal by remember { mutableStateOf(model.reflectJournal || model.journalDraft.isNotEmpty()) }
+private fun ReflectView(model: AppModel, journal: Boolean, onJournal: (Boolean) -> Unit, query: String, onQuery: (String) -> Unit, clearSearch: () -> Unit) {
     LaunchedEffect(Unit) { model.reflectJournal = false }
     Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-        TabButton("Diary card", !journal, { journal = false }, Modifier.weight(1f))
-        TabButton("Journal", journal, { journal = true }, Modifier.weight(1f))
+        TabButton("Diary card", !journal, { onJournal(false) }, Modifier.weight(1f))
+        TabButton("Journal", journal, { onJournal(true) }, Modifier.weight(1f))
     }
-    if (journal) JournalView(model) else DiaryView(model)
+    if (journal) JournalView(model, query, onQuery, clearSearch) else DiaryView(model)
 }
 
 @Composable
@@ -685,7 +700,7 @@ private val JOURNAL_TAGS = listOf("Gratitude", "People", "Work", "Rest", "Health
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun JournalView(model: AppModel) {
+private fun JournalView(model: AppModel, query: String, onQuery: (String) -> Unit, clearSearch: () -> Unit) {
     val care = model.care
     val data = model.careData
     val prompt = care.prompt()
@@ -697,7 +712,6 @@ private fun JournalView(model: AppModel) {
     LaunchedEffect(text) { kotlinx.coroutines.delay(1_200); care.setJournalDraft(text) }
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
-    var query by remember { mutableStateOf("") }
     var writtenAt by remember { mutableStateOf<Long?>(null) }
     var editingId by remember { mutableStateOf<String?>(null) }
     fun save() {
@@ -740,13 +754,10 @@ private fun JournalView(model: AppModel) {
             FormSave("Save entry", ::save, ModuleAccent.CARE.accent, enabled = text.isNotBlank())
         }
     }
-    if (data.journal.size > 3) PixelField(
-        query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the journal",
-    )
     var shown by remember { mutableStateOf(30) }
     val found = care.searchJournal(query)
     val entries = found.take(shown)
-    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.REFLECT.icon, action = "Clear the search" to { query = "" })
+    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", icon = CareSection.REFLECT.icon, action = "Clear the search" to { onQuery(""); clearSearch() })
     entries.forEach { e ->
         ListRow(
             trail = {
