@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.272.0
+
+- **Every alternate and Gigantamax form has a route.** New pokemon-core `FormRoutes` gives each of the 132 alternate and 35 Gigantamax forms one route: ITEM (32 form items covering 35 forms, held like a Mega Stone, sold on a new Kecleon Shop Form items shelf at 1,500 Poké *(tune)*, `KecleonShop.formItems`, with a Form Items page in World's town menu), Gigantamax by holding the Dynamax Band (found once as the Dusty Bowl floor-9 milestone in Galar), EVOLUTION (9 already reached by evolution rows), ENCOUNTER or RARE_ENCOUNTER (36 variants rolled in `HatchRules.roll`, `rollWeighted` and WORLD finds through `RegionalForms.formFor`; natural ones roll with the base form, costume and starter Pikachu and Eevee 1 in 20; evolution keeps a variant by name suffix, `FormRoutes.carryOver`), BATTLE (36, never counted) and BOSS (never counted). `FormDex.counts` counts ITEM, EVOLUTION and ENCOUNTER forms; `FormDex.formsOf` includes the form a held form item or the Band shows. Rule: POKEMON_ECOSYSTEM 3.3.1. No reward change (`RewardRules.VERSION` unchanged).
+- **Test: collection coverage.** `CollectionCoverageTest` now asserts every alternate and Gigantamax form has a route, every form item is sold, holdable and shows its form, every Gigantamax form shows with the Band and the Band is found in the Dusty Bowl, and every evolution and encounter form has a way in.
+
 ## 0.270.0
 
 - **Evolution Trials are visible.** The Pokémon detail Evolution box shows a WORLD trial's title, "Floor N, dungeon (layer)", a requirement line ("Level X reached" or "Needs level X, now Y", and on a team or not, green when both are met) and a Show in WORLD key that opens WORLD on that dungeon's layer; a green "Trial done" line appears once done (phone trials too). WORLD's dungeon picker shows "Evolution Trial: names" under a dungeon holding an open trial for an owned Pokémon (Everstone holders excluded). The expedition report lists "Trial done: A to B" and opens itself when a trial was done. No reward change.
