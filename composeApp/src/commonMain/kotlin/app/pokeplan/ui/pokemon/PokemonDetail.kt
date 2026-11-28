@@ -313,13 +313,12 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
                 PixelButton("Evolve", { asking = o }, color = Pixel.Green, enabled = o.available && asking == null, compact = true)
             }
             val key = app.pokeplan.core.pokemon.EvolutionTrials.doneKey(o.evolution, p.id)
-            app.pokeplan.world.EvolutionTrialSites.of(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { site ->
-                val d = app.pokeplan.world.Dungeons.byId(site.dungeonId)
-                Text("Evolution Trial: ${site.title}", style = soft)
-                Text("Floor ${site.floor}, ${d?.name ?: site.dungeonId} (${d?.layer?.label}), on a team", style = soft, color = Pixel.InkSoft)
+            val noStone = p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE
+            app.pokeplan.world.EvolutionTrialSites.of(o.evolution)?.takeIf { noStone }?.let { site ->
+                WorldTrial(model, p, o.evolution, site, done = key in worldDone)
             }
-            app.pokeplan.core.pokemon.EvolutionTrials.device(o.evolution)?.takeIf { key !in worldDone && p.heldItem != app.pokeplan.core.pokemon.Items.EVERSTONE }?.let { action ->
-                DeviceTrial(model, p, o, action)
+            app.pokeplan.core.pokemon.EvolutionTrials.device(o.evolution)?.takeIf { noStone }?.let { action ->
+                if (key in worldDone) Text("Trial done", style = soft, color = Pixel.Green) else DeviceTrial(model, p, o, action)
             }
             if (asking == o) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("Evolve ${p.nickname} into ${o.target.name}?", style = MaterialTheme.typography.bodyLarge)

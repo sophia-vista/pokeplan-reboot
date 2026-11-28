@@ -104,7 +104,7 @@ internal fun WorldReportCard(model: AppModel) {
     if (gone) return
     val floors = "${report.floors} ${if (report.floors == 1) "floor" else "floors"}"
     TextBox {
-        app.pokeplan.ui.theme.Accordion("Report", summary = "$floors climbed", startOpen = report.finds.isNotEmpty()) {
+        app.pokeplan.ui.theme.Accordion("Report", summary = "$floors climbed", startOpen = report.finds.isNotEmpty() || report.trialsDone.isNotEmpty()) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("$floors climbed", style = MaterialTheme.typography.titleSmall)
             if (report.poke > 0 || report.berries > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -123,6 +123,7 @@ internal fun WorldReportCard(model: AppModel) {
             }
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.trialsDone.isNotEmpty()) Text("Trial done: ${report.trialsDone.joinToString(", ") { it.replace(":", " to ") }}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             PixelButton("OK", { model.store.worldReportDismiss(); gone = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }

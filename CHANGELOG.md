@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.270.0
+
+- **Evolution Trials are visible.** The Pokémon detail Evolution box shows a WORLD trial's title, "Floor N, dungeon (layer)", a requirement line ("Level X reached" or "Needs level X, now Y", and on a team or not, green when both are met) and a Show in WORLD key that opens WORLD on that dungeon's layer; a green "Trial done" line appears once done (phone trials too). WORLD's dungeon picker shows "Evolution Trial: names" under a dungeon holding an open trial for an owned Pokémon (Everstone holders excluded). The expedition report lists "Trial done: A to B" and opens itself when a trial was done. No reward change.
+- **Test: collection coverage.** `CollectionCoverageTest` (app-core) checks that all 1,025 species, 57 regional forms, gender forms and 99 Mega forms have a way in (module eggs, WORLD finds, evolution, legend quests, Plan quests, Mega Stones), and pins Gigantamax (35) and alternate forms (132) as the two kinds with no source yet, as in design.md "Roster".
+
 ## 0.269.1
 
 - **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
