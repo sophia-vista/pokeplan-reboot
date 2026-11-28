@@ -15,6 +15,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":kit-core"))
             api(project(":pokemon-core"))
             api(project(":plan-core"))
             api(project(":care-core"))

@@ -5,10 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.263.3
+## 0.265.1
 
 - **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
 - **Swipe a row left to delete it, with an Undo.** Journal entries and notes lose their trailing keys; the row opens on tap (the journal editor gains a Delete key, notes already had one), and screen readers get a "Delete entry" or "Delete note" action. New `SwipeRow` component with its own tests. Screenshots added for the closed, open, prompt, empty and mid-swipe states.
+
+## 0.265.0
+
+- **Shared building blocks: new `kit-core` module (refactor only).** A neutral module (`app.pokeplan.kit`, depends only on kotlinx-datetime) now holds `Periods` (week and month starts and ranges, replacing copies in Care, Heal, Mint and Plan streaks), `Calendars` (leap years, month lengths, month arithmetic, clamped dates, replacing copies in Plan recurrence, Link, Base and Mint) and `SearchQuery` (trim and lower-case once; Base, Link, Mint and Care journal search). `ReminderPolicy.focusWindow` replaces eight copies of the focus-window lookup in the Care, Heal, Base, Link and Mint reminders and the Android shared reminders. UI: one `ChoiceChip` (Base, Link, Memories, Mint) and one `SearchFieldRow` (JumpSearch, LinkSearch, BaseSearch). Tests: kit-core `PeriodsTest`, `CalendarsTest`, `SearchQueryTest`, app-core `FocusWindowTest`, and one shared `FakeClock` replacing 37 private copies. The five payout wrappers, the three recurrence engines, reminder settings, import plans and the other look-alike dialogs were looked at and left apart on purpose (reasons in the backlog). No reward change, no schema change.
 
 ## 0.263.2
 

@@ -52,6 +52,10 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
     PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 
+/** A module's choice chip: [TabButton] drawn in that module's [key] colour. */
+@Composable
+fun ChoiceChip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, key: Color) = TabButton(label, selected, onClick, modifier, key = key)
+
 @Composable
 fun <T> PixelDropdown(
     options: List<T?>, selected: T?, text: (T?) -> String, onSelect: (T?) -> Unit, modifier: Modifier = Modifier,

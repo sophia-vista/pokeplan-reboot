@@ -1,5 +1,6 @@
 package app.pokeplan.app.reminders
 
+import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.QuietHours
 import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.toEpochMillis
@@ -30,6 +31,10 @@ data class FocusWindow(val startMillis: Long, val endMillis: Long) {
 
 object ReminderPolicy {
     private const val MAX_PASSES = 4
+
+    /** The stretch a running focus session holds, so a reminder waits for it to end; null when nothing is running. */
+    fun focusWindow(session: FocusSession?): FocusWindow? =
+        session?.takeIf { !it.isFinished }?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
 
     fun deliverAt(request: ReminderRequest, quiet: QuietHours, zone: TimeZone, focus: FocusWindow?): Long {
         var at = request.atMillis

@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 import app.pokeplan.plan.OutstandingReview
@@ -21,7 +22,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PlanP2StoreTest {
-    private class FakeClock(var millis: Long) : Clock { override fun nowMillis() = millis }
 
     private val utc = TimeZone.UTC
     private fun store() = GameStore(MemoryStorage(), FakeClock(LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()), utc, Random(7)).also { it.start("Sophia", 25) }

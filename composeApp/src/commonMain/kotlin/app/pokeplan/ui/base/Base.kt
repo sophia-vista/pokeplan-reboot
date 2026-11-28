@@ -106,7 +106,8 @@ import app.pokeplan.ui.screens.pullReveal
 import app.pokeplan.ui.screens.Rule
 import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.SectionScaffold
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.ChoiceChip
+import app.pokeplan.ui.screens.SearchFieldRow
 import app.pokeplan.ui.screens.dayNames
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.plural
@@ -128,12 +129,9 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun ExampleChips(examples: List<String>, onPick: (String) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        examples.forEach { e -> Chip(e, false, { onPick(e) }) }
+        examples.forEach { e -> ChoiceChip(e, false, { onPick(e) }, key = accent) }
     }
 }
-
-@Composable
-private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
 private fun tickChore(model: AppModel, v: ChoreView) {
     val entry = model.base.complete(v.chore.id).record ?: return
@@ -342,13 +340,8 @@ private fun BaseQuickActions(model: AppModel) {
 
 @Composable
 private fun androidx.compose.foundation.layout.ColumnScope.BaseSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
-    val field = remember { androidx.compose.ui.focus.FocusRequester() }
-    androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
     val hits = model.base.search(query).take(8)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search the household", singleLine = true)
-        PixelIconButton("close", "Close search", onDone)
-    }
+    SearchFieldRow(query, onQuery, onDone, "Search the household", 40)
     if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     hits.forEach { h ->
         RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); onDone() }, onClickLabel = "Open")
@@ -425,7 +418,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
         }
         if (r.kind == RepeatKind.WEEKLY) FormLabel("On")
         if (r.kind == RepeatKind.WEEKLY) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            (1..7).forEach { d -> Chip(dayNames[d - 1], d in r.weekdays, { onChange(r.copy(weekdays = if (d in r.weekdays) r.weekdays - d else (r.weekdays + d).sorted())) }) }
+            (1..7).forEach { d -> ChoiceChip(dayNames[d - 1], d in r.weekdays, { onChange(r.copy(weekdays = if (d in r.weekdays) r.weekdays - d else (r.weekdays + d).sorted())) }, key = accent) }
         }
     }
 }
@@ -752,7 +745,7 @@ private fun AdjustStockForm(model: AppModel, s: Supply, onDone: () -> Unit) {
             )
             FormLabel("Reason, optional")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                BaseRules.ADJUSTMENT_REASONS.forEach { r -> Chip(r, reason == r, onClick = { reason = if (reason == r) "" else r }) }
+                BaseRules.ADJUSTMENT_REASONS.forEach { r -> ChoiceChip(r, reason == r, onClick = { reason = if (reason == r) "" else r }, key = accent) }
             }
         }
         Actions {

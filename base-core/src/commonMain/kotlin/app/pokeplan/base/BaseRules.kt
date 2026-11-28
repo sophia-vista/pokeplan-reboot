@@ -15,9 +15,9 @@ sealed interface Check {
 object Schedules {
     private const val MAX_WEEK_SCAN = 7 * 100 + 7
 
-    private fun monthIndex(d: LocalDate): Int = d.year * 12 + d.monthNumber - 1
+    private fun monthIndex(d: LocalDate): Int = app.pokeplan.kit.Calendars.monthIndex(d)
 
-    private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
+    private fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
     private fun inMonth(index: Int, anchor: LocalDate): LocalDate {
         val year = index.floorDiv(12)
@@ -334,9 +334,9 @@ object BaseRules {
     }
 
     fun search(data: BaseData, text: String): List<Hit> {
-        val q = text.trim().lowercase()
-        if (q.isEmpty()) return emptyList()
-        fun has(vararg parts: String?): Boolean = parts.any { it != null && it.lowercase().contains(q) }
+        val query = app.pokeplan.kit.SearchQuery.of(text)
+        if (query.isEmpty) return emptyList()
+        fun has(vararg parts: String?): Boolean = query.matchesAny(*parts)
         fun area(id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
         fun asset(id: String?): String? = id?.let { a -> data.assets.firstOrNull { it.id == a }?.name }
         val hits = mutableListOf<Hit>()
