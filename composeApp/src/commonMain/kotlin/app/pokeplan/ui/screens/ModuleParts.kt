@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
@@ -66,6 +67,24 @@ internal fun RecordRow(
             if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodyMedium, color = if (warn) Pixel.Warning else Pixel.InkSoft)
         }
         trail()
+    }
+}
+
+/** The "Archived (n)" key under a list and, once opened, its put-away records each with Restore and Delete. */
+@Composable
+internal fun <T> ArchivedRecords(
+    items: List<T>, shown: Boolean, onToggle: () -> Unit, name: (T) -> String, accent: Color,
+    onRestore: (T) -> Unit, onDelete: (T) -> Unit,
+) {
+    if (items.isEmpty()) return
+    PixelButton(if (shown) "Hide archived" else "Archived (${items.size})", onToggle, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    if (shown) items.forEach { item ->
+        RecordRow(name(item), "Archived", trail = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Restore", { onRestore(item) }, color = accent, compact = true)
+                PixelIconButton("trash", "Delete ${name(item)}", { onDelete(item) }, Pixel.InkSoft)
+            }
+        })
     }
 }
 

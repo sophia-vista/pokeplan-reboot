@@ -52,7 +52,7 @@ object LinkRules {
     }
 
     fun tags(text: String): List<String> =
-        text.split(',', '#', '\n').map { it.trim().take(TAG_MAX) }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }.take(TAGS_MAX)
+        app.pokeplan.kit.Names.distinct(text.split(',', '#', '\n'), TAG_MAX, TAGS_MAX)
 
     fun checkNote(text: String): Check = when {
         text.isBlank() -> Check.Refused("Write something first.")

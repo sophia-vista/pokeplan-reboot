@@ -1,5 +1,6 @@
 package app.pokeplan.app.link
 
+import app.pokeplan.kit.Names
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.Reward
@@ -513,7 +514,7 @@ class LinkStore(
 
     /** Adds a word of the player's own to the main category list, beside the starting ones. */
     fun addCategory(name: String) = settings { s ->
-        name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
+        Names.tidy(name, LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || Names.isTaken(n, LinkRules.categories(LinkData(settings = s)))) s else s.copy(categories = s.categories + n) }
     }
 
     fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }

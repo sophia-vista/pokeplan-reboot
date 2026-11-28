@@ -53,6 +53,7 @@ import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
@@ -60,7 +61,6 @@ import app.pokeplan.ui.theme.Spacing
 private val tint: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 
 @Composable
@@ -312,8 +312,8 @@ private fun BirthForm(model: AppModel, p: Person, m0: Int?, d0: Int?, y0: Int?, 
         FormGroup(title = "Birth date") {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelDropdown((1..12).toList(), month.toIntOrNull(), { mm -> if (mm == null) "" else monthNames[mm - 1] }, { mm -> if (mm != null) month = mm.toString() }, Modifier.weight(1.2f), key = tint, label = "Month")
-                PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(0.8f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-                PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
+                DigitsField(day, { day = it }, 2, Modifier.weight(0.8f), label = "Day")
+                DigitsField(year, { year = it }, 4, Modifier.weight(1f), label = "Year", placeholder = "unknown")
             }
         }
         FormGroup(title = "Time and place") {

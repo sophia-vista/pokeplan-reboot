@@ -60,6 +60,7 @@ import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelShape
@@ -111,7 +112,6 @@ enum class LinkSection(val label: String, val icon: String) {
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.LINK.accent
 
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val phoneKeys = KeyboardOptions(keyboardType = KeyboardType.Phone)
 private val emailKeys = KeyboardOptions(keyboardType = KeyboardType.Email)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
@@ -808,8 +808,8 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
             val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelDropdown((1..12).toList(), month.toIntOrNull(), { m -> if (m == null) "" else monthNames[m - 1] }, { m -> if (m != null) month = m.toString() }, Modifier.weight(1.2f), key = accent, label = "Month")
-                PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(0.8f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-                PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
+                DigitsField(day, { day = it }, 2, Modifier.weight(0.8f), label = "Day")
+                DigitsField(year, { year = it }, 4, Modifier.weight(1f), label = "Year", placeholder = "unknown")
             }
         }
         FormDisclosure("Additional details", more, { more = !more }) {
