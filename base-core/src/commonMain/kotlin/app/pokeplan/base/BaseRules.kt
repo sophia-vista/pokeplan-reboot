@@ -334,9 +334,9 @@ object BaseRules {
     }
 
     fun search(data: BaseData, text: String): List<Hit> {
-        val q = text.trim().lowercase()
-        if (q.isEmpty()) return emptyList()
-        fun has(vararg parts: String?): Boolean = parts.any { it != null && it.lowercase().contains(q) }
+        val query = app.pokeplan.kit.SearchQuery.of(text)
+        if (query.isEmpty) return emptyList()
+        fun has(vararg parts: String?): Boolean = query.matchesAny(*parts)
         fun area(id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
         fun asset(id: String?): String? = id?.let { a -> data.assets.firstOrNull { it.id == a }?.name }
         val hits = mutableListOf<Hit>()

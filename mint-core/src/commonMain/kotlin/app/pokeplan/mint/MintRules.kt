@@ -545,22 +545,23 @@ object MintRules {
         from: LocalDate? = null,
         to: LocalDate? = null,
     ): List<Transaction> {
-        val q = text.trim().lowercase()
+        val q = app.pokeplan.kit.SearchQuery.of(text)
         return data.transactions.filter { t ->
             (type == null || t.type == type) && (accountId == null || t.accountId == accountId || t.toAccountId == accountId) &&
                 (categoryId == null || t.categoryId == categoryId) && (from == null || t.day >= from) && (to == null || t.day <= to) &&
-                (q.isEmpty() || matches(data, t, q))
+                (q.isEmpty || matches(data, t, q))
         }.sortedWith(compareByDescending<Transaction> { it.atMillis }.thenByDescending { it.createdMillis })
     }
 
-    private fun matches(data: MintData, t: Transaction, q: String): Boolean =
-        t.payee.lowercase().contains(q) || t.note.lowercase().contains(q) ||
-            data.categories.firstOrNull { it.id == t.categoryId }?.name?.lowercase()?.contains(q) == true ||
-            t.splits.any { split -> data.categories.firstOrNull { it.id == split.categoryId }?.name?.lowercase()?.contains(q) == true } ||
-            data.accounts.firstOrNull { it.id == t.accountId }?.name?.lowercase()?.contains(q) == true ||
-            data.accounts.firstOrNull { it.id == t.toAccountId }?.name?.lowercase()?.contains(q) == true ||
-            Money.plain(t.amountMinor, t.currency).contains(q.replace(",", "")) ||
-            (t.feeMinor > 0 && Money.plain(t.feeMinor, t.currency).contains(q.replace(",", "")))
+    private fun matches(data: MintData, t: Transaction, q: app.pokeplan.kit.SearchQuery): Boolean {
+        fun category(id: String?): String? = data.categories.firstOrNull { it.id == id }?.name
+        fun account(id: String?): String? = data.accounts.firstOrNull { it.id == id }?.name
+        val digits = q.text.replace(",", "")
+        return q.matchesAny(t.payee, t.note, category(t.categoryId), account(t.accountId), account(t.toAccountId)) ||
+            t.splits.any { split -> q.matchesAny(category(split.categoryId)) } ||
+            Money.plain(t.amountMinor, t.currency).contains(digits) ||
+            (t.feeMinor > 0 && Money.plain(t.feeMinor, t.currency).contains(digits))
+    }
 
     fun seedCategories(): List<Category> = listOf(
         "food" to "Groceries", "dining" to "Eating out", "transport" to "Transport", "bills" to "Bills and utilities", "rent" to "Rent and housing",
