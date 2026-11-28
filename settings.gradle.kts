@@ -27,6 +27,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":kit-core")
 include(":pokemon-core")
 include(":plan-core")
 include(":care-core")

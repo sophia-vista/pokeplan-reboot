@@ -343,16 +343,13 @@ object MintRules {
         return totals.filterValues { it != 0L }.toList().sortedByDescending { it.second }
     }
 
-    fun monthStart(day: LocalDate): LocalDate = LocalDate(day.year, day.monthNumber, 1)
+    fun monthStart(day: LocalDate): LocalDate = app.pokeplan.kit.Periods.monthStart(day)
 
-    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate {
-        val back = (day.dayOfWeek.ordinal - first.ordinal + 7) % 7
-        return day.minus(DatePeriod(days = back))
-    }
+    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate = app.pokeplan.kit.Periods.weekStartOf(day, first)
 
     fun periodOf(period: BudgetPeriod, day: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Pair<LocalDate, LocalDate> = when (period) {
-        BudgetPeriod.MONTHLY -> monthStart(day).let { it to it.plus(1, DateTimeUnit.MONTH) }
-        BudgetPeriod.WEEKLY -> weekStartOf(day, weekStart).let { it to it.plus(7, DateTimeUnit.DAY) }
+        BudgetPeriod.MONTHLY -> app.pokeplan.kit.Periods.monthRange(day)
+        BudgetPeriod.WEEKLY -> app.pokeplan.kit.Periods.weekRange(day, weekStart)
     }
 
     fun progress(data: MintData, budget: Budget, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): BudgetProgress {
