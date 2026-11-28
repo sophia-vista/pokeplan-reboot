@@ -1,6 +1,7 @@
 package app.pokeplan.world
 
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.pokemon.FormRoutes
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.FormKind
 import kotlin.random.Random
@@ -29,8 +30,13 @@ object RegionalForms {
         Dex.formsOf(speciesId).filter { layer(it) == layer }
 
     /** The form a find of [speciesId] becomes in [layer], or null when the layer's form is the default. */
-    fun formFor(speciesId: Int, layer: WorldLayer, random: Random): String? =
-        inLayer(speciesId, layer).let { forms -> if (forms.isEmpty()) null else forms[random.nextInt(forms.size)].identifier }
+    fun formFor(speciesId: Int, layer: WorldLayer, random: Random): String? {
+        val forms = inLayer(speciesId, layer)
+        if (forms.isNotEmpty()) return forms[random.nextInt(forms.size)].identifier
+        // No regional form here: a species with separate-encounter variants (a costume Pikachu) may be found as one.
+        val base = Dex.defaultForm(speciesId)
+        return FormRoutes.rollVariant(speciesId, base, random).takeIf { it.identifier != base.identifier }?.identifier
+    }
 
     /** The form's own name when there is one, else the species name. */
     fun displayName(speciesId: Int, formIdentifier: String?): String =

@@ -61,9 +61,11 @@ class FormDexTest {
     }
 
     @Test
-    fun gigantamax_and_alternate_forms_are_shown_but_not_counted() {
-        assertFalse(FormDex.counts(Dex.formsOf(6).first { it.kind == FormKind.GMAX }))
-        assertFalse(FormDex.counts(form("rotom-heat")))
+    fun gigantamax_and_item_forms_count_but_battle_forms_do_not() {
+        assertTrue(FormDex.counts(Dex.formsOf(6).first { it.kind == FormKind.GMAX }))
+        assertFalse(FormDex.counts(Dex.form("eternatus-eternamax")!!))
+        assertTrue(FormDex.counts(form("rotom-heat")))
+        assertFalse(FormDex.counts(form("aegislash-blade")))
         assertTrue(FormDex.counts(form("vulpix-alola")))
     }
 }

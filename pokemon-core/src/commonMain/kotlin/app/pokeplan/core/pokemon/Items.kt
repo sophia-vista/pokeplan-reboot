@@ -93,21 +93,21 @@ object Items {
         Dex.evolutions.filter { it.kind == EvolutionKind.TRIAL }.mapNotNull { it.heldItem }.distinct().sorted()
     }
 
-    fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id in tradeItems || id in heldEvolutionItems || id == EVERSTONE
+    fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id == DYNAMAX_BAND || FormRoutes.isFormItem(id) || id in tradeItems || id in heldEvolutionItems || id == EVERSTONE
 
     fun category(id: String): ItemCategory? = when {
         id in special -> special.getValue(id).second
         id.startsWith("berry-") -> ItemCategory.BERRY
         id.startsWith("lure-") -> ItemCategory.LURE
         id.startsWith("tera-shard-") -> ItemCategory.TERA
-        id.startsWith("mega-stone-") -> ItemCategory.FORM
+        id.startsWith("mega-stone-") || FormRoutes.isFormItem(id) -> ItemCategory.FORM
         id in HeldItems.perks -> ItemCategory.HELD
         id in evolutionItems || id in tradeItems || id in heldEvolutionItems -> ItemCategory.EVOLUTION
         else -> null
     }
 
     fun get(id: String): Item? = category(id)?.let {
-        val name = special[id]?.first ?: if (id.startsWith("mega-stone-")) megaStoneName(id) else pretty(id)
+        val name = special[id]?.first ?: FormRoutes.formItem(id)?.name ?: if (id.startsWith("mega-stone-")) megaStoneName(id) else pretty(id)
         Item(id, name, it)
     }
 

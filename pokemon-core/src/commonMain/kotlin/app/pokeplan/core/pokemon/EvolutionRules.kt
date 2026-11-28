@@ -44,8 +44,8 @@ object EvolutionRules {
         return exact.ifEmpty { all.filter { it.requiredForm == null } }
     }
 
-    private fun targetForm(e: Evolution): FormInfo =
-        e.evolvedForm?.let { Dex.form(it) } ?: Dex.defaultForm(e.to)
+    private fun targetForm(e: Evolution, from: OwnedPokemon): FormInfo =
+        e.evolvedForm?.let { Dex.form(it) } ?: FormRoutes.carryOver(from.form, e.to) ?: Dex.defaultForm(e.to)
 
     private fun randomBranch(p: OwnedPokemon, rows: List<Evolution>): Evolution? {
         val branches = rows.filter { it.kind == EvolutionKind.RANDOM }.sortedBy { it.to }
@@ -63,7 +63,7 @@ object EvolutionRules {
         val branch = randomBranch(p, rows)
         val held = p.heldItem == EvolutionTrials.EVERSTONE
         return rows.filter { it.kind != EvolutionKind.RANDOM || it == branch }.map { e ->
-            EvolutionOption(e, targetForm(e), (if (held) listOf(EVERSTONE_HELD) else emptyList()) + missing(p, e, ctx))
+            EvolutionOption(e, targetForm(e, p), (if (held) listOf(EVERSTONE_HELD) else emptyList()) + missing(p, e, ctx))
         }
     }
 

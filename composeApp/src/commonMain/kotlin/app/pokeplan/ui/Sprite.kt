@@ -57,6 +57,14 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
             return
         }
     }
+    // A form item has no icon in the sprite set either: it shows the form it unlocks.
+    app.pokeplan.core.pokemon.FormRoutes.formItem(itemId)?.let { item ->
+        val form = item.forms.values.firstNotNullOfOrNull { app.pokeplan.core.dex.Dex.form(it) }
+        if (form != null) {
+            Sprite(form.id, false, description ?: item.name, modifier, size)
+            return
+        }
+    }
     val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
     val bitmap = rememberCachedImage(cache, path) { decodeAsset(path) }
     Box(modifier.size(size)) {

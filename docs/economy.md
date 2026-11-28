@@ -114,7 +114,7 @@ The Super Candy chance perk adds percentage points.
 | Shiny Charm, Bottle Cap, Nature Mint, Ability Capsule | 0.5 |
 | 18 Tera Shards | 0.1 |
 
-Never dropped: Ability Patch and the Dynamax Band (which is not read yet). Focus sessions never drop items (they pay a berry). Mega Stones are not in the ordinary drop table: every one is always sold at the Kecleon Shop on its own Mega Stones shelf for 2,000 Poké, and when a silver or gold treasure box is opened it has a 3% (silver) or 10% (gold) chance of a Mega Stone (`worldOpenTreasure`); only a stone the player does not own yet is picked.
+Never dropped: Ability Patch and the Dynamax Band (found once as the Dusty Bowl floor-9 milestone in Galar; holding it shows a Pokémon's Gigantamax form). Focus sessions never drop items (they pay a berry). Mega Stones are not in the ordinary drop table: every one is always sold at the Kecleon Shop on its own Mega Stones shelf for 2,000 Poké, and when a silver or gold treasure box is opened it has a 3% (silver) or 10% (gold) chance of a Mega Stone (`worldOpenTreasure`); only a stone the player does not own yet is picked.
 
 ### Module drops (`ModuleDrops`)
 
@@ -140,7 +140,7 @@ The everyday shop: Exp. Candy 5, Super Candy 100, a berry of any flavour 20 (`CO
 
 ### The Kecleon Shop (`KecleonShop`)
 
-The specialty shop in World's Town; it sells no candy. Prices are low on purpose, as everything here grows one Pokémon. **Always in stock** every evolution stone 400, every Mega Stone 2,000 on its own Mega Stones shelf (ten to a page in Town), the Link Cord 500, the Everstone 300, 50 Gimmighoul Coins 150; **today's shelf**, 5 items chosen for the player's local day from trade and held evolution items 500, vitamins 100, perk held items 500 (Shiny Charm 1,500), Tera Shards 1,000, Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Ability Patch 2,000. No countdown, nothing sold only on the shelf (every catalogue item comes round), and the daily five never carries a Mega Stone. A silver or gold treasure box can also hold one (3% and 10%; only a stone not owned yet). *(tune)*
+The specialty shop in World's Town; it sells no candy. Prices are low on purpose, as everything here grows one Pokémon. **Always in stock** every evolution stone 400, every Mega Stone 2,000 on its own Mega Stones shelf (ten to a page in Town), every form item 1,500 on its own Form items shelf (32 items, `KecleonShop.formItems`), the Link Cord 500, the Everstone 300, 50 Gimmighoul Coins 150; **today's shelf**, 5 items chosen for the player's local day from trade and held evolution items 500, vitamins 100, perk held items 500 (Shiny Charm 1,500), Tera Shards 1,000, Nature Mint 400, Ability Capsule 600, Bottle Cap 800, Ability Patch 2,000. No countdown, nothing sold only on the shelf (every catalogue item comes round), and the daily five never carries a Mega Stone. A silver or gold treasure box can also hold one (3% and 10%; only a stone not owned yet). *(tune)*
 
 ### Friendship (`FriendshipRules`, 0 to 255, starts at 70)
 

@@ -1,5 +1,6 @@
 package app.pokeplan.core.dex
 
+import app.pokeplan.core.pokemon.FormRoutes
 import kotlin.random.Random
 
 object HatchRules {
@@ -49,7 +50,7 @@ object HatchRules {
 
     fun roll(region: Region, rarity: Rarity, rng: Random = Random): HatchOption {
         val options = pool(region, rarity)
-        return options[rng.nextInt(options.size)]
+        return withVariant(options[rng.nextInt(options.size)], rng)
     }
 
     fun rollWeighted(region: Region, rarity: Rarity, rng: Random, weight: (HatchOption) -> Double): HatchOption {
@@ -58,8 +59,15 @@ object HatchRules {
         var pick = rng.nextDouble() * weights.sum()
         for ((i, w) in weights.withIndex()) {
             pick -= w
-            if (pick < 0) return options[i]
+            if (pick < 0) return withVariant(options[i], rng)
         }
-        return options.last()
+        return withVariant(options.last(), rng)
+    }
+
+    /** A species with separate-encounter variants (Pumpkaboo's sizes) may hatch as one; others draw nothing. */
+    private fun withVariant(option: HatchOption, rng: Random): HatchOption {
+        val base = Dex.form(option.formIdentifier) ?: return option
+        val variant = FormRoutes.rollVariant(option.speciesId, base, rng)
+        return if (variant.identifier == base.identifier) option else HatchOption(option.speciesId, variant.identifier)
     }
 }
