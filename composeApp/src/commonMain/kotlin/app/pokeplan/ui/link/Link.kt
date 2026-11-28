@@ -558,6 +558,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
         Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
+        if (data.connections.any { it.involves(p.id) }) Text("Their connections go; nobody else changes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         if (data.memories.any { p.id in it.personIds }) Text("Their memories stay, without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it } // copy-ok: result
         if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it } // copy-ok: result
@@ -601,6 +602,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
             photos.take(8).forEach { ph -> PhotoThumb(ph, 80.dp) { viewingPhoto = ph } }
         }
     }
+    PersonConnections(model, p)
     app.pokeplan.ui.integrations.PersonEvents(model, p.id)
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
@@ -852,7 +854,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PersonPicker(people: List<Person>, selected: String?, onPick: (String?) -> Unit) {
+internal fun PersonPicker(people: List<Person>, selected: String?, onPick: (String?) -> Unit) {
     if (people.isEmpty()) return
     var query by remember { mutableStateOf("") }
     val chosen = people.firstOrNull { it.id == selected }

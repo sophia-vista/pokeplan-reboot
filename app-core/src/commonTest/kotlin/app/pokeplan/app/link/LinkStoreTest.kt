@@ -612,6 +612,38 @@ class LinkStoreTest {
     }
 
     @Test
+    fun connectionsAreExplicitSharedBetweenTwoProfilesAndGoWithEitherPerson() {
+        val s = setup()
+        val ana = assertNotNull(s.link.addPerson("Ana").record)
+        val ben = assertNotNull(s.link.addPerson("Ben").record)
+        val cy = assertNotNull(s.link.addPerson("Cy").record)
+        assertNull(s.link.addConnection(ana.id, ana.id, "Friend").record, "not to themselves")
+        assertNull(s.link.addConnection(ana.id, ben.id, " ").record, "a connection needs a word")
+        assertNull(s.link.addConnection(ana.id, "nobody", "Friend").record, "nor to someone who is not there")
+        val c = assertNotNull(s.link.addConnection(ana.id, ben.id, " Sister ").record)
+        assertEquals("Sister", c.label)
+        assertEquals(listOf("Ben"), s.link.connectionsOf(ana.id).map { it.second.name }, "shown on one profile")
+        assertEquals(listOf("Ana"), s.link.connectionsOf(ben.id).map { it.second.name }, "and the other")
+        assertTrue(s.link.connectionsOf(cy.id).isEmpty(), "and on no one else's")
+        assertNull(s.link.addConnection(ben.id, ana.id, "sister").record, "the same word twice is refused, from either side")
+        assertNotNull(s.link.addConnection(ben.id, ana.id, "Flatmate").record, "a second word for the pair is fine")
+        assertEquals("Colleague", assertNotNull(s.link.updateConnection(c.id, "Colleague").record).label)
+        assertNull(s.link.updateConnection(c.id, "Flatmate").record, "a rename cannot repeat the pair's other word")
+        assertTrue("Colleague" in s.link.export(setOf(LinkKinds.PEOPLE)), "connections export with the people")
+        s.reopen()
+        assertEquals(2, s.link.connectionsOf(ana.id).size, "connections survive a reopen")
+        s.link.deletePerson(ben.id, keepDates = true, keepFollowUps = true)
+        assertTrue(s.link.connectionsOf(ana.id).isEmpty() && s.link.data.connections.isEmpty(), "deleting a person removes their connections")
+        assertNotNull(s.link.data.people.firstOrNull { it.id == ana.id }, "and changes nobody else")
+        val d = assertNotNull(s.link.addConnection(ana.id, cy.id, "Friend").record)
+        s.link.removeConnection(d.id)
+        assertTrue(s.link.data.connections.isEmpty())
+        s.link.addConnection(ana.id, cy.id, "Friend")
+        s.link.erase(LinkKinds.PEOPLE)
+        assertTrue(s.link.data.connections.isEmpty(), "erasing the people takes their connections")
+    }
+
+    @Test
     fun memoriesExportAndEraseAsTheirOwnKind() {
         val s = setup()
         val ana = assertNotNull(s.link.addPerson("Ana").record)
