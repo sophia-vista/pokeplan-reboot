@@ -343,16 +343,13 @@ object MintRules {
         return totals.filterValues { it != 0L }.toList().sortedByDescending { it.second }
     }
 
-    fun monthStart(day: LocalDate): LocalDate = LocalDate(day.year, day.monthNumber, 1)
+    fun monthStart(day: LocalDate): LocalDate = app.pokeplan.kit.Periods.monthStart(day)
 
-    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate {
-        val back = (day.dayOfWeek.ordinal - first.ordinal + 7) % 7
-        return day.minus(DatePeriod(days = back))
-    }
+    fun weekStartOf(day: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): LocalDate = app.pokeplan.kit.Periods.weekStartOf(day, first)
 
     fun periodOf(period: BudgetPeriod, day: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Pair<LocalDate, LocalDate> = when (period) {
-        BudgetPeriod.MONTHLY -> monthStart(day).let { it to it.plus(1, DateTimeUnit.MONTH) }
-        BudgetPeriod.WEEKLY -> weekStartOf(day, weekStart).let { it to it.plus(7, DateTimeUnit.DAY) }
+        BudgetPeriod.MONTHLY -> app.pokeplan.kit.Periods.monthRange(day)
+        BudgetPeriod.WEEKLY -> app.pokeplan.kit.Periods.weekRange(day, weekStart)
     }
 
     fun progress(data: MintData, budget: Budget, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): BudgetProgress {
@@ -412,7 +409,7 @@ object MintRules {
         return SavingsProgress(target, saved, (target.targetMinor - saved).coerceAtLeast(0), (saved * 100 / target.targetMinor).coerceAtMost(9_999).toInt())
     }
 
-    private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
+    private fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
     fun dueDay(bill: Bill, index: Int): LocalDate {
         val first = bill.firstDue
@@ -548,22 +545,23 @@ object MintRules {
         from: LocalDate? = null,
         to: LocalDate? = null,
     ): List<Transaction> {
-        val q = text.trim().lowercase()
+        val q = app.pokeplan.kit.SearchQuery.of(text)
         return data.transactions.filter { t ->
             (type == null || t.type == type) && (accountId == null || t.accountId == accountId || t.toAccountId == accountId) &&
                 (categoryId == null || t.categoryId == categoryId) && (from == null || t.day >= from) && (to == null || t.day <= to) &&
-                (q.isEmpty() || matches(data, t, q))
+                (q.isEmpty || matches(data, t, q))
         }.sortedWith(compareByDescending<Transaction> { it.atMillis }.thenByDescending { it.createdMillis })
     }
 
-    private fun matches(data: MintData, t: Transaction, q: String): Boolean =
-        t.payee.lowercase().contains(q) || t.note.lowercase().contains(q) ||
-            data.categories.firstOrNull { it.id == t.categoryId }?.name?.lowercase()?.contains(q) == true ||
-            t.splits.any { split -> data.categories.firstOrNull { it.id == split.categoryId }?.name?.lowercase()?.contains(q) == true } ||
-            data.accounts.firstOrNull { it.id == t.accountId }?.name?.lowercase()?.contains(q) == true ||
-            data.accounts.firstOrNull { it.id == t.toAccountId }?.name?.lowercase()?.contains(q) == true ||
-            Money.plain(t.amountMinor, t.currency).contains(q.replace(",", "")) ||
-            (t.feeMinor > 0 && Money.plain(t.feeMinor, t.currency).contains(q.replace(",", "")))
+    private fun matches(data: MintData, t: Transaction, q: app.pokeplan.kit.SearchQuery): Boolean {
+        fun category(id: String?): String? = data.categories.firstOrNull { it.id == id }?.name
+        fun account(id: String?): String? = data.accounts.firstOrNull { it.id == id }?.name
+        val digits = q.text.replace(",", "")
+        return q.matchesAny(t.payee, t.note, category(t.categoryId), account(t.accountId), account(t.toAccountId)) ||
+            t.splits.any { split -> q.matchesAny(category(split.categoryId)) } ||
+            Money.plain(t.amountMinor, t.currency).contains(digits) ||
+            (t.feeMinor > 0 && Money.plain(t.feeMinor, t.currency).contains(digits))
+    }
 
     fun seedCategories(): List<Category> = listOf(
         "food" to "Groceries", "dining" to "Eating out", "transport" to "Transport", "bills" to "Bills and utilities", "rent" to "Rent and housing",

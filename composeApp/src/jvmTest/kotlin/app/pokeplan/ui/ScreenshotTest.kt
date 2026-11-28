@@ -1413,7 +1413,7 @@ class ScreenshotTest {
     @Test
     fun meHome() = me("me-home", -1)
 
-    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", calm: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
+    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", calm: Boolean = false, journalEntries: Int = 0, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -1427,6 +1427,7 @@ class ScreenshotTest {
         care.practiseSkill("stop")
         care.saveDiary(mapOf(app.pokeplan.care.Emotion.JOY to 3, app.pokeplan.care.Emotion.FEAR to 2), skills = setOf("stop"), note = "A calm morning")
         care.write("Tea with a friend after work.", tags = setOf("People"))
+        repeat(journalEntries) { care.write("Entry ${it + 2}: a quiet evening.", tags = setOf("Self")) }
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
         model.carePracticeCalm = calm
@@ -1549,7 +1550,7 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.HABITAT_EGG)
     }
 
-    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540) {
+    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(homeParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.BASE) }
@@ -1571,7 +1572,7 @@ class ScreenshotTest {
         }
         model.module = app.pokeplan.ui.screens.Module.BASE
         model.baseSection = section
-        render(name, fontScale = fontScale, height = height, width = width) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, width = width, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     private fun baseRoom(name: String, dark: Boolean = false, arrange: Boolean = false, held: String? = null, narrow: Boolean = false, furnished: Boolean = true, party: Int = 6) {
@@ -2284,9 +2285,44 @@ class ScreenshotTest {
             drawImageRect(skia, org.jetbrains.skia.Rect.makeXYWH(90f, 310f, w - 180f, w - 180f))
         }
         val portrait = surface.makeImageSnapshot().toComposeImageBitmap()
-        for ((shape, image) in listOf("square" to square, "portrait" to portrait)) for (dark in listOf(false, true)) {
+        val png = { i: org.jetbrains.skia.Image -> i.encodeToData(EncodedImageFormat.PNG)!!.bytes }
+        for ((shape, bytes) in listOf("square" to png(skia), "portrait" to png(surface.makeImageSnapshot()))) for (dark in listOf(false, true)) {
             render("mint-qr-fullscreen-$shape${if (dark) "-dark" else ""}", minBytes = 3_000) {
-                PixelTheme(dark = dark) { app.pokeplan.ui.mint.QrFullScreen("Daily account", image, {}, {}) }
+                PixelTheme(dark = dark) {
+                    val state = androidx.compose.runtime.remember {
+                        app.pokeplan.ui.media.PhotoViewerState(
+                            listOf(app.pokeplan.ui.media.MediaItem("qr", app.pokeplan.ui.media.MediaSources.bytes(bytes), title = "Daily account", description = "Receive money QR code")), 0,
+                            app.pokeplan.ui.media.PhotoViewerConfig(
+                                allowShare = true, showImageCounter = false, backdrop = app.pokeplan.ui.media.ViewerBackdrop.LIGHT, crisp = true,
+                                module = app.pokeplan.ui.theme.ModuleAccent.MINT, shareLabel = "QR code",
+                            ),
+                        )
+                    }
+                    app.pokeplan.ui.media.PhotoViewerScreen(state, {}, { _, _ -> "" })
+                }
+            }
+        }
+        // The shared viewer as a gallery: a counter, the caption and date, the Info panel open, in both palettes.
+        val shots = listOf(0xFF5B8DEF.toInt(), 0xFFEF8D5B.toInt(), 0xFF5BEF8D.toInt()).mapIndexed { i, colour ->
+            val surf = org.jetbrains.skia.Surface.makeRasterN32Premul(900, 600)
+            surf.canvas.clear(colour)
+            surf.canvas.drawRect(org.jetbrains.skia.Rect.makeXYWH(100f + i * 80f, 120f, 300f, 300f), org.jetbrains.skia.Paint().apply { color = 0xFF202030.toInt() })
+            png(surf.makeImageSnapshot())
+        }
+        for (dark in listOf(false, true)) render("photo-viewer-gallery${if (dark) "-dark" else ""}", minBytes = 3_000) {
+            PixelTheme(dark = dark) {
+                val state = androidx.compose.runtime.remember {
+                    app.pokeplan.ui.media.PhotoViewerState(
+                        shots.mapIndexed { i, b ->
+                            app.pokeplan.ui.media.MediaItem(
+                                "p$i", app.pokeplan.ui.media.MediaSources.bytes(b), "image/png", title = "Beach trip", description = "Photo ${i + 1} of the trip",
+                                dateLabel = "Summer 2019", fileName = "beach-$i.png",
+                            )
+                        },
+                        1, app.pokeplan.ui.media.PhotoViewerConfig(showMetadata = true, module = app.pokeplan.ui.theme.ModuleAccent.LINK, allowShare = true, actions = listOf(app.pokeplan.ui.media.ViewerAction("Open memory") {})),
+                    ).also { it.toggleInfo() }
+                }
+                app.pokeplan.ui.media.PhotoViewerScreen(state, {}, { _, _ -> "" })
             }
         }
         val acc = AppModel(storeWithTeam(), images = object : app.pokeplan.ui.ImageChooser { override fun choose(done: (ByteArray?, String?) -> Unit) {} }).let { m -> m to m.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000).record!! }
@@ -2511,6 +2547,18 @@ class ScreenshotTest {
 
     @Test
     fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)
+
+    @Test
+    fun careJournalSearch() = care("care-journal-search", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalDraft = "Walked by the river after work.", journalEntries = 4, interact = ::pullToSearch)
+
+    @Test
+    fun careJournalSearchDark() = care("care-journal-search-dark", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, dark = true, journalDraft = "Walked by the river after work.", journalEntries = 4, interact = ::pullToSearch)
+
+    @Test
+    fun baseNotesSearch() = household("base-notes-search", app.pokeplan.ui.base.BaseSection.NOTES, height = 1300, interact = ::pullToSearch)
+
+    @Test
+    fun baseNotesSearchDark() = household("base-notes-search-dark", app.pokeplan.ui.base.BaseSection.NOTES, height = 1300, dark = true, interact = ::pullToSearch)
 
     @Test
     fun careJournal() = care("care-journal", app.pokeplan.ui.care.CareSection.REFLECT, journalDraft = "Walked by the river after work.")

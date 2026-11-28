@@ -15,6 +15,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(project(":kit-core"))
             api(libs.kotlinx.datetime)
             api(libs.kotlinx.serialization.json)
         }

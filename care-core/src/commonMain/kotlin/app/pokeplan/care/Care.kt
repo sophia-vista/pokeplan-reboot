@@ -138,8 +138,7 @@ object CareRules {
     /** Care Play moments that pay each day, one per Pokémon (CARE.md 4). */
     const val PLAYS_PAID_PER_DAY = 6
 
-    fun weekStartOf(date: LocalDate, weekStart: DayOfWeek): LocalDate =
-        date.plus(DatePeriod(days = -((date.dayOfWeek.isoDayNumber - weekStart.isoDayNumber + 7) % 7)))
+    fun weekStartOf(date: LocalDate, weekStart: DayOfWeek): LocalDate = app.pokeplan.kit.Periods.weekStartOf(date, weekStart)
 
     fun routinesPaidOn(data: CareData, date: LocalDate): Int = data.routines.count { it.paidOn == date }
 

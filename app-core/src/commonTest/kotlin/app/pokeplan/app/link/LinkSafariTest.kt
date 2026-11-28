@@ -1,5 +1,6 @@
 package app.pokeplan.app.link
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
@@ -18,10 +19,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class LinkSafariTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val start = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()

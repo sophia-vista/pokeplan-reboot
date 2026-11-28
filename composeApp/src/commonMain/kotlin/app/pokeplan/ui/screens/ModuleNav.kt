@@ -117,6 +117,17 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
         .take(limit)
 }
 
+/** The search field (focused as soon as it appears) beside its close key, shared by every module's search. */
+@Composable
+fun SearchFieldRow(query: String, onQuery: (String) -> Unit, onDone: () -> Unit, placeholder: String, max: Int) {
+    val field = remember { FocusRequester() }
+    LaunchedEffect(Unit) { field.requestFocus() }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { onQuery(it.take(max)) }, Modifier.weight(1f).focusRequester(field), singleLine = true, placeholder = placeholder)
+        PixelIconButton("close", "Close search", onDone)
+    }
+}
+
 /**
  * The "Jump to" field and, once something is typed, the places it matches. The caller owns [query]
  * so it can clear it when the search closes, and the field takes focus as soon as it appears, so
@@ -125,13 +136,8 @@ internal fun jumpMatches(targets: List<JumpTarget>, query: String, limit: Int = 
 @Composable
 fun JumpSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit = {}) {
     val focus = LocalFocusTab.current
-    val field = remember { FocusRequester() }
-    LaunchedEffect(Unit) { field.requestFocus() }
     val found = remember(query, focus, Pixel.dark) { jumpMatches(jumpTargets(model, focus), query) }
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { onQuery(it.take(30)) }, Modifier.weight(1f).focusRequester(field), singleLine = true, placeholder = "Jump to")
-        PixelIconButton("close", "Close search", onDone)
-    }
+    SearchFieldRow(query, onQuery, onDone, "Jump to", 30)
     if (query.isBlank()) return
     if (found.isEmpty()) {
         Text("Nothing by that name", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)

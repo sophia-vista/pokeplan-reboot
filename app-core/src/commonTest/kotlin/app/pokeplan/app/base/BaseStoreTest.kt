@@ -1,5 +1,6 @@
 package app.pokeplan.app.base
 
+import app.pokeplan.app.testing.FakeClock
 import kotlinx.datetime.plus
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Items
@@ -40,10 +41,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class BaseStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-        fun advanceDays(n: Int) { millis += n * 86_400_000L }
-    }
 
     private val utc = TimeZone.UTC
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()

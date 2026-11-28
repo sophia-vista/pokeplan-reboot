@@ -1,5 +1,6 @@
 package app.pokeplan.app.world
 
+import app.pokeplan.app.testing.FakeClock
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.TownFinds
 import kotlinx.datetime.LocalDateTime
@@ -17,9 +18,6 @@ import app.pokeplan.app.storage.Clock
 import app.pokeplan.app.storage.MemoryStorage
 
 class TownFindsStoreTest {
-    private class FakeClock(var millis: Long) : Clock {
-        override fun nowMillis() = millis
-    }
 
     private val utc = TimeZone.UTC
     private fun at(day: Int, hour: Int) = LocalDateTime(2026, 11, day, hour, 0).toInstant(utc).toEpochMilliseconds()

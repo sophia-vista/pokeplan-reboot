@@ -43,8 +43,7 @@ object BaseReminders {
     fun upcoming(home: BaseData, app: AppData, nowMillis: Long, zone: TimeZone): List<BaseReminder> {
         val settings = home.settings
         if (!settings.reminders) return emptyList()
-        val session = app.focus?.takeIf { !it.isFinished }
-        val focus = session?.let { FocusWindow(it.startedAtMillis, it.startedAtMillis + it.durationMillis + it.pausedMillis) }
+        val focus = ReminderPolicy.focusWindow(app.focus)
         val today = nowMillis.toLocalDateTime(zone).date
         val limit = nowMillis + DAYS_AHEAD * DAY_MILLIS
         val hour = settings.reminderHour.coerceIn(0, 23)

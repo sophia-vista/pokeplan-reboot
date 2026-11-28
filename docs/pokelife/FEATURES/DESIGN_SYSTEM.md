@@ -253,6 +253,14 @@ Every form is built from the form kit (`screens/Form.kt`) and follows eight prin
 - Destructive or consequential actions explain the outcome and require deliberate confirmation. Reversible actions remain low-friction.
 - Support back dismissal where safe, focus trapping where appropriate, TalkBack announcement and keyboard behavior.
 
+### 6.8A Photo viewer (owner, 28 November 2026; built 0.266.0)
+
+- One shared viewer for every module's pictures (`composeApp/.../ui/media/`): a module calls `model.photoViewer.open(items, index, config)`; `PhotoViewerHost` sits once at the App root and shows a full-screen dialog, so Back returns to the module's screen and its scroll position. A module never builds its own full-screen picture screen.
+- Layout: back, a centred counter and a details key ("...") on top; zoom out, zoom in, rotate and share below (previous and next chevrons when there are several pictures); the caption (title, description, date) underneath. Pixelarticons glyphs. A tap hides the bars.
+- Behaviour: swipe between pictures (only the visible page and one neighbour are loaded; the bitmap cache is 64 MB and released on close); pinch zoom, double-tap zoom and pan, where swiping turns pages only when the picture is not zoomed; Fit and Fill; EXIF orientation applied; rotate is view-only in quarter turns and never touches the file; loading, unavailable and empty states.
+- The details key lists Info rows, Fit/Fill and the module's own keys (LINK's "Open memory"). Share is optional (the config turns it on). `brightScreen` and a light backdrop are for MINT QR codes.
+- Sources are `MediaSource` (a suspend `read()` returning bytes), not Android Uri; `MediaSources.base64` covers LINK photos and MINT's QR and receipt. The date label is a pre-formatted string (LINK dates are flexible).
+
 ### 6.9 Progress indicators
 
 - Shared linear, circular and compact progress indicators use semantic colors and accessible value descriptions.
@@ -366,7 +374,7 @@ Condensed from the owner's `unslop-ui` reference, for a native app. Slop is an u
 Owner decision, 23 November 2026: a screen shows its records first, and what is not needed on every visit stays out of sight until asked for (12A rule 6 applies: hierarchy before another box).
 
 1. **Records first.** Whatever is not needed on every visit is hidden until asked for.
-2. **Search, filter and sort sit behind the pull-down at the top of the list** (`PullReveal.kt`: `rememberPullReveal`, `pullReveal`, `PullRevealSlot`; the Modules search is the model). Pull down at the top to open it; a swipe up with nothing typed, the close key or Back puts it away; a query or filter in use keeps it open; a narrowed list always shows a visible "clear" state.
+2. **Search, filter and sort sit behind the pull-down at the top of the list** (`PullReveal.kt`: `rememberPullReveal`, `pullReveal`, `PullRevealSlot`; the Modules search is the model; owner, 28 November 2026: all list search, with no exception for a module, so CARE's journal and BASE's notes moved there too). A picker inside a form or dialogue (a Pokémon, a contact, a unit, a currency) has no list top to pull from and keeps its inline field. Pull down at the top to open it; a swipe up with nothing typed, the close key or Back puts it away; a query or filter in use keeps it open; a narrowed list always shows a visible "clear" state.
 3. **An add form opens from one "Add X" key** and closes after saving; it opens by itself when the list is empty.
 4. **Secondary information that can grow** (history, stats, a second chart, readings, earlier imports) goes in an `Accordion` (title, and a summary shown while closed). It starts open only when it holds the one thing the person came for or something waiting for a decision.
 5. **Exports, erase and other rare or destructive controls** sit in closed accordions at the bottom of their page.
