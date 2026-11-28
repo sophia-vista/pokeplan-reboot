@@ -17,6 +17,8 @@ class ScenePlayedTest {
         val storage = MemoryStorage()
         val store = GameStore(storage, Clock(1_700_000_000_000L), TimeZone.UTC, Random(7))
         store.start("Sophia", 25)
+        val starter = store.data.player.pokemon.first()
+        store.update { it.copy(rewardLog = it.rewardLog + RewardEntry(1L, "Task: test", listOf(Reward.Hatched(starter, true)))) }
         val entry = store.data.rewardLog.first { e -> e.rewards.any { it is Reward.Hatched } }
         val id = entry.rewards.filterIsInstance<Reward.Hatched>().first().pokemon.id
         assertFalse(entry.scenePlayed)
