@@ -178,12 +178,21 @@ private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (Strin
         BaseMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.BASE.look.header) {
+    // Notes search sits behind the pull-down at the top of the list (DESIGN_SYSTEM 12B); the other sections have none.
+    val scroll = rememberScrollState()
+    var notesQuery by remember { mutableStateOf("") }
+    val reveal = app.pokeplan.ui.screens.rememberPullReveal(scroll, keepOpen = { notesQuery.isNotBlank() }, onClose = { notesQuery = "" })
+    val pulling = section == BaseSection.NOTES && model.baseData.references.isNotEmpty()
+    LaunchedEffect(pulling) { if (!pulling) reveal.close() }
+    SectionScaffold(
+        section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.BASE.look.header,
+        scrollState = scroll, bodyModifier = if (pulling) Modifier.pullReveal(reveal) else Modifier,
+    ) {
         when (section) {
             BaseSection.CHORES -> ChoresView(model)
             BaseSection.BELONGINGS -> BelongingsView(model)
             BaseSection.MAINTENANCE -> MaintenanceView(model)
-            BaseSection.NOTES -> NotesView(model)
+            BaseSection.NOTES -> NotesView(model, notesQuery, { notesQuery = it }, reveal)
             BaseSection.ROOM -> RoomView(model)
             BaseSection.SETTINGS -> BaseSettingsView(model)
         }
@@ -1267,19 +1276,23 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
 }
 
 @Composable
-private fun NotesView(model: AppModel) {
+private fun NotesView(model: AppModel, query: String, onQuery: (String) -> Unit, reveal: app.pokeplan.ui.screens.PullRevealState) {
     val home = model.base
     val data = model.baseData
     val jump = remember { takeJump(BaseSection.NOTES) }
     var title by remember { mutableStateOf("") }
-    var query by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
     val matching = if (query.isBlank()) null else home.search(query).filter { it.kind == HitKind.REFERENCE }.map { it.id }.toSet()
     val notes = data.references.filter { matching == null || it.id in matching }.sortedByDescending { it.updatedMillis }
+    if (data.references.isNotEmpty()) app.pokeplan.ui.screens.PullRevealSlot(reveal, model.data.settings.reduceMotion) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f), placeholder = "Search notes", singleLine = true)
+            PixelIconButton("close", "Close search", reveal::close)
+        }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            if (data.references.isNotEmpty()) PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search notes", singleLine = true)
             FormGroup {
                 PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Note", placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
                 FormSave("Add", {

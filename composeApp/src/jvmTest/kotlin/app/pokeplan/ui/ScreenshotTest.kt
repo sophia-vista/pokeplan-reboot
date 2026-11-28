@@ -1413,7 +1413,7 @@ class ScreenshotTest {
     @Test
     fun meHome() = me("me-home", -1)
 
-    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", calm: Boolean = false, interact: (ImageComposeScene) -> Unit = {}) {
+    private fun care(name: String, section: app.pokeplan.ui.care.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f, dark: Boolean = false, skipOne: Boolean = false, journalDraft: String = "", calm: Boolean = false, journalEntries: Int = 0, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -1427,6 +1427,7 @@ class ScreenshotTest {
         care.practiseSkill("stop")
         care.saveDiary(mapOf(app.pokeplan.care.Emotion.JOY to 3, app.pokeplan.care.Emotion.FEAR to 2), skills = setOf("stop"), note = "A calm morning")
         care.write("Tea with a friend after work.", tags = setOf("People"))
+        repeat(journalEntries) { care.write("Entry ${it + 2}: a quiet evening.", tags = setOf("Self")) }
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
         model.carePracticeCalm = calm
@@ -1549,7 +1550,7 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.HABITAT_EGG)
     }
 
-    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540) {
+    private fun household(name: String, section: app.pokeplan.ui.base.BaseSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, width: Int = 540, interact: (ImageComposeScene) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(homeParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.BASE) }
@@ -1571,7 +1572,7 @@ class ScreenshotTest {
         }
         model.module = app.pokeplan.ui.screens.Module.BASE
         model.baseSection = section
-        render(name, fontScale = fontScale, height = height, width = width) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height, width = width, interact = interact) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     private fun baseRoom(name: String, dark: Boolean = false, arrange: Boolean = false, held: String? = null, narrow: Boolean = false, furnished: Boolean = true, party: Int = 6) {
@@ -2511,6 +2512,18 @@ class ScreenshotTest {
 
     @Test
     fun careDiary() = care("care-diary", app.pokeplan.ui.care.CareSection.REFLECT)
+
+    @Test
+    fun careJournalSearch() = care("care-journal-search", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, journalDraft = "Walked by the river after work.", journalEntries = 4, interact = ::pullToSearch)
+
+    @Test
+    fun careJournalSearchDark() = care("care-journal-search-dark", app.pokeplan.ui.care.CareSection.REFLECT, height = 1300, dark = true, journalDraft = "Walked by the river after work.", journalEntries = 4, interact = ::pullToSearch)
+
+    @Test
+    fun baseNotesSearch() = household("base-notes-search", app.pokeplan.ui.base.BaseSection.NOTES, height = 1300, interact = ::pullToSearch)
+
+    @Test
+    fun baseNotesSearchDark() = household("base-notes-search-dark", app.pokeplan.ui.base.BaseSection.NOTES, height = 1300, dark = true, interact = ::pullToSearch)
 
     @Test
     fun careJournal() = care("care-journal", app.pokeplan.ui.care.CareSection.REFLECT, journalDraft = "Walked by the river after work.")
