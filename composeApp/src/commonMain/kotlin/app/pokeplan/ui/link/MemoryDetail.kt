@@ -44,14 +44,7 @@ private val accent get() = ModuleAccent.LINK.accent
 internal fun MemoryDetail(model: AppModel, memory: Memory, onEdit: () -> Unit, onPerson: (String) -> Unit, onChapter: (String) -> Unit) {
     val link = model.link
     val data = model.linkData
-    var viewing by remember(memory.id) { mutableStateOf<MemoryPhoto?>(null) }
     val photos = link.photosOf(memory.id)
-    val photo = viewing
-    if (photo != null) {
-        UpTo { viewing = null }
-        TextBox { PhotoViewer(photo) { viewing = null } }
-        return
-    }
     val whenLine = listOf(if (memory.date.year != null) LinkRules.dateLabel(memory.date) else "", memory.time).filter { it.isNotBlank() }.joinToString(" · ")
     val people = memory.personIds.mapNotNull { id -> data.people.firstOrNull { it.id == id } }
     val chapters = memory.eraIds.mapNotNull { id -> data.eras.firstOrNull { it.id == id } }
@@ -72,7 +65,7 @@ internal fun MemoryDetail(model: AppModel, memory: Memory, onEdit: () -> Unit, o
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 photos.forEach { ph ->
                     Column(Modifier.width(96.dp), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                        PhotoThumb(ph, 96.dp) { viewing = ph }
+                        PhotoThumb(ph, 96.dp) { openPhotos(model, photos, ph) }
                         if (ph.caption.isNotBlank()) Text(ph.caption, style = MaterialTheme.typography.bodySmall, color = Pixel.InkSoft, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
