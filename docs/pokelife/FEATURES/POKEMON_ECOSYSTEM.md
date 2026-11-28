@@ -129,6 +129,15 @@ A regional Pokédex can list a form independently where canon supports it, but t
 
 A regional form is persistent owned identity, and it has an acquisition route: a wild Find in the region's layer is that region's form, and recruiting it grants the form (section 9.4); the Galarian birds are legend quests of Galar (section 10.1). Every regional form has a route, and none is left unobtainable.
 
+#### 3.3.1 Routes for alternate and Gigantamax forms (owner, 28 November 2026)
+
+Every alternate form and every Gigantamax form has exactly one route (`FormRoutes`), and a test fails for a form with none:
+
+1. **Form item** (the games have an item or key item for it). The Pokémon shows the form, and the form dex counts it, while it holds the item, as with a Mega Stone (11.1.1). Form items are sold on the Kecleon Shop's Form items shelf at 1,500 Poké *(tune)*. Examples: Gracidea (Shaymin), Griseous Orb, Reveal Glass (the four Therian forms), the Rusted Sword and Shield, the Ogerpon masks, Rotom's appliances, Deoxys's meteorites, the Oricorio nectars.
+2. **Gigantamax.** Holding the **Dynamax Band** shows the Pokémon's Gigantamax form when it has one. The Band is a key item found once in WORLD's Galar layer, as the reward at floor 9 of the Dusty Bowl (Galar's Dynamax chapter). Eternatus's Eternamax is a boss form (route 4).
+3. **Separate encounter** (no item exists: a size, a plumage, a colour, a costume). The variant is a find of its own, as Unown's letters are: a hatch of that species rolls among its variants, and evolution carries the variant over where the games do. Costume and event-only variants are rare (1 in 20 *(tune)*).
+4. **Not collectible.** Battle forms (a stance, Zen Mode, Ash-Greninja, Terastal), ride modes and Totem or boss forms are runtime state (3.3), not owned identity. The form dex lists them faded and never counts them.
+
 ### 3.4 Catalog coverage and fallbacks
 
 The target catalog covers official Pokémon species and relevant official forms. Asset availability does not define species availability. Missing sprites or portraits must use the shared asset fallback policy in `FEATURES/ASSETS_AND_AUDIO.md`; they must never create substitute species identities or block acquisition.

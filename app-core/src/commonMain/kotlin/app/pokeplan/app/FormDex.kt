@@ -4,17 +4,19 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.FormKind
 import app.pokeplan.core.dex.Gender
+import app.pokeplan.core.pokemon.FormRoutes
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 
 object FormDex {
-    fun counts(form: FormInfo): Boolean = form.kind in COUNTED
+    fun counts(form: FormInfo): Boolean = form.kind in COUNTED || FormRoutes.counts(form)
 
     fun formsOf(p: OwnedPokemon): List<FormInfo> {
         val all = Dex.formsOf(p.speciesId)
         return listOf(p.form) +
             all.filter { it.kind == FormKind.GENDER && p.gender == Gender.FEMALE } +
-            all.filter { it.kind == FormKind.MEGA && p.heldItem == Items.megaStone(it.identifier) }
+            all.filter { it.kind == FormKind.MEGA && p.heldItem == Items.megaStone(it.identifier) } +
+            listOfNotNull(FormRoutes.heldForm(p))
     }
 
     fun record(data: AppData): AppData {

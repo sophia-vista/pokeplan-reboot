@@ -29,7 +29,7 @@ object GalarDungeons {
             "dusty-bowl", "Dusty Bowl", WorldRegion.ANCIENT, floors = 12, favored = setOf(PokemonType.GROUND, PokemonType.GHOST, PokemonType.ROCK),
             baseFloorSeconds = 5760, needs = ExplorerRank.SILVER, layer = G, chapter = 3,
             wild = listOf(WildEntry(562, 5), WildEntry(343, 4), WildEntry(449, 3), WildEntry(328, 3), WildEntry(843, 4), WildEntry(874, 2, fromFloor = 6), WildEntry(622, 3, fromFloor = 3), WildEntry(551, 3), WildEntry(749, 3), WildEntry(450, 1, fromFloor = 9), WildEntry(222, 2, fromFloor = 4), WildEntry(618, 2, fromFloor = 4)),
-            milestones = mapOf(6 to MilestoneReward(Items.berry("bitter"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 600)),
+            milestones = mapOf(6 to MilestoneReward(Items.berry("bitter"), 3), 9 to MilestoneReward(Items.DYNAMAX_BAND, 1), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 600)),
         ),
         DungeonDef(
             "galar-mine-2", "Galar Mine No. 2", WorldRegion.UNDERGROUND, floors = 14, favored = setOf(PokemonType.STEEL, PokemonType.ROCK, PokemonType.POISON),

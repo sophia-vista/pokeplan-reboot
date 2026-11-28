@@ -564,7 +564,7 @@ private const val MEGA_PAGE = 10
 
 private enum class TownPage(val label: String, val icon: String) {
     FACILITIES("Facilities", "heart-scale"), CAFE("Café", "soothe-bell"),
-    KECLEON("Kecleon Shop", "rare-candy"), MEGA("Mega Stones", "shiny-stone"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
+    KECLEON("Kecleon Shop", "rare-candy"), MEGA("Mega Stones", "shiny-stone"), FORMS("Form Items", "moon-stone"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -582,6 +582,7 @@ private fun WorldTownView(model: AppModel) {
                     TownPage.CAFE -> "a brew for the road"
                     TownPage.KECLEON -> "stones ${app.pokeplan.world.KecleonShop.STONE_PRICE} Poké"
                     TownPage.MEGA -> "${app.pokeplan.core.pokemon.Items.megaStones.size} stones, ${app.pokeplan.world.KecleonShop.MEGA_STONE_PRICE} Poké"
+                    TownPage.FORMS -> "${app.pokeplan.core.pokemon.FormRoutes.formItems.size} items, ${app.pokeplan.world.KecleonShop.FORM_ITEM_PRICE} Poké"
                     TownPage.SWAP -> "berry for berry"
                     TownPage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
                 }
@@ -655,6 +656,20 @@ private fun WorldTownView(model: AppModel) {
         PixelIconButton("arrow-left", "Previous", { megaPage = at - 1 }, Pixel.InkSoft, enabled = at > 0)
         PixelIconButton("arrow-right", "Next", { megaPage = at + 1 }, Pixel.InkSoft, enabled = at < pages - 1)
     }
+        }
+        TownPage.FORMS -> {
+            WorldBanner("map:sky-t01p01a", "Form Items", "Hold one to show its form", top = true, height = 150.dp)
+            var kecleonSays by remember { mutableStateOf(ShopLines.KECLEON_WELCOME) }
+            ShopVoice(Keepers.KECLEON, "Kecleon", kecleonSays)
+            var formPage by rememberSaveable { mutableStateOf(0) }
+            val offers = app.pokeplan.world.KecleonShop.formItems
+            val pages = (offers.size + MEGA_PAGE - 1) / MEGA_PAGE
+            val at = formPage.coerceIn(0, pages - 1)
+            ShopShelf(model, "Form Items ${at + 1} of $pages", offers.drop(at * MEGA_PAGE).take(MEGA_PAGE)) { kecleonSays = if (it) ShopLines.KECLEON_BOUGHT else ShopLines.KECLEON_BROKE }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelIconButton("arrow-left", "Previous", { formPage = at - 1 }, Pixel.InkSoft, enabled = at > 0)
+                PixelIconButton("arrow-right", "Next", { formPage = at + 1 }, Pixel.InkSoft, enabled = at < pages - 1)
+            }
         }
         TownPage.SWAP -> {
             WorldBanner("map:sky-t01p02a", "Croagunk Swap Shop", "Berry for berry", top = true, height = 150.dp)

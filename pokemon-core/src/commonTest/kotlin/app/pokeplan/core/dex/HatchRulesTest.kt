@@ -147,7 +147,10 @@ class HatchRulesTest {
         repeat(300) {
             val region = curated[rng.nextInt(curated.size)]
             val rarity = Rarity.entries[rng.nextInt(4)]
-            assertTrue(HatchRules.roll(region, rarity, rng) in HatchRules.pool(region, rarity))
+            val rolled = HatchRules.roll(region, rarity, rng)
+            // A species with separate-encounter variants may hatch as one of them (FormRoutes.rollVariant).
+            val pool = HatchRules.pool(region, rarity)
+            assertTrue(rolled in pool || pool.any { it.speciesId == rolled.speciesId && Dex.form(rolled.formIdentifier)?.kind == FormKind.ALTERNATE })
         }
     }
 }
