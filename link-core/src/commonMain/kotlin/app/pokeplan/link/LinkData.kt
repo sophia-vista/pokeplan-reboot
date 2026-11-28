@@ -151,6 +151,8 @@ data class LinkSettings(
     val reminders: Boolean = false,
     val reminderHour: Int = 9,
     val reminderNames: Boolean = false,
+    /** The slambook question sets the player customised, one per category; a category without one uses its starting set. */
+    val questionSets: List<QuestionSet> = emptyList(),
 )
 
 @Serializable

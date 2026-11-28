@@ -44,6 +44,7 @@ import app.pokeplan.link.ImportantDate
 import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.MemoryPhoto
+import app.pokeplan.link.PartialDate
 import app.pokeplan.link.Person
 import app.pokeplan.link.Sort
 import app.pokeplan.plan.TaskState
@@ -585,8 +586,12 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     profileSummary(model, p).takeIf { it.isNotEmpty() }?.let { RecordRow(it, "Sign, animal, type") }
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
+    link.metUp(p.id)?.let { RecordRow(LinkRules.dateLabel(PartialDate(it.year, it.monthNumber, it.dayOfMonth)), "Last met") }
     FieldLabel("Memories")
-    link.memoriesOf(p.id).take(4).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date), onClick = { openMemory(model, m.id) }, onClickLabel = "Open the memory") }
+    val theirMemories = link.memoriesOf(p.id)
+    var allMemories by remember(p.id) { mutableStateOf(false) }
+    (if (allMemories) theirMemories else theirMemories.take(4)).forEach { m -> RecordRow(link.memoryLabel(m), LinkRules.dateLabel(m.date), onClick = { openMemory(model, m.id) }, onClickLabel = "Open the memory") }
+    if (!allMemories && theirMemories.size > 4) PixelButton("Show all ${theirMemories.size}", { allMemories = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     PixelButton("Add a memory", { addingMemory = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     val photos = link.photosOfPerson(p.id)
     if (photos.isNotEmpty()) {
@@ -967,6 +972,7 @@ private fun LinkSettingsView(model: AppModel) {
             if (data.settings.postcardTrail) ToggleRow("Friend Safari on each person", data.settings.safari) { link.setSafari(it) }
         }
     }
+    QuestionSetsBox(model)
     if (data.settings.reminders) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reminders")
