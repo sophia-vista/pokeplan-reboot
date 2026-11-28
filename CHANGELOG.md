@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.265.0
+
+- **Shared building blocks: new `kit-core` module (refactor only).** A neutral module (`app.pokeplan.kit`, depends only on kotlinx-datetime) now holds `Periods` (week and month starts and ranges, replacing copies in Care, Heal, Mint and Plan streaks), `Calendars` (leap years, month lengths, month arithmetic, clamped dates, replacing copies in Plan recurrence, Link, Base and Mint) and `SearchQuery` (trim and lower-case once; Base, Link, Mint and Care journal search). `ReminderPolicy.focusWindow` replaces eight copies of the focus-window lookup in the Care, Heal, Base, Link and Mint reminders and the Android shared reminders. UI: one `ChoiceChip` (Base, Link, Memories, Mint) and one `SearchFieldRow` (JumpSearch, LinkSearch, BaseSearch). Tests: kit-core `PeriodsTest`, `CalendarsTest`, `SearchQueryTest`, app-core `FocusWindowTest`, and one shared `FakeClock` replacing 37 private copies. The five payout wrappers, the three recurrence engines, reminder settings, import plans and the other look-alike dialogs were looked at and left apart on purpose (reasons in the backlog). No reward change, no schema change.
+
 ## 0.263.2
 
 - **Search is behind the pull-down everywhere a list has one.** CARE's journal and BASE's notes had a search box sitting on the page; both now open by pulling down at the top of the list, with a close key, like LINK, PLAN, MINT, GEAR, Pokémon and Modules (DESIGN_SYSTEM 12B). A picker inside a form or dialogue (a Pokémon, a contact, a unit, a currency) keeps its inline field. Screenshots added for both open states in both palettes.

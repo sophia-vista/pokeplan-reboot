@@ -84,6 +84,7 @@ The owner's answers to the interview gaps (1A 2A 3B 4B 5A 6B) are specified in `
 | 34 | Retire the JSON documents and file fallbacks (REP-020), then the old-shape migration tests (REP-050) | |
 | 35 | Asset registry and rights manifest (REP-015, manifest half) | |
 | 36 | Database snapshot archive with attachments and whole-archive encryption (REP-008 remainder) | Folded into REP-034 where it overlaps |
+| 36a | Shared building blocks (`kit-core`, 0.265.0): done | `Periods`, `Calendars`, `SearchQuery`, `ReminderPolicy.focusWindow`, one `FakeClock`, `ChoiceChip`, `SearchFieldRow`; refactor only. **Looked at and deliberately not merged (do not retry):** the five per-store `pay()` wrappers (each gates on its own module setting, calls its own World method and event class and builds its own once-only key; Base keeps the legacy `home:` prefix, so unifying risks settlement keys and the sealed Heal path); the three recurrence engines (Plan's sealed Repeat with end and skips, Base's serialized simple Recurrence, Mint's bill frequencies with semi-monthly days and workday shifts: only the date arithmetic is shared); reminder settings trios (persisted field names, one-line setters); import plans (Heal's is sealed, shapes differ); person and Pokémon pickers, confirm dialogs, option pickers, slider and value rows, trailing-action rows, calendar grids, quick-actions boxes (different layouts: merging would change pixels or need many flags) |
 
 ### Tier 5: needs the owner or a device
 
