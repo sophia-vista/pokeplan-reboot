@@ -22,6 +22,7 @@ import app.pokeplan.link.LinkRules
 import app.pokeplan.link.LinkSettings
 import app.pokeplan.link.Memory
 import app.pokeplan.link.MemoryPhoto
+import app.pokeplan.link.PersonConnection
 import app.pokeplan.link.PartialDate
 import app.pokeplan.link.Person
 import app.pokeplan.link.Profile
@@ -196,6 +197,7 @@ class LinkStore(
             dates = if (keepDates) d.dates.map { if (it.personId == id) it.copy(personId = null) else it } else d.dates.filterNot { it.personId == id },
             followUps = if (keepFollowUps) d.followUps.map { if (it.personId == id) it.copy(personId = null) else it } else d.followUps.filterNot { it.personId == id },
             memories = d.memories.map { m -> if (id in m.personIds) m.copy(personIds = m.personIds - id) else m },
+            connections = d.connections.filterNot { it.involves(id) },
             settings = if (id in d.settings.order) d.settings.copy(order = d.settings.order - id) else d.settings,
         )
     }
@@ -240,6 +242,26 @@ class LinkStore(
     }
 
     fun deleteDate(id: String) = update { d -> d.copy(dates = d.dates.filterNot { it.id == id }) }
+
+    fun connectionsOf(personId: String): List<Pair<PersonConnection, Person>> = LinkRules.connectionsOf(data, personId)
+
+    /** Records how two people are connected, on both profiles; refused for the same person, a missing one, a blank or a repeated word. */
+    fun addConnection(aId: String, bId: String, label: String): Logged<PersonConnection> {
+        (LinkRules.checkConnection(data, aId, bId, label) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val c = PersonConnection(newId(), aId, bId, label.trim(), nowMillis)
+        update { d -> d.copy(connections = d.connections + c) }
+        return Logged(c)
+    }
+
+    fun updateConnection(id: String, label: String): Logged<PersonConnection> {
+        val old = data.connections.firstOrNull { it.id == id } ?: return Logged(null, "That connection is gone.")
+        (LinkRules.checkConnection(data, old.aId, old.bId, label, exceptId = id) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val c = old.copy(label = label.trim())
+        update { d -> d.copy(connections = d.connections.map { if (it.id == id) c else it }) }
+        return Logged(c)
+    }
+
+    fun removeConnection(id: String) = update { d -> d.copy(connections = d.connections.filterNot { it.id == id }) }
 
     fun memories(): List<Memory> = LinkRules.memoryOrder(data.memories)
 
@@ -530,7 +552,7 @@ object LinkExport {
     private val pretty = Json { encodeDefaults = true; prettyPrint = true }
 
     private val fields: Map<LinkKinds, List<String>> = mapOf(
-        LinkKinds.PEOPLE to listOf("people", "notes"),
+        LinkKinds.PEOPLE to listOf("people", "notes", "connections"),
         LinkKinds.DATES to listOf("dates"),
         LinkKinds.FOLLOW_UPS to listOf("followUps"),
         LinkKinds.MEMORIES to listOf("memories", "eras", "photos"),
@@ -546,7 +568,7 @@ object LinkExport {
 
     fun without(d: LinkData, kind: LinkKinds): LinkData = when (kind) {
         LinkKinds.PEOPLE -> d.copy(
-            people = emptyList(), notes = emptyList(), dates = d.dates.map { it.copy(personId = null) }, followUps = d.followUps.map { it.copy(personId = null) },
+            people = emptyList(), notes = emptyList(), connections = emptyList(), dates = d.dates.map { it.copy(personId = null) }, followUps = d.followUps.map { it.copy(personId = null) },
             memories = d.memories.map { it.copy(personIds = emptyList()) },
             settings = d.settings.copy(groups = emptyList(), order = emptyList(), categories = emptyList()),
         )
