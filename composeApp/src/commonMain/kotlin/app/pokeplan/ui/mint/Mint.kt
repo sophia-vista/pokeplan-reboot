@@ -93,6 +93,8 @@ import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.ScreenHeader
@@ -433,26 +435,26 @@ private fun AccountsView(model: AppModel) {
                     PixelDropdown(AccountType.entries.toList(), type, { it?.label ?: "" }, { t -> if (t != null) type = t }, Modifier.weight(2f), key = accent, label = "Type")
                     PixelDropdown(Money.common.take(6), currency, { it ?: "" }, { c -> if (c != null) currency = c }, Modifier.weight(1f), key = accent, label = "Currency")
                 }
-                PixelField(
-                    opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                    label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed now" else "Balance now", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                DecimalField(
+                    opening, { opening = it }, 16, Modifier.fillMaxWidth(),
+                    label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed now" else "Balance now",
                 )
-                if (Installments.allowedFor(type)) PixelField(
-                    limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                    label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                if (Installments.allowedFor(type)) DecimalField(
+                    limit, { limit = it }, 16, Modifier.fillMaxWidth(),
+                    label = "Credit limit",
                 )
                 if (Installments.allowedFor(type)) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                     PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                 }
                 if (Installments.allowedFor(type)) {
-                    PixelField(
-                        annualApr, { annualApr = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.fillMaxWidth(),
-                        label = "Annual rate for estimated interest (%)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    DecimalField(
+                        annualApr, { annualApr = it }, 6, Modifier.fillMaxWidth(),
+                        label = "Annual rate for estimated interest (%)",
                     )
-                    PixelField(
-                        interestGraceDays, { interestGraceDays = it.filter(Char::isDigit).take(3) }, Modifier.fillMaxWidth(),
-                        label = "Grace period (days)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    DigitsField(
+                        interestGraceDays, { interestGraceDays = it }, 3, Modifier.fillMaxWidth(),
+                        label = "Grace period (days)",
                     )
                     Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
@@ -493,7 +495,7 @@ private val accountTypeNotes = listOf(
     AccountType.LOAN to "Money you owe and pay back over time.",
     AccountType.OTHER_ASSET to "Anything else you own that has a value.",
     AccountType.OTHER_LIABILITY to "Anything else you owe.",
-)
+                    )
 
 @Composable
 private fun AccountTypesInfo(onClose: () -> Unit) {
@@ -558,27 +560,26 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
                             Modifier.weight(1f), key = accent, label = "Currency",
                         )
                     }
-                    PixelField(
-                        opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                        label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    DecimalField(
+                        opening, { opening = it }, 16, Modifier.fillMaxWidth(),
+                        label = if (Installments.allowedFor(type)) "Starting balance owed" else if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking",
                     )
-                    if (Installments.allowedFor(type)) PixelField(
-                        limit, { limit = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                        label = "Credit limit", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    if (Installments.allowedFor(type)) DecimalField(
+                        limit, { limit = it }, 16, Modifier.fillMaxWidth(),
+                        label = "Credit limit",
                     )
                     if (Installments.allowedFor(type)) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelField(statementDay, { statementDay = dayInput(it) }, Modifier.weight(1f), label = "Statement day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                         PixelField(dueDay, { dueDay = dayInput(it) }, Modifier.weight(1f), label = "Due day", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                     }
                     if (Installments.allowedFor(type)) {
-                        PixelField(
-                            annualApr, { annualApr = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.fillMaxWidth(),
-                            label = "Annual rate for estimated interest (%)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        DecimalField(
+                            annualApr, { annualApr = it }, 6, Modifier.fillMaxWidth(),
+                            label = "Annual rate for estimated interest (%)",
                         )
-                        PixelField(
-                            interestGraceDays, { interestGraceDays = it.filter(Char::isDigit).take(3) }, Modifier.fillMaxWidth(),
-                            label = "Grace period (days)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        DigitsField(
+                            interestGraceDays, { interestGraceDays = it }, 3, Modifier.fillMaxWidth(),
+                            label = "Grace period (days)",
                         )
                         Text("Simple APR/365 estimate; not a lender quote.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
@@ -673,9 +674,9 @@ private fun QuickBalance(model: AppModel, a: FinancialAccount) {
         PixelButton("Update the balance", { open = true; check = null; note = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     } else {
         Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        PixelField(
-            text, { text = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); check = null; note = null }, Modifier.fillMaxWidth(),
-            label = "Balance in the bank app", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = a.currency,
+        DecimalField(
+            text, { text = it; check = null; note = null }, 16, Modifier.fillMaxWidth(),
+            label = "Balance in the bank app", prefix = a.currency,
         )
         val shown = check
         if (shown != null) {
@@ -757,13 +758,13 @@ private fun CreditStatements(model: AppModel, account: FinancialAccount) {
                     }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     FieldLabel("Statement date")
                     PixelDateField(statementDay, today, ModuleAccent.MINT.accent, { statementDay = it ?: statementDay }, min = account.openingDay)
-                    PixelField(
-                        statementBalance, { statementBalance = money(it) }, Modifier.fillMaxWidth(), label = "Statement balance", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = account.currency,
+                    DecimalField(
+                        statementBalance, { statementBalance = it }, 16, Modifier.fillMaxWidth(), label = "Statement balance",
+                        prefix = account.currency,
                     )
-                    PixelField(
-                        minimumPayment, { minimumPayment = money(it) }, Modifier.fillMaxWidth(), label = "Minimum payment", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = account.currency,
+                    DecimalField(
+                        minimumPayment, { minimumPayment = it }, 16, Modifier.fillMaxWidth(), label = "Minimum payment",
+                        prefix = account.currency,
                     )
                     FieldLabel("Payment due date")
                     PixelDateField(dueDay, today, ModuleAccent.MINT.accent, { dueDay = it ?: dueDay }, min = statementDay)
@@ -897,10 +898,10 @@ private data class SplitDraft(val categoryId: String? = null, val amount: String
 private fun SplitFields(parts: List<SplitDraft>, currency: String, categories: List<Pair<String, String>>, onChange: (List<SplitDraft>) -> Unit) {
     parts.forEachIndexed { index, part ->
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(
-                part.amount, { value -> onChange(parts.toMutableList().also { it[index] = part.copy(amount = money(value)) }) },
-                Modifier.weight(1f), label = "Part ${index + 1}", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = currency,
+            DecimalField(
+                part.amount, { value -> onChange(parts.toMutableList().also { it[index] = part.copy(amount = value) }) }, 16,
+                Modifier.weight(1f), label = "Part ${index + 1}",
+                prefix = currency,
             )
             PixelDropdown(
                 listOf<String?>(null) + categories.map { it.first }, part.categoryId,
@@ -1046,9 +1047,9 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
     if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
     else FormBox {
         FormStack {
-            PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); amountError = null }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
+            DecimalField(
+                amount, { amount = it; amountError = null }, 16, Modifier.fillMaxWidth(), label = "Amount",
+                large = true, prefix = currency, placeholder = "0.00",
             )
             amountError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
             FormDivider()
@@ -1070,9 +1071,9 @@ internal fun ActivityView(model: AppModel, find: ActivityFind = remember { Activ
                         targets.map { it.id }, to?.id, { id -> targets.firstOrNull { it.id == id }?.name ?: "" },
                         { id -> if (id != null) toId = id }, Modifier.fillMaxWidth(), key = accent, label = "To",
                     )
-                    if (targets.isNotEmpty()) PixelField(
-                        fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = currency, placeholder = "0.00",
+                    if (targets.isNotEmpty()) DecimalField(
+                        fee, { fee = it }, 16, Modifier.fillMaxWidth(), label = "Fee (optional)",
+                        prefix = currency, placeholder = "0.00",
                     )
                     if (plansOwed.isEmpty() && to?.type?.liability == true) Text("Paying a card is not spending. Owed now and the account you pay from both fall.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     if (plansOwed.isNotEmpty()) Text("Repayment fills earliest due plans first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -1273,18 +1274,18 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
             FormStack {
                 if (planPurchase) Text("Change the purchase from its plan.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 else {
-                    PixelField(
-                        amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); amountError = null }, Modifier.fillMaxWidth(), label = "Amount", singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = t.currency, placeholder = "0.00",
+                    DecimalField(
+                        amount, { amount = it; amountError = null }, 16, Modifier.fillMaxWidth(), label = "Amount",
+                        large = true, prefix = t.currency, placeholder = "0.00",
                     )
                     amountError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
                 }
                 FormDivider()
                 FormGroup {
                     if (t.type == TxType.TRANSFER) {
-                        PixelField(
-                            fee, { fee = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); feeError = null }, Modifier.fillMaxWidth(), label = "Fee (optional)", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency, placeholder = "0.00",
+                        DecimalField(
+                            fee, { fee = it; feeError = null }, 16, Modifier.fillMaxWidth(), label = "Fee (optional)",
+                            prefix = t.currency, placeholder = "0.00",
                         )
                         feeError?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning) }
                     }
@@ -1385,9 +1386,9 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 }
                 if (t.type == TxType.EXPENSE && t.status == TxStatus.POSTED) {
                     if (refunding) {
-                        PixelField(
-                            refundAmount, { refundAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
-                            label = "Refund amount", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = t.currency,
+                        DecimalField(
+                            refundAmount, { refundAmount = it }, 16, Modifier.fillMaxWidth(),
+                            label = "Refund amount", prefix = t.currency,
                         )
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelButton("Save refund", {
@@ -1566,9 +1567,9 @@ private fun BudgetsView(model: AppModel) {
                     }
                     if (openId == b.id) {
                         FormStack {
-                        PixelField(
-                            newAmount, { newAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = b.currency, placeholder = "0.00",
+                        DecimalField(
+                            newAmount, { newAmount = it }, 16, Modifier.fillMaxWidth(), label = "Planned amount",
+                            large = true, prefix = b.currency, placeholder = "0.00",
                         )
                         FormDivider()
                         PixelChoice(BudgetPeriod.entries.toList(), newPeriod, { it?.label ?: "" }, { if (it != null) newPeriod = it }, label = "Period", key = accent)
@@ -1620,9 +1621,9 @@ private fun BudgetsView(model: AppModel) {
                                         if (openTargetId == target.id) {
                                             FormStack {
                                                 PixelField(editTargetName, { editTargetName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Target name", singleLine = true)
-                                                PixelField(
-                                                    editTargetAmount, { editTargetAmount = money(it) }, Modifier.fillMaxWidth(), label = "Target amount", singleLine = true,
-                                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), prefix = target.currency,
+                                                DecimalField(
+                                                    editTargetAmount, { editTargetAmount = it }, 16, Modifier.fillMaxWidth(), label = "Target amount",
+                                                    prefix = target.currency,
                                                 )
                                                 Text("Progress uses these balances.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                                                 Text("One active target per account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -1681,9 +1682,9 @@ private fun BudgetsView(model: AppModel) {
     if (adding) FormBox {
         FormStack {
             PixelTitle("New budget")
-            PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
+            DecimalField(
+                amount, { amount = it }, 16, Modifier.fillMaxWidth(), label = "Planned amount",
+                large = true, prefix = currency, placeholder = "0.00",
             )
             FormDivider()
             FormGroup {
@@ -1706,9 +1707,9 @@ private fun BudgetsView(model: AppModel) {
         FormStack {
             PixelTitle("New savings target")
             PixelField(targetName, { targetName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Target name", singleLine = true)
-            PixelField(
-                targetAmount, { targetAmount = money(it) }, Modifier.fillMaxWidth(), label = "Target amount", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency, placeholder = "0.00",
+            DecimalField(
+                targetAmount, { targetAmount = it }, 16, Modifier.fillMaxWidth(), label = "Target amount",
+                large = true, prefix = currency, placeholder = "0.00",
             )
             FormDivider()
             Text("Progress uses chosen balances.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -1788,9 +1789,9 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     val inc = o.bill.income
                     val est = o.bill.estimate
                     val anyAmount = full == null || est
-                    if (est) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = (if (inc) "Amount received" else "Amount paid") + (o.bill.expectedMinor?.let { " (estimate ${mint.show(it, o.bill.currency)})" } ?: ""), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = o.bill.currency, placeholder = "0.00")
-                    else if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = o.bill.currency, placeholder = "0.00")
-                    else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Received so far" else "Paid so far", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = o.bill.currency, placeholder = "0.00")
+                    if (est) DecimalField(partial, { partial = it }, 16, Modifier.fillMaxWidth(), label = (if (inc) "Amount received" else "Amount paid") + (o.bill.expectedMinor?.let { " (estimate ${mint.show(it, o.bill.currency)})" } ?: ""), large = true, prefix = o.bill.currency, placeholder = "0.00")
+                    else if (full == null) DecimalField(partial, { partial = it }, 16, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", large = true, prefix = o.bill.currency, placeholder = "0.00")
+                    else DecimalField(partial, { partial = it }, 16, Modifier.fillMaxWidth(), label = if (inc) "Received so far" else "Paid so far", large = true, prefix = o.bill.currency, placeholder = "0.00")
                     FieldLabel(if (inc) "Received on" else "Settled on")
                     PixelDateField(paidOn ?: defaultReceivedDay(o, today), today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -1843,7 +1844,7 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val minor = Money.parse(partial, o.bill.currency)
                     val inc = o.bill.income
-                    PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = o.bill.currency, placeholder = "0.00")
+                    DecimalField(partial, { partial = it }, 16, Modifier.fillMaxWidth(), label = if (inc) "Amount received" else "Amount paid", large = true, prefix = o.bill.currency, placeholder = "0.00")
                     FieldLabel(if (inc) "Received on" else "Settled on")
                     PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -1863,9 +1864,9 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
             PixelTitle(if (incomeNew) "New income" else "New bill")
             PixelChoice(listOf(false, true), incomeNew, { if (it == true) "Income expected" else "Bill to pay" }, { if (it != null) { incomeNew = it; if (!it) incomeCategory = null } }, label = "Kind", key = accent)
             PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-            PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = if (incomeNew) "Expected amount" else "Amount", placeholder = "Varies", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = currency,
+            DecimalField(
+                amount, { amount = it }, 16, Modifier.fillMaxWidth(), label = if (incomeNew) "Expected amount" else "Amount", placeholder = "Varies",
+                large = true, prefix = currency,
             )
             FormDivider()
             FormGroup {
@@ -1920,9 +1921,9 @@ internal fun BillsView(model: AppModel, openInstallments: Boolean = false, start
                     val minor = if (editAmount.isBlank()) null else Money.parse(editAmount, b.currency)
                     FormStack(Modifier.padding(bottom = Spacing.S)) {
                         PixelField(editName, { editName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
-                        PixelField(
-                            editAmount, { editAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount", placeholder = "Varies", singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = b.currency,
+                        DecimalField(
+                            editAmount, { editAmount = it }, 16, Modifier.fillMaxWidth(), label = "Amount", placeholder = "Varies",
+                            large = true, prefix = b.currency,
                         )
                         FormDivider()
                         if (scheduleOpen) FormGroup {
@@ -2133,9 +2134,9 @@ private fun ReconcileCard(model: AppModel) {
             if (id != null) { accountId = id; check = null; reason = ""; message = null }
         }, Modifier.fillMaxWidth(), key = accent, label = "Account")
         MintValueRow("In Mint", mint.show(book, cur))
-        PixelField(
-            statement, { statement = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16); check = null; message = null }, Modifier.fillMaxWidth(),
-            label = "Your statement says", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), large = true, prefix = cur, placeholder = "0.00",
+        DecimalField(
+            statement, { statement = it; check = null; message = null }, 16, Modifier.fillMaxWidth(),
+            label = "Your statement says", large = true, prefix = cur, placeholder = "0.00",
         )
         Text(
             "A quick check only compares the two and writes nothing. Recording the reconciliation keeps the comparison; when they differ, accepting the difference records one adjustment, and it needs your reason.",

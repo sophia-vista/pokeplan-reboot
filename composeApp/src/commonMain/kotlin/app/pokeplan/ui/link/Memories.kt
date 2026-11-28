@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,6 +61,7 @@ import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.PixelTitle
@@ -75,7 +75,6 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 
 private val accent: Color @Composable get() = ModuleAccent.LINK.accent
 
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
@@ -326,18 +325,18 @@ private fun PartialDateEditor(input: DateInput, label: String) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         FieldLabel(label)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
-            PixelField(
-                input.year, { input.year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f),
-                label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys,
+            DigitsField(
+                input.year, { input.year = it }, 4, Modifier.weight(1f),
+                label = "Year", placeholder = "unknown",
             )
             PixelDropdown(
                 listOf<Int?>(null) + (1..12).toList(), input.month,
                 { m -> if (m == null) NO_MONTH else MONTHS[m - 1] }, { m -> input.month = m },
                 Modifier.weight(1.2f), key = accent, label = "Month",
             )
-            PixelField(
-                input.day, { input.day = it.filter(Char::isDigit).take(2) }, Modifier.weight(0.8f),
-                label = "Day", singleLine = true, keyboardOptions = numberKeys,
+            DigitsField(
+                input.day, { input.day = it }, 2, Modifier.weight(0.8f),
+                label = "Day",
             )
         }
         ToggleRow("Around then", input.approximate) { input.approximate = it }

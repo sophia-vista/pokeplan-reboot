@@ -32,7 +32,6 @@ import app.pokeplan.ui.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
 import app.pokeplan.plan.LinkKind
@@ -68,6 +67,8 @@ import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.DigitsField
+import app.pokeplan.ui.theme.DecimalField
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelShape
@@ -121,8 +122,6 @@ enum class BaseSection(val label: String, val icon: String) {
 
 private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.BASE.accent
 
-private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
-private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
 
@@ -414,7 +413,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
     if (r.kind != RepeatKind.ONCE) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             Text("Every", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            PixelField(every, { t -> every = t.filter(Char::isDigit).take(2); onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, Modifier.width(88.dp), singleLine = true, keyboardOptions = numberKeys)
+            DigitsField(every, { t -> every = t; onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, 2, Modifier.width(88.dp))
             Text(r.kind.unit + if (r.every == 1) "" else "s", style = MaterialTheme.typography.bodyLarge)
         }
         if (r.kind == RepeatKind.WEEKLY) FormLabel("On")
@@ -591,7 +590,7 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
                 DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
                 AreaChips(data.areas, areaId) { areaId = it }
                 PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-                PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
+                DigitsField(minutes, { minutes = it }, 4, Modifier.fillMaxWidth(), label = "Minutes, optional")
                 PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
             }
         }
@@ -719,10 +718,9 @@ private fun AdjustStockForm(model: AppModel, s: Supply, onDone: () -> Unit) {
         FormGroup {
             FormLabel("Now ${quantityText(s)}")
             PixelChoice(StockChange.entries.toList(), change, { it?.label ?: "" }, { if (it != null) change = it }, key = accent)
-            PixelField(
-                amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+            DecimalField(
+                amount, { amount = it }, 12, Modifier.fillMaxWidth(),
                 label = when (change) { StockChange.SET -> "New quantity$unit"; StockChange.ADD -> "How much to add$unit"; StockChange.REMOVE -> "How much to remove$unit" },
-                singleLine = true, keyboardOptions = decimalKeys,
             )
             FormLabel("Reason, optional")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -793,10 +791,9 @@ private fun androidx.compose.foundation.layout.ColumnScope.RestockTab(model: App
                 val supply = line.supply
                 val needsNew = supply != null && (line.low || supply.quantityMilli == null)
                 val unit = if (supply != null && supply.unit.isNotEmpty()) " (${supply.unit})" else ""
-                PixelField(
-                    quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(),
+                DecimalField(
+                    quantity, { quantity = it }, 12, Modifier.fillMaxWidth(),
                     label = if (needsNew) "How much is there now$unit" else "How much did you buy$unit, blank to just tick it off",
-                    singleLine = true, keyboardOptions = decimalKeys,
                 )
                 Actions {
                     PixelButton("Bought", {
@@ -889,7 +886,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
         FormGroup {
             PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", placeholder = if (adding) "Add a supply" else null, singleLine = true, keyboardOptions = wordKeys)
             if (adding && data.supplies.isEmpty() && name.isEmpty()) ExampleChips(listOf("Dish soap", "Light bulbs", "Trash bags")) { name = it }
-            if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
+            if (adding) DecimalField(quantity, { quantity = it }, 12, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown")
         }
         FormDisclosure("Additional details", more, { more = !more }) {
             FormGroup {
@@ -898,7 +895,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
                     PixelField(newUnit, { newUnit = it.take(16) }, Modifier.weight(1f), label = "Another unit", singleLine = true)
                     PixelButton("Add unit", { home.addUnit(newUnit); if (newUnit.isNotBlank()) { unit = newUnit.trim(); newUnit = "" } }, color = Pixel.InkSoft, enabled = newUnit.isNotBlank(), compact = true)
                 }
-                PixelField(low, { low = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Low at or under, blank for none", singleLine = true, keyboardOptions = decimalKeys)
+                DecimalField(low, { low = it }, 12, Modifier.fillMaxWidth(), label = "Low at or under, blank for none")
                 AreaChips(data.areas, areaId) { areaId = it }
                 PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
                 PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
