@@ -409,7 +409,7 @@ object MintRules {
         return SavingsProgress(target, saved, (target.targetMinor - saved).coerceAtLeast(0), (saved * 100 / target.targetMinor).coerceAtMost(9_999).toInt())
     }
 
-    private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
+    private fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
     fun dueDay(bill: Bill, index: Int): LocalDate {
         val first = bill.firstDue

@@ -210,13 +210,9 @@ object LinkRules {
         return Check.Ok
     }
 
-    fun isLeap(year: Int): Boolean = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+    fun isLeap(year: Int): Boolean = app.pokeplan.kit.Calendars.isLeap(year)
 
-    fun daysInMonth(year: Int, month: Int): Int = when (month) {
-        2 -> if (isLeap(year)) 29 else 28
-        4, 6, 9, 11 -> 30
-        else -> 31
-    }
+    fun daysInMonth(year: Int, month: Int): Int = app.pokeplan.kit.Calendars.daysInMonth(year, month)
 
     fun observed(month: Int, day: Int, year: Int): LocalDate =
         LocalDate(year, month, if (month == 2 && day == 29 && !isLeap(year)) 28 else day)
