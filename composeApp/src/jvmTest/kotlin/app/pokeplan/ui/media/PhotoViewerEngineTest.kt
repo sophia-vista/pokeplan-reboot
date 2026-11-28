@@ -37,7 +37,7 @@ class PhotoViewerEngineTest {
     fun pagesTurnAndThePanelAndControlsToggle() {
         val s = PhotoViewerState(listOf(item("a"), item("b")), 0, PhotoViewerConfig(fitMode = ImageFitMode.FILL_CENTER))
         assertEquals(ImageFitMode.FILL_CENTER, s.fit)
-        s.setZoomed(true)
+        s.markZoomed(true)
         s.notice = "sent"
         s.show(1)
         assertEquals(1, s.index)
@@ -58,6 +58,24 @@ class PhotoViewerEngineTest {
         assertEquals(0.5f, ViewerMath.baseScale(100f, 200f, 200f, 200f, ImageFitMode.FIT_CENTER))
         assertEquals(1f, ViewerMath.baseScale(100f, 200f, 200f, 200f, ImageFitMode.FILL_CENTER))
         assertEquals(1f, ViewerMath.baseScale(0f, 0f, 10f, 10f, ImageFitMode.FIT_CENTER))
+    }
+
+    @Test
+    fun aQuarterTurnSwapsTheSidesAndFillCoversExactlyTheViewport() {
+        // A 200 x 100 picture in a 100 x 100 viewport: fit draws 100 x 50; turned a quarter it draws 50 x 100.
+        assertEquals(100f to 50f, ViewerMath.drawnSize(100f, 100f, 200f, 100f, ImageFitMode.FIT_CENTER, 0))
+        assertEquals(50f to 100f, ViewerMath.drawnSize(100f, 100f, 200f, 100f, ImageFitMode.FIT_CENTER, 1))
+        assertEquals(100f to 50f, ViewerMath.drawnSize(100f, 100f, 200f, 100f, ImageFitMode.FIT_CENTER, 2))
+        assertEquals(100f to 100f, ViewerMath.drawnSize(100f, 100f, 200f, 100f, ImageFitMode.FILL_CENTER, 1))
+    }
+
+    @Test
+    fun rotationTurnsInQuartersAndResetsWithThePage() {
+        val s = PhotoViewerState(listOf(item("a"), item("b")), 0, PhotoViewerConfig())
+        repeat(5) { s.rotate() }
+        assertEquals(1, s.rotation)
+        s.show(1)
+        assertEquals(0, s.rotation)
     }
 
     @Test

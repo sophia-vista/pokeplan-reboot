@@ -22,6 +22,19 @@ object ViewerMath {
         return if (fit == ImageFitMode.FIT_CENTER) min(across, down) else max(across, down)
     }
 
+    /**
+     * The size a picture really covers in a [vw] x [vh] viewport after [turns] quarter turns. Fit leaves bars (the picture's own size);
+     * fill is cropped to the viewport, so it covers exactly the viewport and there is nothing beyond it to pan to.
+     */
+    fun drawnSize(vw: Float, vh: Float, iw: Float, ih: Float, fit: ImageFitMode, turns: Int): Pair<Float, Float> {
+        if (fit == ImageFitMode.FILL_CENTER) return vw to vh
+        val odd = turns % 2 != 0
+        val w = if (odd) ih else iw
+        val h = if (odd) iw else ih
+        val s = baseScale(vw, vh, w, h, ImageFitMode.FIT_CENTER)
+        return w * s to h * s
+    }
+
     /** How far a picture [content] long, drawn at [scale], may slide either way inside a [viewport]. */
     fun limit(scale: Float, viewport: Float, content: Float): Float = max(0f, (content * scale - viewport) / 2f)
 

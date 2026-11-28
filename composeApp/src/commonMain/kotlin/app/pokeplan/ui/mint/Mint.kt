@@ -804,7 +804,7 @@ private fun ReceiveMoney(model: AppModel, a: FinancialAccount, problem: (String?
     // The QR opens in the shared viewer: light field, hard edges, full brightness while it is up, and Share.
     val openFull = {
         model.photoViewer.open(
-            listOf(MediaItem("receive-${a.id}", MediaSources.base64(a.receiveQr), title = a.name, description = "Receive money QR code")),
+            listOf(MediaItem("receive-${a.id}", MediaSources.base64(a.receiveQr), title = "${a.name} QR code")),
             config = PhotoViewerConfig(
                 allowShare = true, showImageCounter = false, backdrop = ViewerBackdrop.LIGHT, crisp = true, brightScreen = true,
                 module = ModuleAccent.MINT, shareLabel = "QR code",

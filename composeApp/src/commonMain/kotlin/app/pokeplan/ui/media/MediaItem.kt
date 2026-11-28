@@ -52,12 +52,14 @@ enum class ViewerBackdrop {
     LIGHT,
 }
 
-/** An extra key a module adds to the viewer's bar ("Open memory"); it gets the picture on show. */
+/** An extra key a module adds to the viewer's details ("Open memory"); it gets the picture on show. */
 class ViewerAction(val label: String, val closesViewer: Boolean = true, val onClick: (MediaItem) -> Unit)
 
 /** What the viewer offers for one opening; the module decides, the engine never needs to change. */
 data class PhotoViewerConfig(
     val allowZoom: Boolean = true,
+    /** Adds a Rotate key: a quarter turn of the view, never of the file. */
+    val allowRotation: Boolean = true,
     val allowShare: Boolean = false,
     val showImageCounter: Boolean = true,
     val showMetadata: Boolean = false,

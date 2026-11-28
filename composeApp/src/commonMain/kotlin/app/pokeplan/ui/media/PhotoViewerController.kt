@@ -17,6 +17,10 @@ class PhotoViewerState(val items: List<MediaItem>, initialIndex: Int, val config
     var fit: ImageFitMode by mutableStateOf(config.fitMode)
         private set
 
+    /** Quarter turns the picture on show is turned (0 to 3). A view only: the file is never touched. */
+    var rotation: Int by mutableIntStateOf(0)
+        private set
+
     /** The picture on show is zoomed in, so a drag pans it and the pages do not turn. */
     var zoomed: Boolean by mutableStateOf(false)
         private set
@@ -34,10 +38,13 @@ class PhotoViewerState(val items: List<MediaItem>, initialIndex: Int, val config
             index = next
             notice = null
         }
+        rotation = 0
         zoomed = false
     }
 
-    fun setZoomed(on: Boolean) { zoomed = on }
+    fun rotate() { rotation = (rotation + 1) % 4 }
+
+    fun markZoomed(on: Boolean) { zoomed = on }
 
     fun toggleControls() { controlsVisible = !controlsVisible }
 

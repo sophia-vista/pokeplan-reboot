@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
+import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /**
  * The EXIF orientation of a JPEG (1 to 8; 1 is upright), read straight from its first bytes with no platform call, so a phone photo
@@ -84,6 +85,6 @@ fun ImageBitmap.upright(orientation: Int): ImageBitmap {
 /** The picture in [bytes], decoded and turned upright. Null when the bytes are not a picture. */
 fun decodeUpright(bytes: ByteArray?): ImageBitmap? {
     if (bytes == null || bytes.isEmpty()) return null
-    val bitmap = runCatching { org.jetbrains.compose.resources.decodeToImageBitmap(bytes) }.getOrNull() ?: return null
+    val bitmap = runCatching { bytes.decodeToImageBitmap() }.getOrNull() ?: return null
     return bitmap.upright(Exif.orientation(bytes))
 }
