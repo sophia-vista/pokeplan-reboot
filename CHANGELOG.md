@@ -5,10 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.265.1
+## 0.266.1
 
 - **CARE journal and BASE notes: records first.** The entry form and the note field no longer sit open above the list: one "Add an entry" or "Add a note" key opens it, it closes after saving, and it is open by itself when there is nothing yet, a draft waits, or another screen asked to write (DESIGN_SYSTEM 12B 3). The journal's prompt card is now a closed "Need a prompt?" accordion inside the form.
 - **Swipe a row left to delete it, with an Undo.** Journal entries and notes lose their trailing keys; the row opens on tap (the journal editor gains a Delete key, notes already had one), and screen readers get a "Delete entry" or "Delete note" action. New `SwipeRow` component with its own tests. Screenshots added for the closed, open, prompt, empty and mid-swipe states.
+
+## 0.266.0
+
+- **Shared photo viewer (owner request, 28 November 2026).** One viewer for every module's pictures, in `composeApp/.../ui/media/`: `model.photoViewer.open(items, index, config)`, shown by `PhotoViewerHost` once at the App root as a full-screen dialog (Back returns to the module's screen and scroll position). Swipe between pictures (only the visible page and one neighbour load; a 64 MB bitmap cache is released on close), pinch and double-tap zoom, pan (swiping turns pages only when not zoomed), Fit and Fill, EXIF orientation read in pure Kotlin (also applied to LINK thumbnails), view-only quarter-turn rotate (never touches the file), loading, unavailable and empty states, a details key (Info rows, Fit/Fill, module keys such as LINK's Open memory), optional Share, and a bright-screen light backdrop for MINT QR codes; a tap hides the bars. Layout: back, centred counter and details key on top; zoom out, zoom in, rotate and share (with previous and next when several) below; the caption (title, description, date) underneath. Sources are `MediaSource` (`MediaSources.base64` for LINK photos and MINT's QR and receipt). LINK (gallery, Memory Detail, person page) and MINT (receive-money QR and receipt) use it; the old LINK photo viewer, its UpTo screens and `QrFullScreen` are removed. Three new Pixelarticons glyphs (share, zoom-in, zoom-out). The Android share chooser is titled "Share this picture". Not yet: BASE photos, an Android Uri source adapter, slideshow, thumbnail strip, save and export, video; not run on a device. No reward change, no schema change.
 
 ## 0.265.0
 

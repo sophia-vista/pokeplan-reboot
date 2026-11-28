@@ -140,6 +140,9 @@ class AppModel(
 
     var gearOpen: Boolean by mutableStateOf(false)
 
+    /** The one door to the shared full-screen photo viewer (`ui/media/`); every module opens its pictures through it. */
+    val photoViewer = app.pokeplan.ui.media.PhotoViewerController()
+
     /** The newest published build, once [checkForUpdate] has read one. */
     var updateRelease: UpdateRelease? by mutableStateOf(null)
         private set
@@ -682,4 +685,5 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
         }
     }
     CutsceneHost(model)
+    app.pokeplan.ui.media.PhotoViewerHost(model)
 }
