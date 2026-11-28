@@ -84,13 +84,14 @@ private val FlashGold = Color(0xFFFFE27A)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CutsceneHost(model: AppModel) {
-    val waiting = model.data.rewardLog.filter { !it.seen && it.source != GameStore.WORLD_SOURCE }
+    val waiting = model.data.rewardLog.filter { !it.seen && !it.scenePlayed && it.source != GameStore.WORLD_SOURCE }
         .flatMap { it.rewards.filterIsInstance<Reward.Hatched>() }
         .firstOrNull { it.pokemon.id !in model.playedHatches }
     val idle = model.cutscene == null
     LaunchedEffect(waiting?.pokemon?.id, idle) {
         if (idle && waiting != null) {
             model.playedHatches += waiting.pokemon.id
+            model.store.markScenePlayed(waiting.pokemon.id)
             model.cutscene = Cutscene.Hatch(waiting.pokemon, waiting.fromTask, model.data.origins[waiting.pokemon.id]?.how)
         }
     }
