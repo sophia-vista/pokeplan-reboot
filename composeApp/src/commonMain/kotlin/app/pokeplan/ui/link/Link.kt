@@ -96,7 +96,8 @@ import app.pokeplan.ui.screens.FormGroup
 import app.pokeplan.ui.screens.FormSave
 import app.pokeplan.ui.screens.FormStack
 import app.pokeplan.ui.screens.PixelChoice
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.ChoiceChip
+import app.pokeplan.ui.screens.SearchFieldRow
 import app.pokeplan.ui.screens.UpTo
 import app.pokeplan.ui.screens.label
 import app.pokeplan.ui.screens.long
@@ -115,9 +116,6 @@ private val phoneKeys = KeyboardOptions(keyboardType = KeyboardType.Phone)
 private val emailKeys = KeyboardOptions(keyboardType = KeyboardType.Email)
 private val wordKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
 private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-
-@Composable
-private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
 internal class LinkJump(val section: LinkSection, val id: String? = null, val tab: Int? = null)
 
@@ -311,13 +309,8 @@ private const val HITS_PER_KIND = 5
 
 @Composable
 private fun LinkSearch(model: AppModel, query: String, onQuery: (String) -> Unit, onDone: () -> Unit) {
-    val field = remember { androidx.compose.ui.focus.FocusRequester() }
-    androidx.compose.runtime.LaunchedEffect(Unit) { field.requestFocus() }
     val hits = model.link.search(query)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { onQuery(it.take(40)) }, Modifier.weight(1f).focusRequester(field), placeholder = "Search Link", singleLine = true)
-        PixelIconButton("close", "Close search", onDone)
-    }
+    SearchFieldRow(query, onQuery, onDone, "Search Link", 40)
     if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     // Grouped by what each result is, with the context that tells two of them apart; each opens its exact record.
     hits.groupBy { it.kind }.forEach { (kind, group) ->
@@ -397,7 +390,7 @@ private fun PeopleScreen(model: AppModel) {
             if (groupChips.isNotEmpty()) {
                 FieldLabel("Groups")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    groupChips.forEach { g -> Chip(g.name, group == g.id, { group = if (group == g.id) null else g.id }) }
+                    groupChips.forEach { g -> ChoiceChip(g.name, group == g.id, { group = if (group == g.id) null else g.id }, key = accent) }
                 }
             }
         }
@@ -498,7 +491,7 @@ private fun GroupsManager(model: AppModel) {
         }
         val unused = LinkRules.STARTING_GROUPS.filter { s -> data.settings.groups.none { it.name.equals(s, ignoreCase = true) } }
         if (unused.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            unused.forEach { s -> Chip(s, false, { newName = s }) }
+            unused.forEach { s -> ChoiceChip(s, false, { newName = s }, key = accent) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
             PixelField(newName, { newName = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), label = "New group", singleLine = true, keyboardOptions = wordKeys)
@@ -731,7 +724,7 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
             if (groups.isNotEmpty()) {
                 SectionLabel("Groups")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    groups.forEach { g -> Chip(g.name, g.id in groupIds, { groupIds = if (g.id in groupIds) groupIds - g.id else groupIds + g.id }) }
+                    groups.forEach { g -> ChoiceChip(g.name, g.id in groupIds, { groupIds = if (g.id in groupIds) groupIds - g.id else groupIds + g.id }, key = accent) }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
@@ -869,10 +862,10 @@ private fun PersonPicker(people: List<Person>, selected: String?, onPick: (Strin
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), label = "Person", placeholder = chosen?.let { LinkRules.displayName(it) } ?: "Search to choose", singleLine = true)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Chip("No one", selected == null, { onPick(null) })
-            chosen?.let { Chip(LinkRules.displayName(it), true, { onPick(null) }) }
+            ChoiceChip("No one", selected == null, { onPick(null) }, key = accent)
+            chosen?.let { ChoiceChip(LinkRules.displayName(it), true, { onPick(null) }, key = accent) }
             val matches = people.filter { it.id != selected && (query.isNotBlank() || people.size <= 6) && (query.isBlank() || LinkRules.displayName(it).contains(query.trim(), ignoreCase = true)) }
-            matches.sortedBy { LinkRules.displayName(it).lowercase() }.take(6).forEach { p -> Chip(LinkRules.displayName(p), false, { onPick(p.id); query = "" }) }
+            matches.sortedBy { LinkRules.displayName(it).lowercase() }.take(6).forEach { p -> ChoiceChip(LinkRules.displayName(p), false, { onPick(p.id); query = "" }, key = accent) }
         }
     }
 }
